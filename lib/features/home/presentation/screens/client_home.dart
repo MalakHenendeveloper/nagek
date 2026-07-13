@@ -313,15 +313,15 @@ class _ClientHomeState extends State<ClientHome> {
           items: [
             const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
-              label: 'Profile',
+              label: 'الملف الشخصي',
             ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.location_on_outlined),
-              label: 'Centers',
+              label: 'المراكز',
             ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.build_outlined),
-              label: 'Repairs',
+              label: 'طلباتي',
             ),
             BottomNavigationBarItem(
               icon: Container(
@@ -335,7 +335,7 @@ class _ClientHomeState extends State<ClientHome> {
                   color: _selectedIndex == 3 ? Colors.black87 : Colors.grey,
                 ),
               ),
-              label: 'Home',
+              label: 'الرئيسية',
             ),
           ],
         ),
@@ -370,13 +370,21 @@ class _ClientHomeState extends State<ClientHome> {
         children: [
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C3E50),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C3E50),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                image: center.logo.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(center.logo),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: const Center(
-                child: Icon(Icons.handyman_outlined, color: Colors.white54, size: 40),
-              ),
+              child: center.logo.isEmpty
+                  ? const Center(
+                      child: Icon(Icons.handyman_outlined, color: Colors.white54, size: 40),
+                    )
+                  : null,
             ),
           ),
           Padding(

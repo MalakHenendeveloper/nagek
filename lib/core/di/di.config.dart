@@ -30,15 +30,23 @@ import '../../features/centers/domain/repositories/centers_repository.dart'
     as _i105;
 import '../../features/centers/domain/use_cases/get_center_details_use_case.dart'
     as _i825;
+import '../../features/centers/domain/use_cases/get_center_services_use_case.dart'
+    as _i101;
 import '../../features/centers/domain/use_cases/get_centers_use_case.dart'
     as _i235;
 import '../../features/centers/presentation/cubit/center_details_cubit.dart'
     as _i1060;
 import '../../features/centers/presentation/cubit/centers_cubit.dart' as _i997;
+import '../../features/orders/data/data_sources/device_local_data_source.dart'
+    as _i468;
 import '../../features/orders/data/data_sources/orders_remote_data_source.dart'
     as _i310;
+import '../../features/orders/data/repositories/device_repository_impl.dart'
+    as _i153;
 import '../../features/orders/data/repositories/orders_repository_impl.dart'
     as _i368;
+import '../../features/orders/domain/repositories/device_repository.dart'
+    as _i850;
 import '../../features/orders/domain/repositories/orders_repository.dart'
     as _i992;
 import '../../features/orders/domain/use_cases/approve_price_offer_use_case.dart'
@@ -57,6 +65,8 @@ import '../../features/orders/domain/use_cases/get_price_offer_use_case.dart'
     as _i994;
 import '../../features/orders/presentation/cubit/create_order_cubit.dart'
     as _i743;
+import '../../features/orders/presentation/cubit/device_selection_cubit.dart'
+    as _i490;
 import '../../features/orders/presentation/cubit/order_tracking_cubit.dart'
     as _i934;
 import '../../features/orders/presentation/cubit/orders_cubit.dart' as _i1028;
@@ -84,6 +94,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );
+    gh.lazySingleton<_i468.DeviceLocalDataSource>(
+      () => _i468.DeviceLocalDataSourceImpl(),
+    );
+    gh.lazySingleton<_i850.DeviceRepository>(
+      () => _i153.DeviceRepositoryImpl(gh<_i468.DeviceLocalDataSource>()),
+    );
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(gh<_i558.FlutterSecureStorage>()),
     );
@@ -92,6 +108,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1012.ProfileRemoteDataSource>(
       () => _i1012.ProfileRemoteDataSourceImpl(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i490.DeviceSelectionCubit>(
+      () => _i490.DeviceSelectionCubit(gh<_i850.DeviceRepository>()),
     );
     gh.lazySingleton<_i93.CentersRemoteDataSource>(
       () => _i93.CentersRemoteDataSourceImpl(gh<_i1047.ApiManager>()),
@@ -113,9 +132,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i110.GetProfileUseCase>(
       () => _i110.GetProfileUseCase(gh<_i894.ProfileRepository>()),
-    );
-    gh.factory<_i36.ProfileCubit>(
-      () => _i36.ProfileCubit(gh<_i110.GetProfileUseCase>()),
     );
     gh.lazySingleton<_i1038.LoginUseCase>(
       () => _i1038.LoginUseCase(gh<_i787.AuthRepository>()),
@@ -153,8 +169,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i994.GetPriceOfferUseCase>(
       () => _i994.GetPriceOfferUseCase(gh<_i992.OrdersRepository>()),
     );
+    gh.factory<_i36.ProfileCubit>(
+      () => _i36.ProfileCubit(
+        gh<_i110.GetProfileUseCase>(),
+        gh<_i894.ProfileRepository>(),
+      ),
+    );
     gh.lazySingleton<_i825.GetCenterDetailsUseCase>(
       () => _i825.GetCenterDetailsUseCase(gh<_i105.CentersRepository>()),
+    );
+    gh.lazySingleton<_i101.GetCenterServicesUseCase>(
+      () => _i101.GetCenterServicesUseCase(gh<_i105.CentersRepository>()),
     );
     gh.lazySingleton<_i235.GetCentersUseCase>(
       () => _i235.GetCentersUseCase(gh<_i105.CentersRepository>()),
@@ -177,11 +202,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i743.CreateOrderCubit>(
       () => _i743.CreateOrderCubit(gh<_i945.CreateOrderUseCase>()),
     );
+    gh.factory<_i1060.CenterDetailsCubit>(
+      () => _i1060.CenterDetailsCubit(
+        gh<_i825.GetCenterDetailsUseCase>(),
+        gh<_i101.GetCenterServicesUseCase>(),
+      ),
+    );
     gh.factory<_i997.CentersCubit>(
       () => _i997.CentersCubit(gh<_i235.GetCentersUseCase>()),
-    );
-    gh.factory<_i1060.CenterDetailsCubit>(
-      () => _i1060.CenterDetailsCubit(gh<_i825.GetCenterDetailsUseCase>()),
     );
     return this;
   }

@@ -15,3 +15,16 @@ class ProfileError extends ProfileState {
   final String message;
   ProfileError(this.message);
 }
+
+class AddAddressLoading extends ProfileState {}
+
+class AddAddressSuccess extends ProfileState {
+  final String message;
+  final ProfileUserEntity user;
+  AddAddressSuccess(this.message, this.user);
+}
+
+class AddAddressError extends ProfileState {
+  final String message;
+  AddAddressError(this.message);
+}

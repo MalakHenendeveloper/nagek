@@ -129,3 +129,25 @@ class AddressModel {
     );
   }
 }
+
+class AddAddressResponseModel {
+  final bool success;
+  final String message;
+  final List<AddressModel> addresses;
+
+  AddAddressResponseModel({
+    required this.success,
+    required this.message,
+    required this.addresses,
+  });
+
+  factory AddAddressResponseModel.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>? ?? {};
+    final list = data['addresses'] as List<dynamic>? ?? [];
+    return AddAddressResponseModel(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      addresses: list.map((a) => AddressModel.fromJson(a as Map<String, dynamic>)).toList(),
+    );
+  }
+}

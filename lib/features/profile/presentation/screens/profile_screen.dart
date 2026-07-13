@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/routes_manager/routes.dart';
@@ -396,13 +397,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 24),
 
                   // Addresses Section
-                  Text(
-                    'العناوين',
-                    style: GoogleFonts.cairo(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'العناوين',
+                        style: GoogleFonts.cairo(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => _showAddAddressDialog(context),
+                        icon: const Icon(Icons.add_location_alt, size: 18, color: Color(0xFFFFC107)),
+                        label: Text(
+                          'إضافة عنوان',
+                          style: GoogleFonts.cairo(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFFFC107),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   if (user.addresses.isEmpty)
@@ -439,6 +457,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _buildAddressCard(address),
                       ),
                     ),
+
+                  const SizedBox(height: 24),
+
+                  // Support & Help Section
+                  Text(
+                    'الدعم والمساعدة',
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    children: [
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.chat, size: 20, color: Colors.green),
+                        ),
+                        title: Text(
+                          'تواصل مع الدعم الفني',
+                          style: GoogleFonts.cairo(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'اضغط لعرض رقم الدعم الفني',
+                          style: GoogleFonts.cairo(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                        onTap: () {
+                          _showSupportNumberDialog(context);
+                        },
+                      ),
+                    ],
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -662,6 +727,241 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showAddAddressDialog(BuildContext context) {
+    final labelController = TextEditingController();
+    final addressController = TextEditingController();
+    final cityController = TextEditingController();
+    final latController = TextEditingController();
+    final lngController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.add_location_alt, color: Color(0xFFFFC107)),
+              const SizedBox(width: 8),
+              Text(
+                'إضافة عنوان جديد',
+                style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: labelController,
+                    decoration: InputDecoration(
+                      labelText: 'تسمية العنوان (مثال: البيت، العمل)',
+                      labelStyle: GoogleFonts.cairo(fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFFFCFAF5),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: addressController,
+                    decoration: InputDecoration(
+                      labelText: 'العنوان بالتفصيل',
+                      labelStyle: GoogleFonts.cairo(fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFFFCFAF5),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: cityController,
+                    decoration: InputDecoration(
+                      labelText: 'المدينة',
+                      labelStyle: GoogleFonts.cairo(fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFFFCFAF5),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: latController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'خط العرض',
+                            labelStyle: GoogleFonts.cairo(fontSize: 12),
+                            filled: true,
+                            fillColor: const Color(0xFFFCFAF5),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'مطلوب';
+                            if (double.tryParse(v) == null) return 'رقم غير صحيح';
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: lngController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'خط الطول',
+                            labelStyle: GoogleFonts.cairo(fontSize: 12),
+                            filled: true,
+                            fillColor: const Color(0xFFFCFAF5),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'مطلوب';
+                            if (double.tryParse(v) == null) return 'رقم غير صحيح';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'إلغاء',
+                style: GoogleFonts.cairo(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.pop(ctx);
+                  _profileCubit.addAddress(
+                    label: labelController.text.trim(),
+                    address: addressController.text.trim(),
+                    city: cityController.text.trim(),
+                    lat: double.parse(latController.text.trim()),
+                    lng: double.parse(lngController.text.trim()),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFC107),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              ),
+              child: Text(
+                'إضافة',
+                style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSupportNumberDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFCFAF5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'رقم الدعم الفني',
+            style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'يمكنك نسخ الرقم والتواصل معنا عبر واتساب:',
+                style: GoogleFonts.cairo(color: Colors.black87, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.phone_android_outlined, color: Color(0xFFFFC107)),
+                    const SizedBox(width: 8),
+                    SelectableText(
+                      '+9647824774219',
+                      style: GoogleFonts.cairo(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'إغلاق',
+                style: GoogleFonts.cairo(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(const ClipboardData(text: '+9647824774219'));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'تم نسخ رقم الدعم الفني بنجاح',
+                      style: GoogleFonts.cairo(),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: Text(
+                'نسخ الرقم',
+                style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFC107),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

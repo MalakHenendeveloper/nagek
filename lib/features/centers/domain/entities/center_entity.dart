@@ -13,6 +13,7 @@ class CenterEntity {
   final String address;
   final String city;
   final String status;
+  final String logo;
   final List<String> supportedBrands;
   final List<String> supportedDeviceTypes;
   final double rating;
@@ -29,6 +30,7 @@ class CenterEntity {
     required this.address,
     required this.city,
     required this.status,
+    required this.logo,
     required this.supportedBrands,
     required this.supportedDeviceTypes,
     required this.rating,

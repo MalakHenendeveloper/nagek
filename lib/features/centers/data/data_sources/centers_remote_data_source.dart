@@ -1,6 +1,7 @@
 import '../../../../core/api/api_manager.dart';
 import '../../../../core/api/endpoints.dart';
 import '../models/center_model.dart';
+import '../models/service_model.dart';
 
 import '../models/center_details_response.dart';
 
@@ -13,6 +14,8 @@ abstract class CentersRemoteDataSource {
   });
 
   Future<CenterDetailsResponseModel> getCenterDetails(String id);
+
+  Future<CenterServicesResponseModel> getCenterServices(String centerId);
 }
 
 @LazySingleton(as: CentersRemoteDataSource)
@@ -47,6 +50,19 @@ class CentersRemoteDataSourceImpl implements CentersRemoteDataSource {
       return CenterDetailsResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في جلب تفاصيل المركز');
+    }
+  }
+
+  @override
+  Future<CenterServicesResponseModel> getCenterServices(String centerId) async {
+    final response = await _apiManager.getDate(
+      '${Endpoints.centerServices}$centerId/services',
+    );
+
+    if (response.data != null) {
+      return CenterServicesResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب خدمات المركز');
     }
   }
 }

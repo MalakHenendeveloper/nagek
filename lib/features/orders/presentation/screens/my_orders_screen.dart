@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
 import '../../domain/entities/order_entity.dart';
@@ -378,7 +379,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                   ),
                 ),
                 Text(
-                  '${order.fees.total.toInt()} ر.س',
+                  '${order.fees.total.toInt()} د.ع',
                   style: GoogleFonts.cairo(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -476,8 +477,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () {},
+          ElevatedButton.icon(
+            onPressed: () {
+              _showSupportNumberDialog(context);
+            },
+            icon: const Icon(Icons.chat, size: 16),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFC107),
               foregroundColor: Colors.black,
@@ -486,7 +490,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: Text(
+            label: Text(
               'تحدث معنا',
               style: GoogleFonts.cairo(fontSize: 12, fontWeight: FontWeight.bold),
             ),
@@ -569,6 +573,92 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     } catch (e) {
       return '';
     }
+  }
+
+  void _showSupportNumberDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFCFAF5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'رقم الدعم الفني',
+            style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'يمكنك نسخ الرقم والتواصل معنا عبر واتساب:',
+                style: GoogleFonts.cairo(color: Colors.black87, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.phone_android_outlined, color: Color(0xFFFFC107)),
+                    const SizedBox(width: 8),
+                    SelectableText(
+                      '+9647824774219',
+                      style: GoogleFonts.cairo(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'إغلاق',
+                style: GoogleFonts.cairo(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(const ClipboardData(text: '+9647824774219'));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'تم نسخ رقم الدعم الفني بنجاح',
+                      style: GoogleFonts.cairo(),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: Text(
+                'نسخ الرقم',
+                style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFC107),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

@@ -7,6 +7,9 @@ import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
 import '../cubit/create_order_cubit.dart';
 import '../cubit/create_order_state.dart';
+import '../cubit/device_selection_cubit.dart';
+import '../cubit/device_selection_state.dart';
+import '../widgets/device_selector_widget.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String centerId;
@@ -40,7 +43,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   void initState() {
     super.initState();
     _cubit = getIt<CreateOrderCubit>();
-    _cityController.text = 'Riyadh'; // default
+    _cityController.text = 'الرياض'; // default
   }
 
   @override
@@ -113,10 +116,23 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
+  bool _isNextButtonEnabled() {
+    if (_currentStep == 1) {
+      if (_selectedDeviceType == 'phone') {
+        return _brandController.text.trim().isNotEmpty &&
+            _modelController.text.trim().isNotEmpty;
+      }
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider(create: (_) => getIt<DeviceSelectionCubit>()..loadBrands()),
+      ],
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFAF5),
         appBar: AppBar(
@@ -137,8 +153,25 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         ),
         body: Directionality(
           textDirection: TextDirection.rtl,
-          child: BlocConsumer<CreateOrderCubit, CreateOrderState>(
+          child: BlocListener<DeviceSelectionCubit, DeviceSelectionState>(
             listener: (context, state) {
+              if (_selectedDeviceType == 'phone') {
+                setState(() {
+                  if (state.selectedDevice != null) {
+                    _brandController.text = state.selectedDevice!.brand;
+                    _modelController.text = state.selectedDevice!.model;
+                  } else if (state.manualDevice != null && state.selectedBrand != null) {
+                    _brandController.text = state.selectedBrand!.name;
+                    _modelController.text = state.manualDevice!;
+                  } else {
+                    _brandController.clear();
+                    _modelController.clear();
+                  }
+                });
+              }
+            },
+            child: BlocConsumer<CreateOrderCubit, CreateOrderState>(
+              listener: (context, state) {
               if (state is CreateOrderSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -183,6 +216,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               );
             },
           ),
+        ),
         ),
       ),
     );
@@ -355,39 +389,43 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             style: GoogleFonts.cairo(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           const SizedBox(height: 24),
-          TextFormField(
-            controller: _brandController,
-            decoration: InputDecoration(
-              labelText: 'الشركة المصنعة (مثال: Apple, Samsung)',
-              labelStyle: GoogleFonts.cairo(),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          if (_selectedDeviceType == 'phone')
+            const DeviceSelectorWidget()
+          else ...[
+            TextFormField(
+              controller: _brandController,
+              decoration: InputDecoration(
+                labelText: 'الشركة المصنعة (مثال: Apple, Samsung)',
+                labelStyle: GoogleFonts.cairo(),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'الرجاء إدخال اسم الشركة المصنعة';
+                }
+                return null;
+              },
             ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'الرجاء إدخال اسم الشركة المصنعة';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 20),
-          TextFormField(
-            controller: _modelController,
-            decoration: InputDecoration(
-              labelText: 'الموديل (مثال: iPhone 14 Pro Max, Galaxy S23)',
-              labelStyle: GoogleFonts.cairo(),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _modelController,
+              decoration: InputDecoration(
+                labelText: 'الموديل (مثال: iPhone 14 Pro Max, Galaxy S23)',
+                labelStyle: GoogleFonts.cairo(),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'الرجاء إدخال موديل الجهاز';
+                }
+                return null;
+              },
             ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'الرجاء إدخال موديل الجهاز';
-              }
-              return null;
-            },
-          ),
+          ],
         ],
       ),
     );
@@ -687,7 +725,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           if (_currentStep > 0) const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: _nextStep,
+              onPressed: _isNextButtonEnabled() ? _nextStep : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFC107),
                 foregroundColor: Colors.black,

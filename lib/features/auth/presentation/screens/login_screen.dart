@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
-import '../../../../logo_painter.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
 
@@ -36,7 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 30.0,
+              ),
               child: Directionality(
                 textDirection: TextDirection.rtl,
                 child: BlocConsumer<LoginCubit, LoginState>(
@@ -99,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const SizedBox(height: 20),
-                          
+
                           // 1. Logo
                           Center(
                             child: Container(
@@ -118,11 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(24),
-                                child: CustomPaint(
-                                  painter: LogoPainter(
-                                    color: const Color(0xFFFFC107),
-                                    strokeWidth: 3.0,
-                                  ),
+                                child: Image.asset(
+                                  'assets/images/logoAppIcon.png',
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                  return 'يرجى إدخال رقم الهاتف';
+                                return 'يرجى إدخال رقم الهاتف';
                               }
                               return null;
                             },
@@ -259,17 +259,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: isLoading ? null : () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'خدمة استعادة كلمة المرور غير متوفرة حالياً',
-                                      style: GoogleFonts.cairo(),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                );
-                              },
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'خدمة استعادة كلمة المرور غير متوفرة حالياً',
+                                            style: GoogleFonts.cairo(),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ),
+                                      );
+                                    },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
@@ -293,9 +297,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ? null
                                 : () {
                                     if (_formKey.currentState!.validate()) {
-                                      BlocProvider.of<LoginCubit>(context).login(
+                                      BlocProvider.of<LoginCubit>(
+                                        context,
+                                      ).login(
                                         phone: _phoneController.text.trim(),
-                                        password: _passwordController.text.trim(),
+                                        password: _passwordController.text
+                                            .trim(),
                                       );
                                     }
                                   },
@@ -314,7 +321,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     width: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.black,
+                                      ),
                                     ),
                                   )
                                 : Text(
@@ -337,7 +346,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
                                 child: Text(
                                   'أو',
                                   style: GoogleFonts.cairo(
@@ -358,12 +369,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // 8. Sign Up Button
                           OutlinedButton(
-                            onPressed: isLoading ? null : () {
-                              Navigator.pushNamed(context, Routes.registerRoute);
-                            },
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.registerRoute,
+                                    );
+                                  },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.black87,
-                              side: const BorderSide(color: Colors.black12, width: 1.2),
+                              side: const BorderSide(
+                                color: Colors.black12,
+                                width: 1.2,
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),

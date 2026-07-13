@@ -28,4 +28,34 @@ class ProfileRepositoryImpl implements ProfileRepository {
           : 'حدث خطأ أثناء جلب بيانات الملف الشخصي'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<AddressEntity>>> addAddress({
+    required String label,
+    required String address,
+    required String city,
+    required double lat,
+    required double lng,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.addAddress(
+        label: label,
+        address: address,
+        city: city,
+        lat: lat,
+        lng: lng,
+      );
+
+      if (responseModel.success) {
+        final entities = responseModel.addresses.map((a) => a.toEntity()).toList();
+        return Right(entities);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء إضافة العنوان'));
+    }
+  }
 }

@@ -20,7 +20,7 @@ class DelegateHome extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
         title: Text(
-          'شاشة المندوب (Delegate)',
+          'شاشة المندوب',
           style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

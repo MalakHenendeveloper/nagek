@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/center_entity.dart';
+import '../../domain/entities/service_entity.dart';
 import '../../domain/repositories/centers_repository.dart';
 import '../data_sources/centers_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -52,6 +53,23 @@ class CentersRepositoryImpl implements CentersRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء جلب تفاصيل المركز'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ServiceEntity>>> getCenterServices(String centerId) async {
+    try {
+      final responseModel = await _remoteDataSource.getCenterServices(centerId);
+
+      if (responseModel.success) {
+        return Right(responseModel.services.map((m) => m.toEntity()).toList());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب خدمات المركز'));
     }
   }
 }

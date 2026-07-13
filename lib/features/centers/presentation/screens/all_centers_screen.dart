@@ -157,13 +157,21 @@ class _AllCentersScreenState extends State<AllCentersScreen> {
         children: [
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C3E50),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C3E50),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                image: center.logo.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(center.logo),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: const Center(
-                child: Icon(Icons.handyman_outlined, color: Colors.white54, size: 40),
-              ),
+              child: center.logo.isEmpty
+                  ? const Center(
+                      child: Icon(Icons.handyman_outlined, color: Colors.white54, size: 40),
+                    )
+                  : null,
             ),
           ),
           Padding(

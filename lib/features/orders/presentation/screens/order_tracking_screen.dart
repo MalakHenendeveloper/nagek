@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_nagek/features/orders/domain/entities/order_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/di/di.dart';
 import '../../domain/entities/inspection_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
@@ -528,7 +529,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                         children: [
                                                           Text('• ${part.name}', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                          Text('${part.cost.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                          Text('${part.cost.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                         ],
                                                       )
                                                     ),
@@ -538,21 +539,21 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('أجور اليد:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.laborCost.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                      Text('${priceOffer.laborCost.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                     ],
                                                   ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('رسوم الفحص:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.inspectionFee.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                      Text('${priceOffer.inspectionFee.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                     ],
                                                   ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('رسوم التوصيل:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.deliveryFee.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                      Text('${priceOffer.deliveryFee.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                     ],
                                                   ),
                                                   Row(
@@ -567,7 +568,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('الإجمالي:', style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      Text('${priceOffer.totalCost.toInt()} ر.س', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
+                                                      Text('${priceOffer.totalCost.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
                                                     ],
                                                   ),
                                                 ] else ...[
@@ -576,21 +577,21 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('رسوم الفحص:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.inspection.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                      Text('${order.fees.inspection.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                     ],
                                                   ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('تكلفة التوصيل:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.delivery.toInt()} ر.س', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
+                                                      Text('${order.fees.delivery.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
                                                     ],
                                                   ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('تكلفة الإصلاح المقدرة:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.repair.toInt()} ر.س', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontSize: 11)),
+                                                      Text('${order.fees.repair.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontSize: 11)),
                                                     ],
                                                   ),
                                                   const Divider(color: Colors.white12),
@@ -598,7 +599,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text('الإجمالي المالي:', style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      Text('${order.fees.total.toInt()} ر.س', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
+                                                      Text('${order.fees.total.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
                                                     ],
                                                   ),
                                                 ],
@@ -654,15 +655,25 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                     Expanded(
                                                       child: OutlinedButton(
                                                         onPressed: state.isApproving
-                                                            ? null
-                                                            : () {
-                                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                                  const SnackBar(
-                                                                    content: Text('يرجى التواصل مع الدعم الفني لتعديل أو رفض العرض'),
-                                                                  ),
-                                                                );
-                                                              },
-                                                        style: OutlinedButton.styleFrom(
+                                                             ? null
+                                                             : () {
+                                                                 ScaffoldMessenger.of(context).showSnackBar(
+                                                                   SnackBar(
+                                                                     content: Text(
+                                                                       'يرجى التواصل مع الدعم الفني لتعديل أو رفض العرض',
+                                                                       style: GoogleFonts.cairo(),
+                                                                     ),
+                                                                     action: SnackBarAction(
+                                                                       label: 'تواصل الآن',
+                                                                       textColor: const Color(0xFFFFC107),
+                                                                       onPressed: () {
+                                                                         _showSupportNumberDialog(context);
+                                                                       },
+                                                                     ),
+                                                                   ),
+                                                                 );
+                                                               },
+                                                         style: OutlinedButton.styleFrom(
                                                           side: const BorderSide(color: Colors.red),
                                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1071,13 +1082,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             ),
             const SizedBox(height: 6),
             ...priceOffer.spareParts.map((part) =>
-              _buildInfoRow('• ${part.name}:', '${part.cost.toInt()} ر.س')
+              _buildInfoRow('• ${part.name}:', '${part.cost.toInt()} د.ع')
             ),
             const Divider(color: Colors.white12, height: 20),
           ],
-          _buildInfoRow('أجور الإصلاح (اليد):', '${priceOffer.laborCost.toInt()} ر.س'),
-          _buildInfoRow('رسوم الفحص:', '${priceOffer.inspectionFee.toInt()} ر.س'),
-          _buildInfoRow('رسوم التوصيل:', '${priceOffer.deliveryFee.toInt()} ر.س'),
+          _buildInfoRow('أجور الإصلاح (اليد):', '${priceOffer.laborCost.toInt()} د.ع'),
+          _buildInfoRow('رسوم الفحص:', '${priceOffer.inspectionFee.toInt()} د.ع'),
+          _buildInfoRow('رسوم التوصيل:', '${priceOffer.deliveryFee.toInt()} د.ع'),
           _buildInfoRow('مدة العمل المتوقعة:', '${priceOffer.estimatedDays} أيام'),
           if (priceOffer.notes.isNotEmpty) ...[
             const SizedBox(height: 4),
@@ -1096,7 +1107,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Text(
-                '${priceOffer.totalCost.toInt()} ر.س',
+                '${priceOffer.totalCost.toInt()} د.ع',
                 style: GoogleFonts.cairo(
                   color: const Color(0xFFFFC107),
                   fontWeight: FontWeight.bold,
@@ -1157,9 +1168,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             ],
           ),
           const Divider(color: Colors.white12, height: 24),
-          _buildInfoRow('رسوم الفحص:', '${order.fees.inspection.toInt()} ر.س'),
-          _buildInfoRow('تكلفة التوصيل:', '${order.fees.delivery.toInt()} ر.س'),
-          _buildInfoRow('تكلفة الإصلاح المقدرة:', '${order.fees.repair.toInt()} ر.س'),
+          _buildInfoRow('رسوم الفحص:', '${order.fees.inspection.toInt()} د.ع'),
+          _buildInfoRow('تكلفة التوصيل:', '${order.fees.delivery.toInt()} د.ع'),
+          _buildInfoRow('تكلفة الإصلاح المقدرة:', '${order.fees.repair.toInt()} د.ع'),
           const Divider(color: Colors.white12, height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1173,7 +1184,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Text(
-                '${order.fees.total.toInt()} ر.س',
+                '${order.fees.total.toInt()} د.ع',
                 style: GoogleFonts.cairo(
                   color: const Color(0xFFFFC107),
                   fontWeight: FontWeight.bold,
@@ -1184,6 +1195,91 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
           ),
         ],
       ),
+    );
+  }
+  void _showSupportNumberDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFCFAF5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'رقم الدعم الفني',
+            style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'يمكنك نسخ الرقم والتواصل معنا عبر واتساب:',
+                style: GoogleFonts.cairo(color: Colors.black87, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.phone_android_outlined, color: Color(0xFFFFC107)),
+                    const SizedBox(width: 8),
+                    SelectableText(
+                      '+9647824774219',
+                      style: GoogleFonts.cairo(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'إغلاق',
+                style: GoogleFonts.cairo(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(const ClipboardData(text: '+9647824774219'));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'تم نسخ رقم الدعم الفني بنجاح',
+                      style: GoogleFonts.cairo(),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: Text(
+                'نسخ الرقم',
+                style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFC107),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

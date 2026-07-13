@@ -20,7 +20,7 @@ class AdminHome extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
         title: Text(
-          'شاشة مدير النظام (Admin)',
+          'شاشة مدير النظام',
           style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

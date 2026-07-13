@@ -6,6 +6,7 @@ import '../cubit/center_details_cubit.dart';
 import '../cubit/center_details_state.dart';
 import '../widgets/center_skeletons.dart';
 import '../../domain/entities/center_entity.dart';
+import '../../domain/entities/service_entity.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/routes_manager/routes.dart';
 
@@ -75,7 +76,7 @@ class _CenterDetailsScreenState extends State<CenterDetailsScreen> {
                                 const SizedBox(height: 24),
                                 _buildSectionTitle('خدمات الصيانة', 'عرض الكل'),
                                 const SizedBox(height: 16),
-                                _buildServicesList(center.inspectionFee),
+                                _buildServicesList(state.services, center.inspectionFee),
                                 const SizedBox(height: 24),
                                 _buildSectionTitle('الأجهزة المدعومة'),
                                 const SizedBox(height: 16),
@@ -212,10 +213,18 @@ class _CenterDetailsScreenState extends State<CenterDetailsScreen> {
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white, width: 2),
+                      image: center.logo.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(center.logo),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: const Center(
-                      child: Icon(Icons.handyman, color: Color(0xFFFFC107)),
-                    ),
+                    child: center.logo.isEmpty
+                        ? const Center(
+                            child: Icon(Icons.handyman, color: Color(0xFFFFC107)),
+                          )
+                        : null,
                   ),
                 ],
               ),
@@ -332,17 +341,53 @@ class _CenterDetailsScreenState extends State<CenterDetailsScreen> {
     );
   }
 
-  Widget _buildServicesList(double inspectionFee) {
-    // Dummy Data as per mockup, incorporating the dynamic inspection fee
-    final services = [
-      {'title': 'رسوم الفحص والتوصيل', 'subtitle': 'فحص وتحديد العطل وتسليم الجهاز', 'price': '${inspectionFee.toInt()} ر.س', 'icon': Icons.search},
-      {'title': 'تغيير شاشة', 'subtitle': 'شاشات أصلية مع ضمان', 'price': '250 ر.س', 'icon': Icons.phone_iphone},
-      {'title': 'تبديل بطارية', 'subtitle': 'رفع كفاءة الجهاز', 'price': '120 ر.س', 'icon': Icons.battery_charging_full},
-      {'title': 'إصلاح سوفت وير', 'subtitle': 'تحديث وحل المشاكل التقنية', 'price': '80 ر.س', 'icon': Icons.settings},
+  Widget _buildServicesList(List<ServiceEntity> apiServices, double inspectionFee) {
+    final List<Map<String, dynamic>> items = [
+      {
+        'title': 'رسوم الفحص والتوصيل',
+        'subtitle': 'فحص وتحديد العطل وتسليم الجهاز',
+        'price': '${inspectionFee.toInt()} د.ع',
+        'icon': Icons.search,
+      }
     ];
 
+    for (var service in apiServices) {
+      if (!service.isAvailable) continue;
+
+      IconData icon = Icons.build_outlined;
+      final name = service.serviceName.toLowerCase();
+      if (name.contains('شاشة') || name.contains('screen')) {
+        icon = Icons.phone_iphone;
+      } else if (name.contains('بطارية') || name.contains('battery')) {
+        icon = Icons.battery_charging_full;
+      } else if (name.contains('سماعة') || name.contains('speaker') || name.contains('headphone') || name.contains('سماعه')) {
+        icon = Icons.volume_up;
+      } else if (name.contains('سوف') || name.contains('برمجة') || name.contains('software')) {
+        icon = Icons.settings;
+      }
+
+      String subtitle = service.description;
+      if (service.estimatedTime.isNotEmpty || service.warranty.isNotEmpty) {
+        List<String> details = [];
+        if (service.estimatedTime.isNotEmpty) {
+          details.add('الوقت: ${service.estimatedTime}');
+        }
+        if (service.warranty.isNotEmpty) {
+          details.add('الضمان: ${service.warranty}');
+        }
+        subtitle += ' (${details.join(' | ')})';
+      }
+
+      items.add({
+        'title': service.serviceName,
+        'subtitle': subtitle,
+        'price': '${service.price.toInt()} د.ع',
+        'icon': icon,
+      });
+    }
+
     return Column(
-      children: services.map((service) {
+      children: items.map((service) {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),

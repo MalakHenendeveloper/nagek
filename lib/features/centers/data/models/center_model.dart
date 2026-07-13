@@ -26,6 +26,7 @@ class CenterModel {
   final String address;
   final String city;
   final String status;
+  final String logo;
   final List<String> supportedBrands;
   final List<String> supportedDeviceTypes;
   final double rating;
@@ -41,6 +42,7 @@ class CenterModel {
     required this.address,
     required this.city,
     required this.status,
+    required this.logo,
     required this.supportedBrands,
     required this.supportedDeviceTypes,
     required this.rating,
@@ -58,6 +60,7 @@ class CenterModel {
       address: json['address'] ?? '',
       city: json['city'] ?? '',
       status: json['status'] ?? '',
+      logo: json['logo'] ?? '',
       supportedBrands: List<String>.from(json['supportedBrands'] ?? []),
       supportedDeviceTypes: List<String>.from(json['supportedDeviceTypes'] ?? []),
       rating: (json['rating'] ?? 0).toDouble(),
@@ -76,6 +79,7 @@ class CenterModel {
       address: address,
       city: city,
       status: status,
+      logo: logo,
       supportedBrands: supportedBrands,
       supportedDeviceTypes: supportedDeviceTypes,
       rating: rating,

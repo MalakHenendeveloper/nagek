@@ -20,7 +20,7 @@ class CenterHome extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
         title: Text(
-          'شاشة مركز الصيانة (Center)',
+          'شاشة مركز الصيانة',
           style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

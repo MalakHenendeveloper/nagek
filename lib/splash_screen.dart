@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'logo_painter.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onInitializationComplete;
@@ -155,11 +154,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(32),
-                          child: CustomPaint(
-                            painter: LogoPainter(
-                              color: const Color(0xFFFFC107), // Beautiful gold
-                              strokeWidth: 3.5,
-                            ),
+                          child: Image.asset(
+                            'assets/images/logoAppIcon.png',
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
