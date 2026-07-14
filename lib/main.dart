@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/di/di.dart';
 import 'core/routes_manager/route_generator.dart';
 import 'core/storage/secure_storage_service.dart';
@@ -12,6 +13,7 @@ import 'features/home/presentation/screens/center_home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   configureDependencies();
   runApp(const MyApp());
 }

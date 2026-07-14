@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/register_delegate_screen.dart';
+import '../../features/auth/presentation/screens/delegate_login_screen.dart';
 import '../../features/home/presentation/screens/client_home.dart';
 import '../../features/home/presentation/screens/admin_home.dart';
 import '../../features/home/presentation/screens/delegate_home.dart';
@@ -22,6 +24,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case Routes.registerRoute:
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
+      case Routes.registerDelegateRoute:
+        return MaterialPageRoute(builder: (_) => const RegisterDelegateScreen());
+      case Routes.delegateLoginRoute:
+        return MaterialPageRoute(builder: (_) => const DelegateLoginScreen());
       case Routes.clientHomeRoute:
         return MaterialPageRoute(builder: (_) => const ClientHome());
       case Routes.adminHomeRoute:

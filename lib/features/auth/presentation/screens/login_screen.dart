@@ -396,6 +396,54 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 12),
+
+                          // 9. Login as Delegate Button
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.delegateLoginRoute,
+                                    );
+                                  },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                            child: Text(
+                              'تسجيل الدخول كمندوب توصيل',
+                              style: GoogleFonts.cairo(
+                                color: const Color(0xFFC59F00),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // 10. Register as Delegate Button
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.registerDelegateRoute,
+                                    );
+                                  },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                            child: Text(
+                              'التسجيل كمندوب توصيل جديد',
+                              style: GoogleFonts.cairo(
+                                color: const Color(0xFFC59F00),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     );

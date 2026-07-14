@@ -9,11 +9,10 @@ import 'auth_interceptor.dart';
 
 @lazySingleton
 class ApiManager {
-  late final Dio dio;
+  final Dio dio;
   final SecureStorageService _secureStorageService;
 
-  ApiManager(this._secureStorageService) {
-    dio = Dio();
+  ApiManager(this.dio, this._secureStorageService) {
     
     // Add custom JWT Auth Interceptor with Refresh Token Rotation
     dio.interceptors.add(AuthInterceptor(dio, _secureStorageService));

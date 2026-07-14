@@ -177,6 +177,45 @@ class StatusHistoryModel {
   }
 }
 
+class OrderClientModel {
+  final String id;
+  final String name;
+  final String phone;
+  final String email;
+
+  OrderClientModel({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.email,
+  });
+
+  factory OrderClientModel.fromJson(dynamic json) {
+    if (json == null) {
+      return OrderClientModel(id: '', name: '', phone: '', email: '');
+    }
+    if (json is String) {
+      return OrderClientModel(id: json, name: '', phone: '', email: '');
+    }
+    final map = json as Map? ?? {};
+    return OrderClientModel(
+      id: map['_id'] ?? '',
+      name: map['name'] ?? '',
+      phone: map['phone'] ?? '',
+      email: map['email'] ?? '',
+    );
+  }
+
+  OrderClientEntity toEntity() {
+    return OrderClientEntity(
+      id: id,
+      name: name,
+      phone: phone,
+      email: email,
+    );
+  }
+}
+
 class OrderModel {
   final String id;
   final String orderNumber;
@@ -193,6 +232,7 @@ class OrderModel {
   final bool deliveryOTPVerified;
   final String? clientApprovalStatus;
   final String? clientApprovalTimestamp;
+  final OrderClientModel? client;
 
   OrderModel({
     required this.id,
@@ -210,6 +250,7 @@ class OrderModel {
     required this.deliveryOTPVerified,
     this.clientApprovalStatus,
     this.clientApprovalTimestamp,
+    this.client,
   });
 
   factory OrderModel.fromJson(Map<dynamic, dynamic>? json) {
@@ -235,6 +276,7 @@ class OrderModel {
       deliveryOTPVerified: deliveryOTP['verified'] ?? false,
       clientApprovalStatus: clientApproval['status'],
       clientApprovalTimestamp: clientApproval['timestamp'],
+      client: map['client'] != null ? OrderClientModel.fromJson(map['client']) : null,
     );
   }
 
@@ -255,6 +297,7 @@ class OrderModel {
       deliveryOTPVerified: deliveryOTPVerified,
       clientApprovalStatus: clientApprovalStatus,
       clientApprovalTimestamp: clientApprovalTimestamp,
+      client: client?.toEntity(),
     );
   }
 }

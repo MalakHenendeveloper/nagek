@@ -70,6 +70,20 @@ class StatusHistoryEntity {
   });
 }
 
+class OrderClientEntity {
+  final String id;
+  final String name;
+  final String phone;
+  final String email;
+
+  OrderClientEntity({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.email,
+  });
+}
+
 class OrderEntity {
   final String id;
   final String orderNumber;
@@ -86,6 +100,7 @@ class OrderEntity {
   final bool deliveryOTPVerified;
   final String? clientApprovalStatus;
   final String? clientApprovalTimestamp;
+  final OrderClientEntity? client;
 
   OrderEntity({
     required this.id,
@@ -103,6 +118,7 @@ class OrderEntity {
     required this.deliveryOTPVerified,
     this.clientApprovalStatus,
     this.clientApprovalTimestamp,
+    this.client,
   });
 }
 

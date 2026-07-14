@@ -18,13 +18,15 @@ class AuthInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final path = options.path;
-    // Do not add access token if the request is authentication-related
-    if (!path.contains('/auth/login') &&
-        !path.contains('/auth/register') &&
-        !path.contains('/auth/refresh-token')) {
-      final token = await _secureStorageService.getAccessToken();
-      if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
+    // Only intercept requests directed to our backend API
+    if (path.startsWith(Endpoints.Url)) {
+      if (!path.contains('/auth/login') &&
+          !path.contains('/auth/register') &&
+          !path.contains('/auth/refresh-token')) {
+        final token = await _secureStorageService.getAccessToken();
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
       }
     }
     return handler.next(options);
@@ -32,7 +34,8 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) async {
-    if (response.statusCode == 401) {
+    final path = response.requestOptions.path;
+    if (response.statusCode == 401 && path.startsWith(Endpoints.Url)) {
       try {
         final newResponse = await _handle401(response.requestOptions);
         return handler.resolve(newResponse);
@@ -46,7 +49,8 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+    final path = err.requestOptions.path;
+    if (err.response?.statusCode == 401 && path.startsWith(Endpoints.Url)) {
       try {
         final newResponse = await _handle401(err.requestOptions);
         return handler.resolve(newResponse);

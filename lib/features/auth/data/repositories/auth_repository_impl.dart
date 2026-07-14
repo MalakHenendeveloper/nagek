@@ -2,8 +2,10 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/delegate_login_result.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../data_sources/auth_remote_data_source.dart';
+import '../models/delegate_register_request_model.dart';
 import 'package:injectable/injectable.dart';
 
 @LazySingleton(as: AuthRepository)
@@ -84,6 +86,59 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> registerDelegate({
+    required DelegateRegisterRequestModel request,
+  }) async {
+    try {
+      await _remoteDataSource.registerDelegate(request: request);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : e.toString().replaceFirst('Exception: ', '')));
+    }
+  }
+
+  @override
+  Future<Either<Failure, DelegateLoginResult>> delegateLogin({
+    required String phone,
+    required String password,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.delegateLogin(
+        phone: phone,
+        password: password,
+      );
+
+      if (responseModel.status == 'pending') {
+        return Right(DelegateLoginPending());
+      } else if (responseModel.status == 'rejected') {
+        return Right(DelegateLoginRejected(responseModel.rejectReason ?? ''));
+      } else if (responseModel.success == true && responseModel.data != null) {
+        final entity = responseModel.data!.toEntity();
+
+        // Save session and tokens to secure storage only for successful approved logins
+        await _secureStorageService.saveAuthData(
+          accessToken: entity.accessToken,
+          refreshToken: entity.refreshToken,
+          role: entity.role,
+          name: entity.name,
+          phone: entity.phone,
+          id: entity.id,
+        );
+
+        return Right(DelegateLoginSuccess(entity));
+      } else {
+        return Left(ServerFailure(responseModel.message ?? 'فشل تسجيل الدخول كمندوب'));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : e.toString().replaceFirst('Exception: ', '')));
     }
   }
 }
