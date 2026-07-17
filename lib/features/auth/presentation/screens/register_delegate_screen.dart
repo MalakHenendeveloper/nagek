@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -650,11 +651,17 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(filePath),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            filePath,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          )
+                        : Image.file(
+                            File(filePath),
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 4),

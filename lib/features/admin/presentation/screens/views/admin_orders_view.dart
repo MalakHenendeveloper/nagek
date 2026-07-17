@@ -42,6 +42,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
     'pending': 'بانتظار المعالجة',
     'accepted': 'تم القبول',
     'assigned': 'تم التعيين',
+    'delegate_assigned': 'تم تعيين المندوب',
     'picking_up': 'جاري الاستلام',
     'picked_up': 'تم الاستلام',
     'at_center': 'في المركز',
@@ -50,6 +51,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
     'approved': 'تم الموافقة',
     'repairing': 'جاري الإصلاح',
     'repaired': 'تم الإصلاح',
+    'returning': 'جاري التوصيل',
     'delivering': 'جاري التوصيل',
     'delivered': 'تم التوصيل',
     'completed': 'مكتمل',
@@ -61,6 +63,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
     'pending': Color(0xFFFFC107),
     'accepted': Color(0xFF2196F3),
     'assigned': Color(0xFF2196F3),
+    'delegate_assigned': Color(0xFF4CAF50),
     'picking_up': Color(0xFF9C27B0),
     'picked_up': Color(0xFF9C27B0),
     'at_center': Color(0xFF00BCD4),
@@ -69,6 +72,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
     'approved': Color(0xFF4CAF50),
     'repairing': Color(0xFFFF5722),
     'repaired': Color(0xFF8BC34A),
+    'returning': Color(0xFF3F51B5),
     'delivering': Color(0xFF3F51B5),
     'delivered': Color(0xFF4CAF50),
     'completed': Color(0xFF4CAF50),
@@ -232,7 +236,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
 
   Widget _buildOrderCard(OrderEntity order) {
     final statusColor = _statusColors[order.status] ?? Colors.grey;
-    final statusLabel = _statusLabels[order.status] ?? order.status;
+    final statusLabel = _statusLabels[order.status] ?? 'حالة غير معروفة';
     final deviceIcon = _deviceTypeIcons[order.device.type] ?? Icons.devices;
 
     final createdDate = DateTime.tryParse(order.createdAt);

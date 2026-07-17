@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 'center':
         return 'مركز صيانة';
       default:
-        return role;
+        return 'مستخدم';
     }
   }
 

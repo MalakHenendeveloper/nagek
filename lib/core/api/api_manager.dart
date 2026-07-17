@@ -78,6 +78,24 @@ class ApiManager {
     );
   }
 
+  Future<Response> PutFormData(
+    String endpoint, {
+    required FormData formData,
+    Map<String, dynamic>? headers,
+  }) {
+    return dio.put(
+      Endpoints.Url + endpoint,
+      data: formData,
+      options: Options(
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...?headers,
+        },
+        validateStatus: (status) => true,
+      ),
+    );
+  }
+
   Future<Response> Deletedata(
     String endpoint, {
     Map<String, dynamic>? headers,

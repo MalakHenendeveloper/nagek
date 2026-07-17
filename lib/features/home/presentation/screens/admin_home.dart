@@ -13,6 +13,7 @@ import '../../../admin/presentation/cubit/admin_centers_cubit.dart';
 import '../../../admin/presentation/cubit/admin_create_center_cubit.dart';
 import '../../../admin/presentation/cubit/admin_orders_cubit.dart';
 import '../../../admin/presentation/cubit/admin_delegate_applications_cubit.dart';
+import '../../../admin/presentation/cubit/admin_payments_cubit.dart';
 
 // Import Admin Views
 import '../../../admin/presentation/screens/views/admin_dashboard_view.dart';
@@ -22,6 +23,7 @@ import '../../../admin/presentation/screens/views/admin_centers_view.dart';
 import '../../../admin/presentation/screens/views/admin_add_center_view.dart';
 import '../../../admin/presentation/screens/views/admin_orders_view.dart';
 import '../../../admin/presentation/screens/views/admin_delegate_applications_view.dart';
+import '../../../admin/presentation/screens/views/admin_payments_view.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -199,6 +201,13 @@ class _AdminHomeState extends State<AdminHome> {
                           title: 'جميع الطلبات',
                           icon: Icons.assignment_rounded,
                         ),
+
+                        _buildDrawerCategory('الإدارة المالية'),
+                        _buildDrawerSubItem(
+                          index: 8,
+                          title: 'التحويلات والمدفوعات',
+                          icon: Icons.account_balance_wallet_rounded,
+                        ),
                       ],
                     ),
                   ),
@@ -242,6 +251,8 @@ class _AdminHomeState extends State<AdminHome> {
         return 'إدارة الطلبات';
       case 7:
         return 'طلبات تسجيل المندوبين';
+      case 8:
+        return 'التحويلات والمدفوعات';
       default:
         return 'مدير النظام';
     }
@@ -271,6 +282,11 @@ class _AdminHomeState extends State<AdminHome> {
         return const AdminOrdersView();
       case 7:
         return const AdminDelegateApplicationsView();
+      case 8:
+        return BlocProvider<AdminPaymentsCubit>(
+          create: (context) => getIt<AdminPaymentsCubit>(),
+          child: const AdminPaymentsView(),
+        );
       default:
         return const AdminDashboardView();
     }

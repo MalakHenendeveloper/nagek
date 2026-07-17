@@ -12,6 +12,12 @@ import '../../features/centers/presentation/screens/center_details_screen.dart';
 import '../../features/orders/presentation/screens/create_order_screen.dart';
 import '../../features/orders/presentation/screens/order_tracking_screen.dart';
 import '../../features/orders/presentation/screens/my_orders_screen.dart';
+import '../../features/orders/presentation/screens/available_pickup_orders_screen.dart';
+import '../../features/orders/presentation/screens/delegate_tasks_screen.dart';
+import '../../features/centers/presentation/screens/center_order_details_screen.dart';
+import '../../features/centers/presentation/screens/submit_inspection_screen.dart';
+import '../../features/centers/presentation/screens/submit_price_offer_screen.dart';
+import '../../features/orders/presentation/screens/order_payment_screen.dart';
 import 'routes.dart';
 
 
@@ -49,6 +55,22 @@ class RouteGenerator {
       case Routes.orderTrackingRoute:
         final orderId = settings.arguments as String;
         return MaterialPageRoute(builder: (_) => OrderTrackingScreen(orderId: orderId));
+      case Routes.delegateAvailableOrdersRoute:
+        return MaterialPageRoute(builder: (_) => const AvailablePickupOrdersScreen());
+      case Routes.delegateTasksRoute:
+        return MaterialPageRoute(builder: (_) => const DelegateTasksScreen());
+      case Routes.centerOrderDetailsRoute:
+        final orderId = settings.arguments as String;
+        return MaterialPageRoute(builder: (_) => CenterOrderDetailsScreen(orderId: orderId));
+      case Routes.submitInspectionRoute:
+        final orderId = settings.arguments as String;
+        return MaterialPageRoute(builder: (_) => SubmitInspectionScreen(orderId: orderId));
+      case Routes.submitPriceOfferRoute:
+        final orderId = settings.arguments as String;
+        return MaterialPageRoute(builder: (_) => SubmitPriceOfferScreen(orderId: orderId));
+      case Routes.orderPaymentRoute:
+        final orderId = settings.arguments as String;
+        return MaterialPageRoute(builder: (_) => OrderPaymentScreen(orderId: orderId));
       default:
         return unDefinedRoute();
     }

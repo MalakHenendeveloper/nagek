@@ -5,6 +5,7 @@ import '../entities/admin_user_entity.dart';
 import '../entities/admin_center_entity.dart';
 import '../entities/admin_center_details_entity.dart';
 import '../entities/delegate_application_entity.dart';
+import '../entities/admin_payment_entity.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 abstract class AdminRepository {
@@ -43,4 +44,10 @@ abstract class AdminRepository {
   Future<Either<Failure, DelegateApplicationEntity>> getDelegateApplicationDetails(String applicationId);
   Future<Either<Failure, void>> approveDelegateApplication(String id);
   Future<Either<Failure, void>> rejectDelegateApplication(String id, String rejectReason);
+  Future<Either<Failure, AdminPaymentsResult>> getAdminPayments({required int page, required int limit});
+  Future<Either<Failure, void>> reviewPayment(
+    String paymentId, {
+    required String status,
+    String? rejectionReason,
+  });
 }

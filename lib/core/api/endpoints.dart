@@ -11,17 +11,33 @@ class Endpoints {
   static const String centerDetails = '/centers/';
   static const String centerServices = '/centers/';
   static const String orders = '/orders';
+  static const String orderPayment = '/orders/';
   static const String inspection = '/inspection';
   static const String priceOffer = '/price-offer';
   static const String profile = '/users/profile';
   static const String addresses = '/users/addresses';
-  
+  static const String availablePickupOrders =
+      '/delegate/orders/available-pickup';
+  static const String availableDeliveryOrders =
+      '/delegate/orders/available-delivery';
+  static const String delegateOrders = '/delegate/orders';
+  static const String delegateTasks = '/delegate/tasks';
+  static const String centerDashboardOrders = '/centers/dashboard/orders';
+  static const String centerDashboardOrderDetails = '/centers/dashboard/orders/';
+  static const String centerDashboardInspection = '/centers/dashboard/orders/';
+  static const String centerDashboardPriceOffer = '/centers/dashboard/orders/';
+
+
+
+
+
   // Admin Endpoints
   static const String adminDelegates = '/admin/delegates';
   static const String adminUsers = '/admin/users';
   static const String adminCenters = '/admin/centers';
   static const String adminUserDetails = '/admin/users/';
   static const String adminOrders = '/admin/orders';
-  static const String adminDelegateApplications = '/admin/delegate-applications';
+  static const String adminDelegateApplications =
+      '/admin/delegate-applications';
+  static const String adminPayments = '/admin/payments';
 }
-

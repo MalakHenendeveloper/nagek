@@ -511,50 +511,116 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     switch (status.toLowerCase()) {
       case 'pending':
         return _StatusBadgeData(
-          text: 'قيد التنفيذ',
-          backgroundColor: const Color(0xFFFFF9C4), // Yellow accent light
+          text: 'قيد الانتظار',
+          backgroundColor: const Color(0xFFFFF9C4),
           textColor: const Color(0xFF8B7500),
           showDot: true,
         );
       case 'awaiting_approval':
         return _StatusBadgeData(
           text: 'بانتظار الموافقة',
-          backgroundColor: const Color(0xFFE0F7FA), // Cyan accent light
+          backgroundColor: const Color(0xFFE0F7FA),
           textColor: const Color(0xFF00838F),
+          showDot: false,
+        );
+      case 'delegate_assigned':
+      case 'assigned':
+        return _StatusBadgeData(
+          text: 'تم تعيين المندوب',
+          backgroundColor: const Color(0xFFE8F5E9),
+          textColor: const Color(0xFF2E7D32),
+          showDot: false,
+        );
+      case 'picking_up':
+        return _StatusBadgeData(
+          text: 'جاري الاستلام',
+          backgroundColor: const Color(0xFFF3E5F5),
+          textColor: const Color(0xFF7B1FA2),
+          showDot: true,
+        );
+      case 'picked_up':
+        return _StatusBadgeData(
+          text: 'تم الاستلام',
+          backgroundColor: const Color(0xFFE0F2F1),
+          textColor: const Color(0xFF00695C),
+          showDot: false,
+        );
+      case 'at_center':
+        return _StatusBadgeData(
+          text: 'في المركز',
+          backgroundColor: const Color(0xFFE0F7FA),
+          textColor: const Color(0xFF006064),
+          showDot: false,
+        );
+      case 'inspecting':
+        return _StatusBadgeData(
+          text: 'جاري الفحص',
+          backgroundColor: const Color(0xFFFFF3E0),
+          textColor: const Color(0xFFE65100),
+          showDot: true,
+        );
+      case 'approved':
+        return _StatusBadgeData(
+          text: 'تم الموافقة',
+          backgroundColor: const Color(0xFFE8F5E9),
+          textColor: const Color(0xFF2E7D32),
+          showDot: false,
+        );
+      case 'rejected':
+        return _StatusBadgeData(
+          text: 'مرفوض',
+          backgroundColor: const Color(0xFFFFEBEE),
+          textColor: const Color(0xFFC62828),
           showDot: false,
         );
       case 'ongoing':
       case 'repairing':
         return _StatusBadgeData(
-          text: 'قيد الإصلاح',
+          text: 'جاري الإصلاح',
           backgroundColor: const Color(0xFFFFF9C4),
           textColor: const Color(0xFF8B7500),
           showDot: true,
         );
-      case 'in_transit':
+      case 'repaired':
         return _StatusBadgeData(
-          text: 'في الطريق للفحص',
-          backgroundColor: const Color(0xFFE3F2FD), // Blue accent light
+          text: 'تم الإصلاح',
+          backgroundColor: const Color(0xFFF1F8E9),
+          textColor: const Color(0xFF558B2F),
+          showDot: false,
+        );
+      case 'in_transit':
+      case 'delivering':
+      case 'returning':
+        return _StatusBadgeData(
+          text: 'في الطريق',
+          backgroundColor: const Color(0xFFE3F2FD),
           textColor: const Color(0xFF1565C0),
+          showDot: true,
+        );
+      case 'delivered':
+        return _StatusBadgeData(
+          text: 'تم التوصيل',
+          backgroundColor: const Color(0xFFE8F5E9),
+          textColor: const Color(0xFF2E7D32),
           showDot: false,
         );
       case 'completed':
         return _StatusBadgeData(
           text: 'مكتمل',
-          backgroundColor: const Color(0xFFE8F5E9), // Green accent light
+          backgroundColor: const Color(0xFFE8F5E9),
           textColor: const Color(0xFF2E7D32),
           showDot: false,
         );
       case 'cancelled':
         return _StatusBadgeData(
           text: 'ملغي',
-          backgroundColor: const Color(0xFFFFEBEE), // Red accent light
+          backgroundColor: const Color(0xFFFFEBEE),
           textColor: const Color(0xFFC62828),
           showDot: false,
         );
       default:
         return _StatusBadgeData(
-          text: 'قيد المراجعة',
+          text: 'حالة غير معروفة',
           backgroundColor: const Color(0xFFF5F5F5),
           textColor: Colors.black54,
           showDot: true,

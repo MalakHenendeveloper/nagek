@@ -3,6 +3,7 @@ import '../../../../core/errors/failures.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/inspection_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
+import '../../domain/entities/order_payment_entity.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../data_sources/orders_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -142,6 +143,145 @@ class OrdersRepositoryImpl implements OrdersRepository {
       }
     } catch (e) {
       return Left(ServerFailure('حدث خطأ أثناء الموافقة على عرض السعر: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderPaymentEntity>> getOrderPaymentDetails(String orderId) async {
+    try {
+      final responseModel = await _remoteDataSource.getOrderPaymentDetails(orderId);
+      if (responseModel.success && responseModel.data != null) {
+        return Right(responseModel.data!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء جلب تفاصيل الدفع: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> submitPaymentProof({
+    required String orderId,
+    required String senderWalletNumber,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.submitPaymentProof(
+        orderId: orderId,
+        senderWalletNumber: senderWalletNumber,
+      );
+      if (responseModel.success) {
+        return const Right(true);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء إرسال إثبات الدفع: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<OrderEntity>>> getAvailablePickupOrders() async {
+    try {
+      final responseModel = await _remoteDataSource.getAvailablePickupOrders();
+      if (responseModel.success) {
+        final ordersList = responseModel.orders.map((m) => m.toEntity()).toList();
+        return Right(ordersList);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب الطلبات المتاحة للاستلام'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<OrderEntity>>> getAvailableDeliveryOrders() async {
+    try {
+      final responseModel = await _remoteDataSource.getAvailableDeliveryOrders();
+      if (responseModel.success) {
+        final ordersList = responseModel.orders.map((m) => m.toEntity()).toList();
+        return Right(ordersList);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب الطلبات المتاحة للتوصيل'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderEntity>> acceptPickup(String orderId) async {
+    try {
+      final responseModel = await _remoteDataSource.acceptPickup(orderId);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء قبول مهمة التوصيل: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<String>>> uploadPickupPhotos(String orderId, List<String> imagePaths) async {
+    try {
+      final responseModel = await _remoteDataSource.uploadPickupPhotos(orderId, imagePaths);
+      if (responseModel.success) {
+        return Right(responseModel.photoUrls);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء رفع صور الاستلام: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderEntity>> confirmPickup(String orderId) async {
+    try {
+      final responseModel = await _remoteDataSource.confirmPickup(orderId);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء تأكيد استلام الجهاز: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderEntity>> confirmDropCenter(String orderId, List<String> imagePaths) async {
+    try {
+      final responseModel = await _remoteDataSource.confirmDropCenter(orderId, imagePaths);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء تأكيد تسليم الجهاز للمركز: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<OrderEntity>>> getDelegateOrders() async {
+    try {
+      final responseModel = await _remoteDataSource.getDelegateOrders();
+      if (responseModel.success) {
+        final entities = responseModel.orders.map((m) => m.toEntity()).toList();
+        return Right(entities);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء جلب طلبات المندوب: ${e.toString()}'));
     }
   }
 }

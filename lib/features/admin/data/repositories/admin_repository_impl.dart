@@ -5,6 +5,7 @@ import '../../domain/entities/admin_user_entity.dart';
 import '../../domain/entities/admin_center_entity.dart';
 import '../../domain/entities/admin_center_details_entity.dart';
 import '../../domain/entities/delegate_application_entity.dart';
+import '../../domain/entities/admin_payment_entity.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../data_sources/admin_remote_data_source.dart';
@@ -323,6 +324,46 @@ class AdminRepositoryImpl implements AdminRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء رفض طلب المندوب'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AdminPaymentsResult>> getAdminPayments({required int page, required int limit}) async {
+    try {
+      final responseModel = await _remoteDataSource.getAdminPayments(page: page, limit: limit);
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب التحويلات والدفع'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> reviewPayment(
+    String paymentId, {
+    required String status,
+    String? rejectionReason,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.reviewPayment(
+        paymentId,
+        status: status,
+        rejectionReason: rejectionReason,
+      );
+      if (responseModel.success) {
+        return const Right(null);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء مراجعة عملية الدفع'));
     }
   }
 }

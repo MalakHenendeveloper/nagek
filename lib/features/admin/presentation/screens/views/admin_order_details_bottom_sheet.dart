@@ -32,6 +32,7 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
     'approved': 'تم الموافقة',
     'repairing': 'جاري الإصلاح',
     'repaired': 'تم الإصلاح',
+    'returning': 'جاري التوصيل',
     'delivering': 'جاري التوصيل',
     'delivered': 'تم التوصيل',
     'completed': 'مكتمل',
@@ -52,6 +53,7 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
     'approved': Color(0xFF4CAF50),
     'repairing': Color(0xFFFF5722),
     'repaired': Color(0xFF8BC34A),
+    'returning': Color(0xFF3F51B5),
     'delivering': Color(0xFF3F51B5),
     'delivered': Color(0xFF4CAF50),
     'completed': Color(0xFF4CAF50),
@@ -178,7 +180,7 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
 
   Widget _buildOrderDetailsContent(OrderEntity order) {
     final statusColor = _statusColors[order.status] ?? Colors.grey;
-    final statusLabel = _statusLabels[order.status] ?? order.status;
+    final statusLabel = _statusLabels[order.status] ?? 'حالة غير معروفة';
 
     final createdDate = DateTime.tryParse(order.createdAt);
     final dateStr = createdDate != null
@@ -575,7 +577,7 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
 
   Widget _buildTimelineStep(StatusHistoryEntity history, bool isLast) {
     final statusColor = _statusColors[history.status] ?? Colors.grey;
-    final statusLabel = _statusLabels[history.status] ?? history.status;
+    final statusLabel = _statusLabels[history.status] ?? 'حالة غير معروفة';
 
     final parsedDate = DateTime.tryParse(history.timestamp);
     final dateStr = parsedDate != null

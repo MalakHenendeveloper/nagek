@@ -13,4 +13,10 @@ class Routes {
   static const String myOrdersRoute = '/my_orders';
   static const String createOrderRoute = '/create_order';
   static const String orderTrackingRoute = '/order_tracking';
+  static const String delegateAvailableOrdersRoute = '/delegate_available_orders';
+  static const String delegateTasksRoute = '/delegate_tasks';
+  static const String centerOrderDetailsRoute = '/center_order_details';
+  static const String submitInspectionRoute = '/submit_inspection';
+  static const String submitPriceOfferRoute = '/submit_price_offer';
+  static const String orderPaymentRoute = '/order_payment';
 }

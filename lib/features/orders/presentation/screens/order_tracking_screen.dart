@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/di/di.dart';
+import '../../../../core/routes_manager/routes.dart';
 import '../../domain/entities/inspection_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
 import '../cubit/order_tracking_cubit.dart';
@@ -56,7 +57,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       case 'delegate_assigned':
         return 'تم تعيين مندوب الاستلام';
       case 'picked_up':
-        return 'تم استلام الجهاز';
+        return 'تم تأكيد الاستلام';
       case 'at_center':
         return 'وصل للجهاز للمركز';
       case 'inspecting':
@@ -225,6 +226,35 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                           ],
                         ),
                       ),
+                      // Client warning banner when delegate is assigned
+                      if (order.status == 'delegate_assigned') ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 1.5),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 26),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'تنبيه للحماية: قبل تحرك المندوب، تأكد من رفع الصور وأن الحالة أصبحت "تم تأكيد الاستلام"',
+                                  style: GoogleFonts.cairo(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange[200],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       // Detailed Order Information Card
                       const SizedBox(height: 16),
                       Container(
@@ -246,9 +276,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            _buildInfoRow('نوع الجهاز:', order.device.type),
+                            _buildInfoRow('نوع الجهاز:', _translateDeviceType(order.device.type)),
                             _buildInfoRow('الماركة والموديل:', '${order.device.brand} ${order.device.model}'),
-                            _buildInfoRow('نوع المشكلة:', order.device.problemType),
+                            _buildInfoRow('نوع المشكلة:', _translateProblemType(order.device.problemType)),
                             _buildInfoRow('وصف المشكلة:', order.device.problemDescription.isNotEmpty ? order.device.problemDescription : 'لا يوجد وصف'),
                             const Divider(color: Colors.white12, height: 24),
                             
@@ -276,20 +306,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             const SizedBox(height: 8),
                             _buildInfoRow('اسم المركز:', order.repairCenter.name),
                             _buildInfoRow('عنوان المركز:', order.repairCenter.address),
-                            _buildInfoRow('رقم الهاتف:', order.repairCenter.phone),
-                            const Divider(color: Colors.white12, height: 24),
 
-                            Text(
-                              'حالة الأمان ورمز التحقق (OTP)',
-                              style: GoogleFonts.cairo(
-                                color: const Color(0xFFFFC107),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _buildInfoRow('رمز الاستلام (Pickup OTP):', order.pickupOTPVerified ? 'تم التحقق ✔' : 'بانتظار التحقق ⏳'),
-                            _buildInfoRow('رمز التسليم (Delivery OTP):', order.deliveryOTPVerified ? 'تم التحقق ✔' : 'بانتظار التحقق ⏳'),
 
                             if (order.clientApprovalStatus != null) ...[
                               const Divider(color: Colors.white12, height: 24),
@@ -616,9 +633,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                                   if (success) {
                                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                                       const SnackBar(
-                                                                        content: Text('تمت الموافقة على عرض السعر بنجاح، سيبدأ الإصلاح قريباً'),
+                                                                        content: Text('تمت الموافقة على عرض السعر بنجاح'),
                                                                         backgroundColor: Colors.green,
                                                                       ),
+                                                                    );
+                                                                    Navigator.pushNamed(
+                                                                      context,
+                                                                      Routes.orderPaymentRoute,
+                                                                      arguments: order.id,
                                                                     );
                                                                   } else {
                                                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -989,8 +1011,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     switch (severity.toLowerCase()) {
       case 'major':
         return 'عالية الخطورة';
-      case 'moderate':
-        return 'متوسطة الخطورة';
+      case 'critical':
+        return 'حرجة';
       case 'minor':
         return 'بسيطة';
       default:
@@ -1002,7 +1024,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     switch (severity.toLowerCase()) {
       case 'major':
         return Colors.red;
-      case 'moderate':
+      case 'critical':
         return Colors.orange;
       case 'minor':
         return Colors.green;
@@ -1015,7 +1037,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     switch (severity.toLowerCase()) {
       case 'major':
         return Icons.error_outline;
-      case 'moderate':
+      case 'critical':
         return Icons.warning_amber_outlined;
       case 'minor':
         return Icons.info_outline;
@@ -1116,6 +1138,37 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
             ],
           ),
+          if (paymentStatus.toLowerCase() != 'paid' &&
+              paymentStatus.toLowerCase() != 'confirmed' &&
+              paymentStatus.toLowerCase() != 'pending') ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    Routes.orderPaymentRoute,
+                    arguments: widget.orderId,
+                  );
+                  if (result == true) {
+                    _cubit.fetchOrderTracking(widget.orderId);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFC107),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.payment, size: 18),
+                label: Text(
+                  'انتقل للدفع وإرسال الإثبات',
+                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1193,6 +1246,45 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
             ],
           ),
+          if (order.status.toLowerCase() != 'pending' &&
+              order.status.toLowerCase() != 'delegate_assigned' &&
+              order.status.toLowerCase() != 'picked_up' &&
+              order.status.toLowerCase() != 'at_center' &&
+              order.status.toLowerCase() != 'inspecting' &&
+              order.status.toLowerCase() != 'awaiting_approval' &&
+              order.status.toLowerCase() != 'rejected' &&
+              order.status.toLowerCase() != 'cancelled' &&
+              order.paymentStatus.toLowerCase() != 'paid' &&
+              order.paymentStatus.toLowerCase() != 'confirmed' &&
+              order.paymentStatus.toLowerCase() != 'pending') ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    Routes.orderPaymentRoute,
+                    arguments: order.id,
+                  );
+                  if (result == true) {
+                    _cubit.fetchOrderTracking(widget.orderId);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFC107),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.payment, size: 18),
+                label: Text(
+                  'انتقل للدفع وإرسال الإثبات',
+                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1281,5 +1373,47 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         );
       },
     );
+  }
+
+  String _translateDeviceType(String type) {
+    switch (type.toLowerCase()) {
+      case 'phone':
+        return 'هاتف';
+      case 'tablet':
+        return 'تابلت';
+      case 'laptop':
+        return 'لابتوب';
+      case 'desktop':
+        return 'كمبيوتر';
+      case 'smartwatch':
+        return 'ساعة ذكية';
+      default:
+        return type.isNotEmpty ? type : 'جهاز';
+    }
+  }
+
+  String _translateProblemType(String type) {
+    switch (type.toLowerCase()) {
+      case 'screen':
+        return 'مشكلة في الشاشة';
+      case 'battery':
+        return 'مشكلة في البطارية';
+      case 'software':
+        return 'مشكلة برمجية';
+      case 'charging':
+        return 'مشكلة في الشحن';
+      case 'camera':
+        return 'مشكلة في الكاميرا';
+      case 'speaker':
+        return 'مشكلة في السماعة';
+      case 'water_damage':
+        return 'ضرر مياه';
+      case 'back_glass':
+        return 'الزجاج الخلفي';
+      case 'other':
+        return 'أخرى';
+      default:
+        return type.isNotEmpty ? type : 'أخرى';
+    }
   }
 }

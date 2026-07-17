@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_picker/image_picker.dart' show XFile;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import '../../../../core/api/api_manager.dart';
 import '../../../../core/api/endpoints.dart';
 import '../models/admin_responses.dart';
 import '../models/delegate_application_model.dart';
 import '../../../orders/data/models/order_model.dart';
 import '../../../orders/data/models/order_details_response_model.dart';
+import '../models/admin_payments_response_model.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class AdminRemoteDataSource {
@@ -44,6 +48,12 @@ abstract class AdminRemoteDataSource {
   Future<AdminDelegateApplicationDetailsResponseModel> getDelegateApplicationDetails(String applicationId);
   Future<AdminApproveDelegateResponseModel> approveDelegateApplication(String id);
   Future<AdminRejectDelegateResponseModel> rejectDelegateApplication(String id, String rejectReason);
+  Future<AdminPaymentsResponseModel> getAdminPayments({required int page, required int limit});
+  Future<AdminReviewPaymentResponseModel> reviewPayment(
+    String paymentId, {
+    required String status,
+    String? rejectionReason,
+  });
 }
 
 @LazySingleton(as: AdminRemoteDataSource)
@@ -253,11 +263,35 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     };
 
     if (logoPath != null && logoPath.isNotEmpty) {
-      final fileName = logoPath.split('/').last;
-      fields['logo'] = await MultipartFile.fromFile(
-        logoPath,
-        filename: fileName,
-      );
+      if (kIsWeb) {
+        final bytes = await XFile(logoPath).readAsBytes();
+        final fileName = logoPath.split('/').last;
+        String webFilename = fileName;
+        MediaType mediaType = MediaType('image', 'jpeg');
+        if (fileName.contains('.')) {
+          final ext = fileName.split('.').last.toLowerCase();
+          if (ext == 'png') {
+            mediaType = MediaType('image', 'png');
+          } else if (ext == 'gif') {
+            mediaType = MediaType('image', 'gif');
+          } else if (ext == 'webp') {
+            mediaType = MediaType('image', 'webp');
+          }
+        } else {
+          webFilename = '$fileName.jpg';
+        }
+        fields['logo'] = MultipartFile.fromBytes(
+          bytes,
+          filename: webFilename,
+          contentType: mediaType,
+        );
+      } else {
+        final fileName = logoPath.split('/').last;
+        fields['logo'] = await MultipartFile.fromFile(
+          logoPath,
+          filename: fileName,
+        );
+      }
     }
 
     final formData = FormData.fromMap(fields);
@@ -343,6 +377,48 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       return AdminRejectDelegateResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في رفض طلب المندوب');
+    }
+  }
+
+  @override
+  Future<AdminPaymentsResponseModel> getAdminPayments({required int page, required int limit}) async {
+    final response = await _apiManager.getDate(
+      Endpoints.adminPayments,
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+      },
+    );
+
+    if (response.data != null) {
+      return AdminPaymentsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب التحويلات والدفع');
+    }
+  }
+
+  @override
+  Future<AdminReviewPaymentResponseModel> reviewPayment(
+    String paymentId, {
+    required String status,
+    String? rejectionReason,
+  }) async {
+    final Map<String, dynamic> body = {
+      'status': status,
+    };
+    if (rejectionReason != null) {
+      body['rejectionReason'] = rejectionReason;
+    }
+
+    final response = await _apiManager.UpdateData(
+      '${Endpoints.adminPayments}/$paymentId/review',
+      body: body,
+    );
+
+    if (response.data != null) {
+      return AdminReviewPaymentResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في مراجعة الدفع');
     }
   }
 }
