@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/di/di.dart';
 import '../cubit/order_payment_cubit.dart';
 import '../cubit/order_payment_state.dart';
+import '../../domain/entities/order_payment_entity.dart';
 
 class OrderPaymentScreen extends StatefulWidget {
   final String orderId;
@@ -17,6 +18,7 @@ class OrderPaymentScreen extends StatefulWidget {
 
 class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
   late OrderPaymentCubit _cubit;
+  String? _selectedMethod;
 
 
   @override
@@ -79,7 +81,7 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'أدخل رقم المحفظة الإلكترونية التي قمت بالدفع منها',
+                    'أدخل بيانات عملية الدفع لتأكيد الطلب',
                     style: GoogleFonts.cairo(fontSize: 13, color: Colors.white54),
                   ),
                   const SizedBox(height: 20),
@@ -172,6 +174,8 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                                     final success = await _cubit.submitPaymentProof(
                                       orderId: widget.orderId,
                                       senderWalletNumber: walletController.text.trim(),
+                                      transferReference: '',
+                                      paymentMethod: _selectedMethod ?? 'zain_cash',
                                     );
                                     if (!success && ctx.mounted) {
                                       ScaffoldMessenger.of(ctx).showSnackBar(
@@ -270,7 +274,19 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
         ),
         body: Directionality(
           textDirection: TextDirection.rtl,
-          child: BlocBuilder<OrderPaymentCubit, OrderPaymentState>(
+          child: BlocConsumer<OrderPaymentCubit, OrderPaymentState>(
+            listener: (context, state) {
+              if (state is OrderPaymentLoaded) {
+                final availableMethods = state.details.paymentInfo?.availablePaymentMethods ??
+                    state.details.financialView.walletInfo?.walletNumbers.keys.toList() ??
+                    ['zain_cash'];
+                if (_selectedMethod == null && availableMethods.isNotEmpty) {
+                  setState(() {
+                    _selectedMethod = availableMethods.first;
+                  });
+                }
+              }
+            },
             builder: (context, state) {
               if (state is OrderPaymentLoading || state is OrderPaymentInitial) {
                 return _buildSkeletonLoader();
@@ -312,6 +328,9 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                 final financial = state.details.financialView;
                 final isPaid = financial.paymentStatus.toLowerCase() == 'paid';
                 final isPending = financial.paymentStatus.toLowerCase() == 'pending';
+                final availableMethods = state.details.paymentInfo?.availablePaymentMethods ??
+                    financial.walletInfo?.walletNumbers.keys.toList() ??
+                    ['zain_cash'];
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -405,18 +424,10 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                       _buildSectionTitle('تفاصيل التكاليف والفاتورة', Icons.receipt_long_outlined),
                       const SizedBox(height: 8),
                       _buildCard(
-                        child: Column(
-                          children: [
-                            _buildBillingRow('رسوم الفحص والتشخيص', '${order.fees.inspection.toInt()} ${financial.currency}'),
-                            _buildBillingRow('رسوم التوصيل والاستلام', '${order.fees.delivery.toInt()} ${financial.currency}'),
-                            _buildBillingRow('رسوم قطع الغيار والإصلاح', '${order.fees.repair.toInt()} ${financial.currency}'),
-                            const Divider(color: Colors.white10, height: 24),
-                            _buildBillingRow(
-                              'المبلغ الكلي المطلوب',
-                              '${order.fees.total.toInt()} ${financial.currency}',
-                              isHighlighted: true,
-                            ),
-                          ],
+                        child: _buildBillingRow(
+                          'المبلغ الكلي المطلوب',
+                          '${(financial.orderTotal > 0 ? financial.orderTotal : ((order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0) ? order.financialSnapshot!.clientTotal : (order.fees.total > 0 ? order.fees.total : (order.fees.repair + order.fees.delivery + order.fees.inspection)))).toInt()} ${financial.currency}',
+                          isHighlighted: true,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -425,50 +436,80 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                       if (!isPaid && !isPending) ...[
                         _buildSectionTitle('طريقة الدفع', Icons.payment_outlined),
                         const SizedBox(height: 8),
-                        // Fixed Zain Cash payment method card
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFC107).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFFFFC107),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.account_balance_wallet_outlined, color: Color(0xFFFFC107), size: 24),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        ...availableMethods.map((method) {
+                          final isSelected = _selectedMethod == method;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedMethod = method;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFFFFC107).withValues(alpha: 0.1)
+                                      : const Color(0xFF141414),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFFFFC107)
+                                        : Colors.white12,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Row(
                                   children: [
-                                    Text(
-                                      'زين كاش',
-                                      style: GoogleFonts.cairo(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFFFFC107),
+                                    Icon(
+                                      _getMethodIcon(method),
+                                      color: isSelected ? const Color(0xFFFFC107) : Colors.white54,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _getMethodName(method),
+                                            style: GoogleFonts.cairo(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected ? const Color(0xFFFFC107) : Colors.white,
+                                            ),
+                                          ),
+                                          Text(
+                                            _getMethodDescription(method),
+                                            style: GoogleFonts.cairo(
+                                              fontSize: 11,
+                                              color: isSelected ? Colors.white38 : Colors.white30,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Text(
-                                      'الدفع عبر محفظة زين كاش الإلكترونية',
-                                      style: GoogleFonts.cairo(fontSize: 11, color: Colors.white30),
-                                    ),
+                                    if (isSelected)
+                                      const Icon(Icons.check_circle_rounded, color: Color(0xFFFFC107), size: 20)
+                                    else
+                                      const Icon(Icons.radio_button_off_outlined, color: Colors.white24, size: 20),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.check_circle_rounded, color: Color(0xFFFFC107), size: 20),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        }),
                         const SizedBox(height: 16),
 
                         // ─── Wallet Number for Transfer ───────────
                         _buildSectionTitle('رقم المحفظة للتحويل', Icons.phone_android_outlined),
                         const SizedBox(height: 8),
-                        _buildWalletInfoCard(financial.walletInfo),
+                        _buildWalletInfoCard(
+                          financial.walletInfo ?? state.details.paymentInfo,
+                          _selectedMethod ?? 'zain_cash',
+                        ),
                         const SizedBox(height: 32),
 
                         // ─── Action Button ───────────────────────
@@ -476,7 +517,7 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton.icon(
-                            onPressed: () => _showPaymentBottomSheet(order.fees.total, financial.currency),
+                            onPressed: () => _showPaymentBottomSheet(financial.orderTotal > 0 ? financial.orderTotal : order.fees.total, financial.currency),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFC107),
                               foregroundColor: Colors.black87,
@@ -641,11 +682,20 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
     );
   }
 
-  Widget _buildWalletInfoCard(dynamic walletInfo) {
-    // Extract wallet number from walletInfo
+  Widget _buildWalletInfoCard(dynamic walletInfo, String selectedMethod) {
     String walletNumber = '';
-    String walletName = 'زين كاش';
-    if (walletInfo is Map) {
+    String walletName = 'شركة الصيانة';
+    String instructions = '';
+
+    if (walletInfo is WalletInfoEntity) {
+      walletNumber = walletInfo.walletNumbers[selectedMethod] ?? '';
+      walletName = walletInfo.walletOwnerName;
+      instructions = walletInfo.paymentInstructions;
+    } else if (walletInfo is PaymentInfoEntity) {
+      walletNumber = walletInfo.walletNumbers[selectedMethod] ?? '';
+      walletName = walletInfo.walletOwnerName;
+      instructions = walletInfo.paymentInstructions;
+    } else if (walletInfo is Map) {
       walletNumber = walletInfo['walletNumber']?.toString() ?? walletInfo['number']?.toString() ?? '';
       walletName = walletInfo['name']?.toString() ?? walletInfo['walletName']?.toString() ?? 'زين كاش';
     } else if (walletInfo is String) {
@@ -683,7 +733,7 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.phone_android, color: Color(0xFFFFC107), size: 20),
+                Icon(_getMethodIcon(selectedMethod), color: const Color(0xFFFFC107), size: 20),
                 const SizedBox(width: 10),
                 SelectableText(
                   walletNumber,
@@ -703,9 +753,46 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
             'باسم: $walletName',
             style: GoogleFonts.cairo(fontSize: 12, color: Colors.white38),
           ),
+          if (instructions.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              instructions,
+              style: GoogleFonts.cairo(fontSize: 12, color: Colors.white54),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  String _getMethodName(String method) {
+    switch (method) {
+      case 'zain_cash': return 'زين كاش';
+      case 'western_union': return 'ويسترن يونيون';
+      case 'visa': return 'فيزا كارد';
+      case 'mastercard': return 'ماستر كارد';
+      default: return method;
+    }
+  }
+
+  String _getMethodDescription(String method) {
+    switch (method) {
+      case 'zain_cash': return 'الدفع عبر محفظة زين كاش الإلكترونية';
+      case 'western_union': return 'تحويل مالي عبر ويسترن يونيون';
+      case 'visa': return 'الدفع الآمن باستخدام بطاقة فيزا';
+      case 'mastercard': return 'الدفع الآمن باستخدام بطاقة ماستر كارد';
+      default: return 'الدفع الإلكتروني السريع والآمن';
+    }
+  }
+
+  IconData _getMethodIcon(String method) {
+    switch (method) {
+      case 'zain_cash': return Icons.account_balance_wallet_outlined;
+      case 'western_union': return Icons.monetization_on_outlined;
+      case 'visa':
+      case 'mastercard': return Icons.credit_card_outlined;
+      default: return Icons.payment_outlined;
+    }
   }
 
   String _getDeviceTypeLabel(String type) {

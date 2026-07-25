@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../../core/services/image_picker_service.dart';
 import '../../cubit/admin_create_center_cubit.dart';
 import '../../cubit/admin_create_center_state.dart';
 
@@ -63,8 +64,7 @@ class _AdminAddCenterViewState extends State<AdminAddCenterView> {
 
   Future<void> _pickLogo() async {
     try {
-      final picker = ImagePicker();
-      final image = await picker.pickImage(source: ImageSource.gallery);
+      final image = await ImagePickerService.pickImage(source: ImageSource.gallery);
       if (image != null) {
         setState(() {
           _logoPath = image.path;

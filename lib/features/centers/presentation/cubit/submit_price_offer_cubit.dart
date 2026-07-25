@@ -11,22 +11,14 @@ class SubmitPriceOfferCubit extends Cubit<SubmitPriceOfferState> {
 
   Future<void> submitPriceOffer({
     required String orderId,
-    required List<Map<String, dynamic>> spareParts,
-    required double laborCost,
-    required double inspectionFee,
-    required double deliveryFee,
-    required int estimatedDays,
+    required double totalCost,
     required String notes,
   }) async {
     emit(SubmitPriceOfferLoading());
 
     final result = await _useCase(
       orderId: orderId,
-      spareParts: spareParts,
-      laborCost: laborCost,
-      inspectionFee: inspectionFee,
-      deliveryFee: deliveryFee,
-      estimatedDays: estimatedDays,
+      totalCost: totalCost,
       notes: notes,
     );
 

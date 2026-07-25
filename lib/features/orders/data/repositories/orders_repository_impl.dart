@@ -4,6 +4,8 @@ import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/inspection_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
 import '../../domain/entities/order_payment_entity.dart';
+import '../../domain/entities/delegate_dashboard_entity.dart';
+import '../../domain/entities/delegate_settlement_entity.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../data_sources/orders_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -164,11 +166,17 @@ class OrdersRepositoryImpl implements OrdersRepository {
   Future<Either<Failure, bool>> submitPaymentProof({
     required String orderId,
     required String senderWalletNumber,
+    required String transferReference,
+    required String paymentMethod,
+    String? screenshotPath,
   }) async {
     try {
       final responseModel = await _remoteDataSource.submitPaymentProof(
         orderId: orderId,
         senderWalletNumber: senderWalletNumber,
+        transferReference: transferReference,
+        paymentMethod: paymentMethod,
+        screenshotPath: screenshotPath,
       );
       if (responseModel.success) {
         return const Right(true);
@@ -229,6 +237,20 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
+  Future<Either<Failure, OrderEntity>> acceptDelivery(String orderId) async {
+    try {
+      final responseModel = await _remoteDataSource.acceptDelivery(orderId);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء قبول مهمة التوصيل: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<String>>> uploadPickupPhotos(String orderId, List<String> imagePaths) async {
     try {
       final responseModel = await _remoteDataSource.uploadPickupPhotos(orderId, imagePaths);
@@ -271,6 +293,34 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
+  Future<Either<Failure, OrderEntity>> confirmPickupCenter(String orderId, List<String> imagePaths) async {
+    try {
+      final responseModel = await _remoteDataSource.confirmPickupCenter(orderId, imagePaths);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء تأكيد استلام الجهاز من المركز: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderEntity>> confirmDelivery(String orderId, List<String> imagePaths) async {
+    try {
+      final responseModel = await _remoteDataSource.confirmDelivery(orderId, imagePaths);
+      if (responseModel.success && responseModel.order != null) {
+        return Right(responseModel.order!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء تأكيد تسليم الجهاز للعميل: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<OrderEntity>>> getDelegateOrders() async {
     try {
       final responseModel = await _remoteDataSource.getDelegateOrders();
@@ -282,6 +332,48 @@ class OrdersRepositoryImpl implements OrdersRepository {
       }
     } catch (e) {
       return Left(ServerFailure('حدث خطأ أثناء جلب طلبات المندوب: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, DelegateDashboardEntity>> getDelegateDashboard() async {
+    try {
+      final responseModel = await _remoteDataSource.getDelegateDashboard();
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء جلب لوحة إحصائيات المندوب: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, DelegateSettlementsResultEntity>> getDelegateSettlements({
+    int page = 1,
+    int limit = 10,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.getDelegateSettlements(
+        page: page,
+        limit: limit,
+        status: status,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        sort: sort,
+      );
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ أثناء جلب قائمة تسويات المندوب: ${e.toString()}'));
     }
   }
 }

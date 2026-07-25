@@ -1,12 +1,14 @@
 import '../../../orders/domain/entities/order_entity.dart';
 
 class CenterFinancialViewEntity {
+  final double repairCost;
   final double repairIncome;
   final String paymentStatus;
   final String currency;
   final String? paymentDetails;
 
   CenterFinancialViewEntity({
+    required this.repairCost,
     required this.repairIncome,
     required this.paymentStatus,
     required this.currency,

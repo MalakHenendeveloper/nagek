@@ -6,6 +6,8 @@ import '../../domain/entities/center_entity.dart';
 import '../../domain/entities/service_entity.dart';
 import '../../domain/entities/center_order_details_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
+import '../../domain/entities/center_dashboard_entity.dart';
+import '../../domain/entities/center_settlement_entity.dart';
 import '../../domain/repositories/centers_repository.dart';
 import '../data_sources/centers_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -153,21 +155,13 @@ class CentersRepositoryImpl implements CentersRepository {
   @override
   Future<Either<Failure, PriceOfferEntity>> submitPriceOffer({
     required String orderId,
-    required List<Map<String, dynamic>> spareParts,
-    required double laborCost,
-    required double inspectionFee,
-    required double deliveryFee,
-    required int estimatedDays,
+    required double totalCost,
     required String notes,
   }) async {
     try {
       final responseModel = await _remoteDataSource.submitPriceOffer(
         orderId: orderId,
-        spareParts: spareParts,
-        laborCost: laborCost,
-        inspectionFee: inspectionFee,
-        deliveryFee: deliveryFee,
-        estimatedDays: estimatedDays,
+        totalCost: totalCost,
         notes: notes,
       );
 
@@ -202,6 +196,173 @@ class CentersRepositoryImpl implements CentersRepository {
       }
     } catch (e) {
       return Left(ServerFailure(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CenterDashboardEntity>> getCenterDashboard() async {
+    try {
+      final responseModel = await _remoteDataSource.getCenterDashboard();
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب لوحة إحصائيات مركز الصيانة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CenterSettlementsResultEntity>> getCenterSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.getCenterSettlements(
+        page: page,
+        limit: limit,
+        status: status,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        sort: sort,
+      );
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب تسويات مركز الصيانة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ServiceEntity>> addCenterService({
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    bool isAvailable = true,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.addCenterService(
+        serviceName: serviceName,
+        description: description,
+        price: price,
+        estimatedTime: estimatedTime,
+        isAvailable: isAvailable,
+      );
+      if (responseModel.success && responseModel.service != null) {
+        return Right(responseModel.service!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء إضافة الخدمة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ServiceEntity>>> getMyCenterServices() async {
+    try {
+      final responseModel = await _remoteDataSource.getMyCenterServices();
+      if (responseModel.success) {
+        final list = responseModel.services.map((e) => e.toEntity()).toList();
+        return Right(list);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب خدمات مركز الصيانة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ServiceEntity>> getCenterServiceDetails(String serviceId) async {
+    try {
+      final responseModel = await _remoteDataSource.getCenterServiceDetails(serviceId);
+      if (responseModel.success && responseModel.service != null) {
+        return Right(responseModel.service!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب تفاصيل الخدمة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ServiceEntity>> updateCenterService({
+    required String serviceId,
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    required bool isAvailable,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.updateCenterService(
+        serviceId: serviceId,
+        serviceName: serviceName,
+        description: description,
+        price: price,
+        estimatedTime: estimatedTime,
+        isAvailable: isAvailable,
+      );
+      if (responseModel.success && responseModel.service != null) {
+        return Right(responseModel.service!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء تحديث الخدمة'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CenterEntity>> updateCenterProfile({
+    required String name,
+    required String phone,
+    required String email,
+    required String address,
+    String? logoPath,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.updateCenterProfile(
+        name: name,
+        phone: phone,
+        email: email,
+        address: address,
+        logoPath: logoPath,
+      );
+      if (responseModel.success && responseModel.center != null) {
+        return Right(responseModel.center!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message.isNotEmpty
+            ? responseModel.message
+            : 'فشل في تحديث ملف مركز الصيانة'));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء تحديث ملف مركز الصيانة'));
     }
   }
 }

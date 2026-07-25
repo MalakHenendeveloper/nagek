@@ -75,3 +75,41 @@ class DelegateOrdersDropCenterError extends DelegateOrdersState {
 
   DelegateOrdersDropCenterError(this.message);
 }
+
+// Pickup Center states (confirm-pickup-center)
+class DelegateOrdersPickupCenterLoading extends DelegateOrdersState {
+  final String orderId;
+
+  DelegateOrdersPickupCenterLoading(this.orderId);
+}
+
+class DelegateOrdersPickupCenterSuccess extends DelegateOrdersState {
+  final OrderEntity order;
+
+  DelegateOrdersPickupCenterSuccess(this.order);
+}
+
+class DelegateOrdersPickupCenterError extends DelegateOrdersState {
+  final String message;
+
+  DelegateOrdersPickupCenterError(this.message);
+}
+
+// Confirm Delivery states (confirm-delivery to client with photos)
+class DelegateOrdersConfirmDeliveryLoading extends DelegateOrdersState {
+  final String orderId;
+
+  DelegateOrdersConfirmDeliveryLoading(this.orderId);
+}
+
+class DelegateOrdersConfirmDeliverySuccess extends DelegateOrdersState {
+  final OrderEntity order;
+
+  DelegateOrdersConfirmDeliverySuccess(this.order);
+}
+
+class DelegateOrdersConfirmDeliveryError extends DelegateOrdersState {
+  final String message;
+
+  DelegateOrdersConfirmDeliveryError(this.message);
+}

@@ -17,6 +17,8 @@ import '../models/available_pickup_orders_response_model.dart';
 import '../models/pickup_photos_response_model.dart';
 import '../models/order_payment_response_model.dart';
 import '../models/payment_proof_response_model.dart';
+import '../models/delegate_dashboard_response_model.dart';
+import '../models/delegate_settlements_response_model.dart';
 
 abstract class OrdersRemoteDataSource {
   Future<OrdersResponseModel> getOrders({
@@ -51,6 +53,9 @@ abstract class OrdersRemoteDataSource {
   Future<PaymentProofResponseModel> submitPaymentProof({
     required String orderId,
     required String senderWalletNumber,
+    required String transferReference,
+    required String paymentMethod,
+    String? screenshotPath,
   });
 
   Future<AvailablePickupOrdersResponseModel> getAvailablePickupOrders();
@@ -60,6 +65,8 @@ abstract class OrdersRemoteDataSource {
   Future<AvailablePickupOrdersResponseModel> getDelegateOrders();
 
   Future<OrderDetailsResponseModel> acceptPickup(String orderId);
+
+  Future<OrderDetailsResponseModel> acceptDelivery(String orderId);
 
   Future<PickupPhotosResponseModel> uploadPickupPhotos(
     String orderId,
@@ -72,6 +79,27 @@ abstract class OrdersRemoteDataSource {
     String orderId,
     List<String> imagePaths,
   );
+
+  Future<OrderDetailsResponseModel> confirmPickupCenter(
+    String orderId,
+    List<String> imagePaths,
+  );
+
+  Future<OrderDetailsResponseModel> confirmDelivery(
+    String orderId,
+    List<String> imagePaths,
+  );
+
+  Future<DelegateDashboardResponseModel> getDelegateDashboard();
+
+  Future<DelegateSettlementsResponseModel> getDelegateSettlements({
+    int page = 1,
+    int limit = 10,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  });
 }
 
 @LazySingleton(as: OrdersRemoteDataSource)
@@ -228,12 +256,28 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   Future<PaymentProofResponseModel> submitPaymentProof({
     required String orderId,
     required String senderWalletNumber,
+    String transferReference = '',
+    required String paymentMethod,
+    String? screenshotPath,
   }) async {
-    final response = await _apiManager.PostDate(
+    final formDataMap = <String, dynamic>{
+      'senderWalletNumber': senderWalletNumber,
+      'paymentMethod': paymentMethod,
+    };
+
+    if (transferReference.trim().isNotEmpty) {
+      formDataMap['transferReference'] = transferReference.trim();
+    }
+
+    if (screenshotPath != null && screenshotPath.isNotEmpty) {
+      formDataMap['screenshot'] = await _getMultipartFile(screenshotPath);
+    }
+
+    final formData = FormData.fromMap(formDataMap);
+
+    final response = await _apiManager.PostFormData(
       '${Endpoints.orderPayment}$orderId/payment',
-      body: {
-        'senderWalletNumber': senderWalletNumber,
-      },
+      formData: formData,
     );
 
     if (response.data != null) {
@@ -267,6 +311,18 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   Future<OrderDetailsResponseModel> acceptPickup(String orderId) async {
     final response = await _apiManager.UpdateData(
       '${Endpoints.delegateOrders}/$orderId/accept-pickup',
+    );
+    if (response.data != null) {
+      return OrderDetailsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في قبول مهمة التوصيل');
+    }
+  }
+
+  @override
+  Future<OrderDetailsResponseModel> acceptDelivery(String orderId) async {
+    final response = await _apiManager.UpdateData(
+      '${Endpoints.delegateOrders}/$orderId/accept-delivery',
     );
     if (response.data != null) {
       return OrderDetailsResponseModel.fromJson(response.data);
@@ -344,12 +400,117 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   }
 
   @override
+  Future<OrderDetailsResponseModel> confirmPickupCenter(
+    String orderId,
+    List<String> imagePaths,
+  ) async {
+    final formData = FormData();
+
+    for (final path in imagePaths) {
+      formData.files.add(
+        MapEntry(
+          'photos',
+          await _getMultipartFile(path),
+        ),
+      );
+    }
+
+    final response = await _apiManager.PutFormData(
+      Endpoints.confirmPickupCenter(orderId),
+      formData: formData,
+    );
+
+    if (response.data != null) {
+      return OrderDetailsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تأكيد استلام الجهاز من المركز');
+    }
+  }
+
+  @override
+  Future<OrderDetailsResponseModel> confirmDelivery(
+    String orderId,
+    List<String> imagePaths,
+  ) async {
+    final formData = FormData();
+
+    for (final path in imagePaths) {
+      formData.files.add(
+        MapEntry(
+          'photos',
+          await _getMultipartFile(path),
+        ),
+      );
+    }
+
+    final response = await _apiManager.PutFormData(
+      Endpoints.confirmDelivery(orderId),
+      formData: formData,
+    );
+
+    if (response.data != null) {
+      return OrderDetailsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تأكيد تسليم الجهاز للعميل');
+    }
+  }
+
+  @override
   Future<AvailablePickupOrdersResponseModel> getDelegateOrders() async {
     final response = await _apiManager.getDate(Endpoints.delegateTasks);
     if (response.data != null) {
       return AvailablePickupOrdersResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في جلب طلبات المندوب');
+    }
+  }
+
+  @override
+  Future<DelegateDashboardResponseModel> getDelegateDashboard() async {
+    final response = await _apiManager.getDate(Endpoints.delegateDashboard);
+    if (response.data != null) {
+      return DelegateDashboardResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب لوحة إحصائيات المندوب');
+    }
+  }
+
+  @override
+  Future<DelegateSettlementsResponseModel> getDelegateSettlements({
+    int page = 1,
+    int limit = 10,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'limit': limit,
+    };
+
+    if (status != null && status.isNotEmpty && status != 'all') {
+      queryParams['status'] = status;
+    }
+    if (dateFrom != null && dateFrom.isNotEmpty) {
+      queryParams['dateFrom'] = dateFrom;
+    }
+    if (dateTo != null && dateTo.isNotEmpty) {
+      queryParams['dateTo'] = dateTo;
+    }
+    if (sort != null && sort.isNotEmpty) {
+      queryParams['sort'] = sort;
+    }
+
+    final response = await _apiManager.getDate(
+      Endpoints.delegateSettlements,
+      queryParameters: queryParams,
+    );
+
+    if (response.data != null) {
+      return DelegateSettlementsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب قائمة تسويات المندوب');
     }
   }
 

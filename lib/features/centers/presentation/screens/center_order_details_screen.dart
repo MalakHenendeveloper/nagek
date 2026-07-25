@@ -367,6 +367,9 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
               const SizedBox(height: 16),
             ],
 
+            // ─── Delegate Info ────────────────────────────────────
+            _buildDelegateSection(order),
+
             // ─── Pickup Address ───────────────────────────────────
             _buildSectionTitle('عنوان الاستلام', Icons.location_on_outlined),
             const SizedBox(height: 8),
@@ -386,22 +389,13 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
             _buildCard(
               child: Column(
                 children: [
-                  _buildFinancialRow('رسوم الفحص', '${order.fees.inspection.toInt()} ${financial.currency}'),
-                  _buildFinancialRow('رسوم التوصيل', '${order.fees.delivery.toInt()} ${financial.currency}'),
-                  _buildFinancialRow('رسوم الإصلاح', '${order.fees.repair.toInt()} ${financial.currency}'),
-                  const Divider(color: Colors.white10, height: 20),
                   _buildFinancialRow(
-                    'إجمالي الرسوم',
-                    '${order.fees.total.toInt()} ${financial.currency}',
-                    isHighlighted: true,
-                  ),
-                  const Divider(color: Colors.white10, height: 20),
-                  _buildFinancialRow(
-                    'دخل الإصلاح للمركز',
-                    '${financial.repairIncome.toInt()} ${financial.currency}',
+                    'مستحق مركز الصيانة',
+                    '${(financial.repairIncome > 0 ? financial.repairIncome : (order.financialSnapshot?.centerAmount ?? order.fees.repair)).toInt()} ${financial.currency}',
                     isHighlighted: true,
                     highlightColor: Colors.greenAccent,
                   ),
+                  const Divider(color: Colors.white10, height: 20),
                   _buildFinancialRow(
                     'حالة الدفع',
                     _getPaymentStatusLabel(financial.paymentStatus),
@@ -956,6 +950,131 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
       default:
         return _StatusBadgeData(text: 'حالة غير معروفة', backgroundColor: Colors.grey.withValues(alpha: 0.15), textColor: Colors.white54, showDot: true);
     }
+  }
+
+  Widget _buildDelegateSection(OrderEntity order) {
+    final pickupDel = order.pickupDelegate ?? order.delegate;
+    final deliveryDel = order.deliveryDelegate;
+
+    final hasPickup = pickupDel != null && pickupDel.name.isNotEmpty;
+    final hasDelivery = deliveryDel != null && deliveryDel.name.isNotEmpty;
+
+    if (!hasPickup && !hasDelivery) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('معلومات المندوب', Icons.two_wheeler_outlined),
+        const SizedBox(height: 8),
+        _buildCard(
+          child: Column(
+            children: [
+              if (hasPickup) ...[
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.two_wheeler, color: Colors.greenAccent, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'استلم من العميل وسلّم للمركز',
+                            style: GoogleFonts.cairo(fontSize: 11, color: Colors.white54),
+                          ),
+                          Text(
+                            pickupDel.name,
+                            style: GoogleFonts.cairo(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (pickupDel.phone.isNotEmpty)
+                            Text(
+                              pickupDel.phone,
+                              style: GoogleFonts.cairo(fontSize: 12, color: Colors.white38),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (pickupDel.phone.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.phone_enabled_outlined, color: Colors.greenAccent),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.greenAccent.withValues(alpha: 0.1),
+                        ),
+                        onPressed: () => _makeCall(pickupDel.phone),
+                      ),
+                  ],
+                ),
+              ],
+              if (hasPickup && hasDelivery)
+                const Divider(color: Colors.white10, height: 20),
+              if (hasDelivery) ...[
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.local_shipping_outlined, color: Color(0xFFFFC107), size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'استلم من المركز وسلّم للعميل',
+                            style: GoogleFonts.cairo(fontSize: 11, color: Colors.white54),
+                          ),
+                          Text(
+                            deliveryDel.name,
+                            style: GoogleFonts.cairo(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (deliveryDel.phone.isNotEmpty)
+                            Text(
+                              deliveryDel.phone,
+                              style: GoogleFonts.cairo(fontSize: 12, color: Colors.white38),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (deliveryDel.phone.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.phone_enabled_outlined, color: Color(0xFFFFC107)),
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFC107).withValues(alpha: 0.1),
+                        ),
+                        onPressed: () => _makeCall(deliveryDel.phone),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 }
 

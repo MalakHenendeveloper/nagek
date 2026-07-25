@@ -6,6 +6,8 @@ import '../entities/center_entity.dart';
 import '../entities/service_entity.dart';
 import '../entities/center_order_details_entity.dart';
 import '../entities/price_offer_entity.dart';
+import '../entities/center_dashboard_entity.dart';
+import '../entities/center_settlement_entity.dart';
 
 abstract class CentersRepository {
   Future<Either<Failure, CentersResultEntity>> getCenters({
@@ -14,6 +16,27 @@ abstract class CentersRepository {
   });
 
   Future<Either<Failure, CenterEntity>> getCenterDetails(String id);
+
+  Future<Either<Failure, ServiceEntity>> addCenterService({
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    bool isAvailable = true,
+  });
+
+  Future<Either<Failure, List<ServiceEntity>>> getMyCenterServices();
+
+  Future<Either<Failure, ServiceEntity>> getCenterServiceDetails(String serviceId);
+
+  Future<Either<Failure, ServiceEntity>> updateCenterService({
+    required String serviceId,
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    required bool isAvailable,
+  });
 
   Future<Either<Failure, List<ServiceEntity>>> getCenterServices(String centerId);
 
@@ -34,11 +57,7 @@ abstract class CentersRepository {
 
   Future<Either<Failure, PriceOfferEntity>> submitPriceOffer({
     required String orderId,
-    required List<Map<String, dynamic>> spareParts,
-    required double laborCost,
-    required double inspectionFee,
-    required double deliveryFee,
-    required int estimatedDays,
+    required double totalCost,
     required String notes,
   });
 
@@ -47,4 +66,24 @@ abstract class CentersRepository {
     required String status,
     required String note,
   });
+
+  Future<Either<Failure, CenterDashboardEntity>> getCenterDashboard();
+
+  Future<Either<Failure, CenterSettlementsResultEntity>> getCenterSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  });
+
+  Future<Either<Failure, CenterEntity>> updateCenterProfile({
+    required String name,
+    required String phone,
+    required String email,
+    required String address,
+    String? logoPath,
+  });
 }
+

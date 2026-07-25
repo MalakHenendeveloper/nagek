@@ -1,3 +1,5 @@
+import '../../domain/entities/admin_dashboard_entity.dart';
+
 abstract class AdminDashboardState {
   const AdminDashboardState();
 }
@@ -11,15 +13,9 @@ class AdminDashboardLoading extends AdminDashboardState {
 }
 
 class AdminDashboardLoaded extends AdminDashboardState {
-  final int totalUsers;
-  final int totalDelegates;
-  final int totalCenters;
+  final AdminDashboardEntity dashboard;
 
-  const AdminDashboardLoaded({
-    required this.totalUsers,
-    required this.totalDelegates,
-    required this.totalCenters,
-  });
+  const AdminDashboardLoaded(this.dashboard);
 }
 
 class AdminDashboardError extends AdminDashboardState {

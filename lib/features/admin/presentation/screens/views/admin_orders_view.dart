@@ -384,7 +384,7 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
                     const Icon(Icons.monetization_on_outlined, color: Color(0xFFFFC107), size: 13),
                     const SizedBox(width: 4),
                     Text(
-                      order.fees.total.toStringAsFixed(0),
+                      (order.financialSnapshot?.clientTotal ?? order.fees.total).toStringAsFixed(0),
                       style: GoogleFonts.cairo(
                         color: const Color(0xFFFFC107),
                         fontSize: 11,
@@ -400,15 +400,32 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: order.paymentStatus == 'paid'
+                  color: (order.paymentStatus.toLowerCase() == 'paid' ||
+                          order.paymentStatus.toLowerCase() == 'confirmed' ||
+                          order.paymentStatus.toLowerCase() == 'approved' ||
+                          order.paymentStatus.toLowerCase() == 'completed')
                       ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
                       : Colors.redAccent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  order.paymentStatus == 'paid' ? 'مدفوع' : 'غير مدفوع',
+                  (order.paymentStatus.toLowerCase() == 'paid' ||
+                          order.paymentStatus.toLowerCase() == 'confirmed' ||
+                          order.paymentStatus.toLowerCase() == 'approved' ||
+                          order.paymentStatus.toLowerCase() == 'completed')
+                      ? 'مدفوع'
+                      : (order.paymentStatus.toLowerCase() == 'pending'
+                          ? 'قيد الدفع'
+                          : 'غير مدفوع'),
                   style: GoogleFonts.cairo(
-                    color: order.paymentStatus == 'paid' ? const Color(0xFF4CAF50) : Colors.redAccent,
+                    color: (order.paymentStatus.toLowerCase() == 'paid' ||
+                            order.paymentStatus.toLowerCase() == 'confirmed' ||
+                            order.paymentStatus.toLowerCase() == 'approved' ||
+                            order.paymentStatus.toLowerCase() == 'completed')
+                        ? const Color(0xFF4CAF50)
+                        : (order.paymentStatus.toLowerCase() == 'pending'
+                            ? const Color(0xFFFFC107)
+                            : Colors.redAccent),
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),

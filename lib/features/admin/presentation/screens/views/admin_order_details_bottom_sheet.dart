@@ -279,11 +279,23 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      order.paymentStatus == 'paid' ? 'مدفوع' : 'غير مدفوع',
+                      (order.paymentStatus.toLowerCase() == 'paid' ||
+                              order.paymentStatus.toLowerCase() == 'confirmed' ||
+                              order.paymentStatus.toLowerCase() == 'approved' ||
+                              order.paymentStatus.toLowerCase() == 'completed')
+                          ? 'مدفوع'
+                          : (order.paymentStatus.toLowerCase() == 'pending'
+                              ? 'قيد التعديل / الدفع'
+                              : 'غير مدفوع'),
                       style: GoogleFonts.cairo(
-                        color: order.paymentStatus == 'paid'
+                        color: (order.paymentStatus.toLowerCase() == 'paid' ||
+                                order.paymentStatus.toLowerCase() == 'confirmed' ||
+                                order.paymentStatus.toLowerCase() == 'approved' ||
+                                order.paymentStatus.toLowerCase() == 'completed')
                             ? const Color(0xFF4CAF50)
-                            : Colors.redAccent,
+                            : (order.paymentStatus.toLowerCase() == 'pending'
+                                ? const Color(0xFFFFC107)
+                                : Colors.redAccent),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -466,23 +478,54 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white10),
             ),
-            child: Column(
-              children: [
-                _buildFeeRow('رسوم الفحص التقديري', order.fees.inspection),
-                const SizedBox(height: 8),
-                _buildFeeRow('رسوم النقل والتوصيل', order.fees.delivery),
-                const SizedBox(height: 8),
-                _buildFeeRow('تكلفة الإصلاح الفعلي', order.fees.repair),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: Colors.white10, height: 1),
-                ),
-                _buildFeeRow(
-                  'المجموع الكلي المطلوب',
-                  order.fees.total,
-                  isTotal: true,
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                // Pickup delegate fee (client -> center)
+                final pickupFee = (order.financialSnapshot != null && order.financialSnapshot!.inspectionFee > 0)
+                    ? order.financialSnapshot!.inspectionFee
+                    : order.fees.inspection;
+
+                // Delivery delegate fee (center -> client)
+                final deliveryFee = (order.financialSnapshot != null && order.financialSnapshot!.deliveryFee > 0)
+                    ? order.financialSnapshot!.deliveryFee
+                    : order.fees.delivery;
+
+                // Center payout
+                final centerAmount = (order.financialSnapshot != null && order.financialSnapshot!.centerAmount > 0)
+                    ? order.financialSnapshot!.centerAmount
+                    : order.fees.repair;
+
+                // Client total
+                final clientTotal = (order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0)
+                    ? order.financialSnapshot!.clientTotal
+                    : (order.fees.total > 0
+                        ? order.fees.total
+                        : order.fees.repair + order.fees.delivery + order.fees.inspection);
+
+                // Admin commission = total - center - pickup - delivery
+                final adminCommission = clientTotal - centerAmount - pickupFee - deliveryFee;
+
+                return Column(
+                  children: [
+                    _buildFeeRow('أجر مندوب الاستلام (إلى المركز)', pickupFee),
+                    const SizedBox(height: 8),
+                    _buildFeeRow('أجر مندوب التوصيل (من المركز للعميل)', deliveryFee),
+                    const SizedBox(height: 8),
+                    _buildFeeRow('مستحق مركز الصيانة', centerAmount),
+                    const SizedBox(height: 8),
+                    _buildFeeRow('عمولة الإدارة', adminCommission),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Divider(color: Colors.white10, height: 1),
+                    ),
+                    _buildFeeRow(
+                      'المجموع الكلي المطلوب من العميل',
+                      clientTotal,
+                      isTotal: true,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           const SizedBox(height: 20),

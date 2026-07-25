@@ -3,6 +3,8 @@ import '../../domain/use_cases/get_delegate_orders_use_case.dart';
 import '../../domain/use_cases/upload_pickup_photos_use_case.dart';
 import '../../domain/use_cases/confirm_pickup_use_case.dart';
 import '../../domain/use_cases/confirm_drop_center_use_case.dart';
+import '../../domain/use_cases/confirm_pickup_center_use_case.dart';
+import '../../domain/use_cases/confirm_delivery_use_case.dart';
 import 'delegate_orders_state.dart';
 import 'package:injectable/injectable.dart';
 
@@ -12,12 +14,16 @@ class DelegateOrdersCubit extends Cubit<DelegateOrdersState> {
   final UploadPickupPhotosUseCase _uploadPickupPhotosUseCase;
   final ConfirmPickupUseCase _confirmPickupUseCase;
   final ConfirmDropCenterUseCase _confirmDropCenterUseCase;
+  final ConfirmPickupCenterUseCase _confirmPickupCenterUseCase;
+  final ConfirmDeliveryUseCase _confirmDeliveryUseCase;
 
   DelegateOrdersCubit(
     this._getDelegateOrdersUseCase,
     this._uploadPickupPhotosUseCase,
     this._confirmPickupUseCase,
     this._confirmDropCenterUseCase,
+    this._confirmPickupCenterUseCase,
+    this._confirmDeliveryUseCase,
   ) : super(DelegateOrdersInitial());
 
   Future<void> fetchDelegateOrders() async {
@@ -28,19 +34,16 @@ class DelegateOrdersCubit extends Cubit<DelegateOrdersState> {
     result.fold(
       (failure) => emit(DelegateOrdersError(failure.message)),
       (orders) {
-        // Calculate completed orders count & total earnings
+        // Calculate completed orders count from status
         int completedCount = 0;
-        double totalEarnings = 0.0;
-
         for (final order in orders) {
           final status = order.status.toLowerCase();
           if (status == 'delivered' || status == 'completed') {
             completedCount++;
-            totalEarnings += order.fees.delivery;
           }
         }
 
-        emit(DelegateOrdersLoaded(orders, completedCount, totalEarnings));
+        emit(DelegateOrdersLoaded(orders, completedCount, 0.0));
       },
     );
   }
@@ -81,8 +84,39 @@ class DelegateOrdersCubit extends Cubit<DelegateOrdersState> {
 
     result.fold(
       (failure) => emit(DelegateOrdersDropCenterError(failure.message)),
-      (order) {
+      (order) async {
         emit(DelegateOrdersDropCenterSuccess(order));
+        await Future.delayed(const Duration(milliseconds: 300));
+        fetchDelegateOrders();
+      },
+    );
+  }
+
+  Future<void> confirmPickupCenter(String orderId, List<String> imagePaths) async {
+    emit(DelegateOrdersPickupCenterLoading(orderId));
+
+    final result = await _confirmPickupCenterUseCase.call(orderId, imagePaths);
+
+    result.fold(
+      (failure) => emit(DelegateOrdersPickupCenterError(failure.message)),
+      (order) async {
+        emit(DelegateOrdersPickupCenterSuccess(order));
+        await Future.delayed(const Duration(milliseconds: 300));
+        fetchDelegateOrders();
+      },
+    );
+  }
+
+  Future<void> confirmDelivery(String orderId, List<String> imagePaths) async {
+    emit(DelegateOrdersConfirmDeliveryLoading(orderId));
+
+    final result = await _confirmDeliveryUseCase.call(orderId, imagePaths);
+
+    result.fold(
+      (failure) => emit(DelegateOrdersConfirmDeliveryError(failure.message)),
+      (order) async {
+        emit(DelegateOrdersConfirmDeliverySuccess(order));
+        await Future.delayed(const Duration(milliseconds: 300));
         fetchDelegateOrders();
       },
     );

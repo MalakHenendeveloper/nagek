@@ -2,12 +2,14 @@ import '../../../orders/data/models/order_model.dart';
 import '../../domain/entities/center_order_details_entity.dart';
 
 class CenterFinancialViewModel {
+  final double repairCost;
   final double repairIncome;
   final String paymentStatus;
   final String currency;
   final String? paymentDetails;
 
   CenterFinancialViewModel({
+    required this.repairCost,
     required this.repairIncome,
     required this.paymentStatus,
     required this.currency,
@@ -16,16 +18,19 @@ class CenterFinancialViewModel {
 
   factory CenterFinancialViewModel.fromJson(Map<dynamic, dynamic>? json) {
     final map = json ?? {};
+    final repair = (map['repairCost'] ?? map['repairIncome'] ?? map['centerPayout'] ?? map['centerAmount'] ?? 0.0).toDouble();
     return CenterFinancialViewModel(
-      repairIncome: (map['repairIncome'] ?? 0.0).toDouble(),
+      repairCost: repair,
+      repairIncome: repair,
       paymentStatus: map['paymentStatus'] ?? '',
-      currency: map['currency'] ?? '',
-      paymentDetails: map['paymentDetails'],
+      currency: (map['currency'] != null && map['currency'].toString().isNotEmpty) ? map['currency'].toString() : 'IQD',
+      paymentDetails: map['paymentDetails']?.toString(),
     );
   }
 
   CenterFinancialViewEntity toEntity() {
     return CenterFinancialViewEntity(
+      repairCost: repairCost,
       repairIncome: repairIncome,
       paymentStatus: paymentStatus,
       currency: currency,

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/di.dart';
+import '../../../../core/services/image_picker_service.dart';
 import '../cubit/submit_inspection_cubit.dart';
 import '../cubit/submit_inspection_state.dart';
 
@@ -22,7 +23,6 @@ class _SubmitInspectionScreenState extends State<SubmitInspectionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _technicianController = TextEditingController();
   final _notesController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
 
   final List<Map<String, String>> _findings = [];
   final List<XFile> _images = [];
@@ -45,7 +45,7 @@ class _SubmitInspectionScreenState extends State<SubmitInspectionScreen> {
 
   void _addFinding() {
     setState(() {
-      _findings.add({'issue': '', 'severity': 'minor'});
+      _findings.add({'issue': '', 'severity': 'low'});
     });
   }
 
@@ -56,7 +56,7 @@ class _SubmitInspectionScreenState extends State<SubmitInspectionScreen> {
   }
 
   Future<void> _pickImages() async {
-    final List<XFile> picked = await _picker.pickMultiImage(imageQuality: 80);
+    final List<XFile> picked = await ImagePickerService.pickMultiImage();
     if (picked.isNotEmpty) {
       setState(() {
         _images.addAll(picked);

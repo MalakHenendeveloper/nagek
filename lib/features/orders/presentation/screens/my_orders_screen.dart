@@ -43,11 +43,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
 
   // Filter orders based on selected tab
   List<OrderEntity> _filterOrders(List<OrderEntity> orders) {
-    final activeStatuses = ['pending', 'awaiting_approval', 'ongoing', 'repairing', 'accepted', 'pickup_assigned', 'in_transit'];
+    final previousStatuses = ['delivered', 'completed', 'done', 'cancelled', 'rejected'];
     if (_showActive) {
-      return orders.where((order) => activeStatuses.contains(order.status.toLowerCase())).toList();
+      return orders.where((order) => !previousStatuses.contains(order.status.toLowerCase())).toList();
     } else {
-      return orders.where((order) => !activeStatuses.contains(order.status.toLowerCase())).toList();
+      return orders.where((order) => previousStatuses.contains(order.status.toLowerCase())).toList();
     }
   }
 
@@ -378,13 +378,46 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                     ],
                   ),
                 ),
-                Text(
-                  '${order.fees.total.toInt()} د.ع',
-                  style: GoogleFonts.cairo(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFFC107),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final double calculatedTotal = (order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0)
+                        ? order.financialSnapshot!.clientTotal
+                        : (order.fees.total > 0
+                            ? order.fees.total
+                            : (order.fees.repair + order.fees.delivery + order.fees.inspection));
+
+                    final bool isPriceAvailable = (order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0) ||
+                        (order.fees.repair > 0) ||
+                        (!['pending', 'delegate_assigned', 'picked_up', 'at_center', 'inspecting'].contains(order.status.toLowerCase()) && calculatedTotal > 0);
+
+                    if (isPriceAvailable) {
+                      return Text(
+                        '${calculatedTotal.toInt()} د.ع',
+                        style: GoogleFonts.cairo(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFFFC107),
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        'في انتظار ارسال السعر من قبل السنتر',
+                        style: GoogleFonts.cairo(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFD97706),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

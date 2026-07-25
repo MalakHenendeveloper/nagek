@@ -6,9 +6,43 @@ import '../entities/admin_center_entity.dart';
 import '../entities/admin_center_details_entity.dart';
 import '../entities/delegate_application_entity.dart';
 import '../entities/admin_payment_entity.dart';
+import '../entities/admin_payment_settings_entity.dart';
+import '../entities/admin_financial_settings_entity.dart';
+import '../entities/admin_dashboard_entity.dart';
+import '../entities/admin_settlement_entity.dart';
+import '../entities/admin_settlements_summary_entity.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 abstract class AdminRepository {
+  Future<Either<Failure, AdminDashboardEntity>> getAdminDashboard();
+
+  Future<Either<Failure, AdminSettlementEntity>> payAdminSettlement(
+    String settlementId, {
+    String? paymentMethod,
+    String? notes,
+  });
+
+  Future<Either<Failure, AdminSettlementsSummaryResultEntity>> getAdminSettlementsSummary({
+    required int page,
+    required int limit,
+    String? recipientType,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  });
+
+  Future<Either<Failure, AdminSettlementsResultEntity>> getAdminSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? recipientType,
+    String? recipientId,
+    String? order,
+    String? paymentMethod,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  });
   Future<Either<Failure, OrdersResultEntity>> getOrders({required int page, required int limit});
   Future<Either<Failure, OrderEntity>> getOrderDetails(String orderId);
   Future<Either<Failure, AdminUsersResult>> getUsers({required int page, required int limit});
@@ -50,4 +84,20 @@ abstract class AdminRepository {
     required String status,
     String? rejectionReason,
   });
+  Future<Either<Failure, AdminPaymentSettingsEntity>> updatePaymentSettings({
+    required String walletOwnerName,
+    required Map<String, String> walletNumbers,
+    required List<String> activePaymentMethods,
+    required String paymentInstructions,
+  });
+  Future<Either<Failure, AdminPaymentSettingsEntity>> getPaymentSettings();
+  Future<Either<Failure, AdminFinancialSettingsEntity>> updateFinancialSettings({
+    required String commissionType,
+    required double commissionValue,
+    required String delegateFeeType,
+    required double delegateFeeValue,
+    required String currency,
+    required bool isActive,
+  });
+  Future<Either<Failure, AdminFinancialSettingsEntity>> getFinancialSettings();
 }

@@ -344,10 +344,10 @@ class _CenterDetailsScreenState extends State<CenterDetailsScreen> {
   Widget _buildServicesList(List<ServiceEntity> apiServices, double inspectionFee) {
     final List<Map<String, dynamic>> items = [
       {
-        'title': 'رسوم الفحص والتوصيل',
-        'subtitle': 'فحص وتحديد العطل وتسليم الجهاز',
-        'price': '${inspectionFee.toInt()} د.ع',
-        'icon': Icons.search,
+        'title': 'رسوم التوصيل (ذهاب وعودة)',
+        'subtitle': 'توصيل الجهاز من العميل للمركز وإرجاعه (الفحص مجاني)',
+        'price': inspectionFee > 0 ? '${inspectionFee.toInt()} د.ع' : 'رسوم التوصيل',
+        'icon': Icons.local_shipping_outlined,
       }
     ];
 

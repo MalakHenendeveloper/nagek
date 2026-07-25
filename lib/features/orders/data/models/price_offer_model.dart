@@ -24,35 +24,6 @@ class PriceOfferResponseModel {
   }
 }
 
-class SparePartModel {
-  final String id;
-  final String name;
-  final double cost;
-
-  SparePartModel({
-    required this.id,
-    required this.name,
-    required this.cost,
-  });
-
-  factory SparePartModel.fromJson(Map<dynamic, dynamic>? json) {
-    final map = json ?? {};
-    return SparePartModel(
-      id: map['_id'] ?? '',
-      name: map['name'] ?? '',
-      cost: (map['cost'] as num?)?.toDouble() ?? 0.0,
-    );
-  }
-
-  SparePartEntity toEntity() {
-    return SparePartEntity(
-      id: id,
-      name: name,
-      cost: cost,
-    );
-  }
-}
-
 class PriceOfferModel {
   final String id;
   final String orderId;
@@ -62,15 +33,13 @@ class PriceOfferModel {
   final String centerName;
   final String centerPhone;
   final String centerAddress;
-  final List<SparePartModel> spareParts;
-  final double laborCost;
-  final double inspectionFee;
-  final double deliveryFee;
   final double totalCost;
-  final int estimatedDays;
   final String notes;
   final String status;
+  final bool isDeleted;
+  final String? deletedAt;
   final String createdAt;
+  final String updatedAt;
 
   PriceOfferModel({
     required this.id,
@@ -81,41 +50,62 @@ class PriceOfferModel {
     required this.centerName,
     required this.centerPhone,
     required this.centerAddress,
-    required this.spareParts,
-    required this.laborCost,
-    required this.inspectionFee,
-    required this.deliveryFee,
     required this.totalCost,
-    required this.estimatedDays,
     required this.notes,
     required this.status,
+    required this.isDeleted,
+    this.deletedAt,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory PriceOfferModel.fromJson(Map<dynamic, dynamic>? json) {
     final map = json ?? {};
-    final order = map['order'] as Map? ?? {};
-    final repairCenter = map['repairCenter'] as Map? ?? {};
-    final sparePartsList = map['spareParts'] as List<dynamic>? ?? [];
+    final order = map['order'];
+    final repairCenter = map['repairCenter'];
+
+    String orderId = '';
+    String orderStatus = '';
+    String orderNumber = '';
+
+    if (order is Map) {
+      orderId = order['_id'] ?? '';
+      orderStatus = order['status'] ?? '';
+      orderNumber = order['orderNumber'] ?? '';
+    } else if (order is String) {
+      orderId = order;
+    }
+
+    String centerId = '';
+    String centerName = '';
+    String centerPhone = '';
+    String centerAddress = '';
+
+    if (repairCenter is Map) {
+      centerId = repairCenter['_id'] ?? '';
+      centerName = repairCenter['name'] ?? '';
+      centerPhone = repairCenter['phone'] ?? '';
+      centerAddress = repairCenter['address'] ?? '';
+    } else if (repairCenter is String) {
+      centerId = repairCenter;
+    }
 
     return PriceOfferModel(
       id: map['_id'] ?? '',
-      orderId: order['_id'] ?? '',
-      orderStatus: order['status'] ?? '',
-      orderNumber: order['orderNumber'] ?? '',
-      centerId: repairCenter['_id'] ?? '',
-      centerName: repairCenter['name'] ?? '',
-      centerPhone: repairCenter['phone'] ?? '',
-      centerAddress: repairCenter['address'] ?? '',
-      spareParts: sparePartsList.map((e) => SparePartModel.fromJson(e as Map?)).toList(),
-      laborCost: (map['laborCost'] as num?)?.toDouble() ?? 0.0,
-      inspectionFee: (map['inspectionFee'] as num?)?.toDouble() ?? 0.0,
-      deliveryFee: (map['deliveryFee'] as num?)?.toDouble() ?? 0.0,
+      orderId: orderId,
+      orderStatus: orderStatus,
+      orderNumber: orderNumber,
+      centerId: centerId,
+      centerName: centerName,
+      centerPhone: centerPhone,
+      centerAddress: centerAddress,
       totalCost: (map['totalCost'] as num?)?.toDouble() ?? 0.0,
-      estimatedDays: map['estimatedDays'] ?? 0,
       notes: map['notes'] ?? '',
       status: map['status'] ?? 'pending',
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
       createdAt: map['createdAt'] ?? '',
+      updatedAt: map['updatedAt'] ?? '',
     );
   }
 
@@ -129,15 +119,13 @@ class PriceOfferModel {
       centerName: centerName,
       centerPhone: centerPhone,
       centerAddress: centerAddress,
-      spareParts: spareParts.map((e) => e.toEntity()).toList(),
-      laborCost: laborCost,
-      inspectionFee: inspectionFee,
-      deliveryFee: deliveryFee,
       totalCost: totalCost,
-      estimatedDays: estimatedDays,
       notes: notes,
       status: status,
+      isDeleted: isDeleted,
+      deletedAt: deletedAt,
       createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }

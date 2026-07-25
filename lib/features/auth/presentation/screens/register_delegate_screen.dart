@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
+import '../../../../core/services/image_picker_service.dart';
 import '../cubit/register_delegate_cubit.dart';
 import '../cubit/register_delegate_state.dart';
 
@@ -23,7 +24,6 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -41,9 +41,8 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
   Future<void> _pickImage(BuildContext context, String docType) async {
     final cubit = context.read<RegisterDelegateCubit>();
     try {
-      final XFile? pickedFile = await _picker.pickImage(
+      final XFile? pickedFile = await ImagePickerService.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80,
       );
 
       if (pickedFile != null) {

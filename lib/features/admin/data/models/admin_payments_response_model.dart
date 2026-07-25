@@ -45,10 +45,12 @@ class AdminPaymentOrderModel {
     required this.orderNumber,
   });
 
-  factory AdminPaymentOrderModel.fromJson(Map<dynamic, dynamic>? json) {
-    final map = json ?? {};
+  factory AdminPaymentOrderModel.fromJson(dynamic json) {
+    if (json == null) return AdminPaymentOrderModel(id: '', status: '', orderNumber: '');
+    if (json is String) return AdminPaymentOrderModel(id: json, status: '', orderNumber: '');
+    final map = json as Map? ?? {};
     return AdminPaymentOrderModel(
-      id: map['_id'] ?? '',
+      id: map['_id'] ?? map['id'] ?? '',
       status: map['status'] ?? '',
       orderNumber: map['orderNumber'] ?? '',
     );
@@ -74,10 +76,12 @@ class AdminPaymentClientModel {
     required this.phone,
   });
 
-  factory AdminPaymentClientModel.fromJson(Map<dynamic, dynamic>? json) {
-    final map = json ?? {};
+  factory AdminPaymentClientModel.fromJson(dynamic json) {
+    if (json == null) return AdminPaymentClientModel(id: '', name: '', phone: '');
+    if (json is String) return AdminPaymentClientModel(id: json, name: '', phone: '');
+    final map = json as Map? ?? {};
     return AdminPaymentClientModel(
-      id: map['_id'] ?? '',
+      id: map['_id'] ?? map['id'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
     );
@@ -129,9 +133,9 @@ class AdminPaymentModel {
 
   factory AdminPaymentModel.fromJson(Map<dynamic, dynamic> json) {
     return AdminPaymentModel(
-      id: json['_id'] ?? '',
-      order: AdminPaymentOrderModel.fromJson(json['order'] as Map?),
-      client: AdminPaymentClientModel.fromJson(json['client'] as Map?),
+      id: json['_id'] ?? json['id'] ?? '',
+      order: AdminPaymentOrderModel.fromJson(json['order']),
+      client: AdminPaymentClientModel.fromJson(json['client']),
       amount: (json['amount'] ?? 0).toDouble(),
       paymentMethod: json['paymentMethod'] ?? '',
       senderWalletNumber: json['senderWalletNumber'] ?? '',

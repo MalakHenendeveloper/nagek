@@ -11,7 +11,11 @@ class OrderPaymentLoaded extends OrderPaymentState {
   final bool isSubmitting;
   final bool isSubmitted;
 
-  OrderPaymentLoaded(this.details, {this.isSubmitting = false, this.isSubmitted = false});
+  OrderPaymentLoaded(
+    this.details, {
+    this.isSubmitting = false,
+    this.isSubmitted = false,
+  });
 
   OrderPaymentLoaded copyWith({bool? isSubmitting, bool? isSubmitted}) {
     return OrderPaymentLoaded(

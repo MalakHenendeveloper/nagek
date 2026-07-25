@@ -19,4 +19,13 @@ class Routes {
   static const String submitInspectionRoute = '/submit_inspection';
   static const String submitPriceOfferRoute = '/submit_price_offer';
   static const String orderPaymentRoute = '/order_payment';
+  static const String delegateSettlementsRoute = '/delegate_settlements';
+  static const String centerSettlementsRoute = '/center_settlements';
+  static const String adminSettlementsRoute = '/admin_settlements';
+  static const String adminSettlementsSummaryRoute = '/admin_settlements_summary';
+  static const String addCenterServiceRoute = '/add_center_service';
+  static const String centerServicesRoute = '/center_services';
+  static const String centerServiceDetailsRoute = '/center_service_details';
+  static const String editCenterServiceRoute = '/edit_center_service';
+  static const String delegateEarningsRoute = '/delegate_earnings';
 }

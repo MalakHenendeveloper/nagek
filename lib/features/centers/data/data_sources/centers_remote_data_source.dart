@@ -13,10 +13,53 @@ import '../models/center_order_details_response_model.dart';
 import '../models/price_offer_response_model.dart';
 
 import '../models/center_details_response.dart';
+import '../models/center_dashboard_response_model.dart';
+import '../models/center_settlements_response_model.dart';
+import '../models/add_center_service_response_model.dart';
+import '../models/center_service_details_response_model.dart';
+import '../models/update_center_profile_response_model.dart';
 
 import 'package:injectable/injectable.dart';
 
 abstract class CentersRemoteDataSource {
+  Future<UpdateCenterProfileResponseModel> updateCenterProfile({
+    required String name,
+    required String phone,
+    required String email,
+    required String address,
+    String? logoPath,
+  });
+
+  Future<CenterServicesResponseModel> getMyCenterServices();
+
+  Future<CenterServiceDetailsResponseModel> getCenterServiceDetails(String serviceId);
+
+  Future<CenterServiceDetailsResponseModel> updateCenterService({
+    required String serviceId,
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    required bool isAvailable,
+  });
+
+  Future<AddCenterServiceResponseModel> addCenterService({
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    bool isAvailable = true,
+  });
+  Future<CenterDashboardResponseModel> getCenterDashboard();
+
+  Future<CenterSettlementsResponseModel> getCenterSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  });
   Future<CentersResponseModel> getCenters({
     required int page,
     required int limit,
@@ -45,11 +88,7 @@ abstract class CentersRemoteDataSource {
 
   Future<PriceOfferResponseModel> submitPriceOffer({
     required String orderId,
-    required List<Map<String, dynamic>> spareParts,
-    required double laborCost,
-    required double inspectionFee,
-    required double deliveryFee,
-    required int estimatedDays,
+    required double totalCost,
     required String notes,
   });
 
@@ -96,7 +135,7 @@ class CentersRemoteDataSourceImpl implements CentersRemoteDataSource {
   @override
   Future<CenterServicesResponseModel> getCenterServices(String centerId) async {
     final response = await _apiManager.getDate(
-      '${Endpoints.centerServices}$centerId/services',
+      '${Endpoints.centerDetailsServices}$centerId/services',
     );
 
     if (response.data != null) {
@@ -199,21 +238,13 @@ class CentersRemoteDataSourceImpl implements CentersRemoteDataSource {
   @override
   Future<PriceOfferResponseModel> submitPriceOffer({
     required String orderId,
-    required List<Map<String, dynamic>> spareParts,
-    required double laborCost,
-    required double inspectionFee,
-    required double deliveryFee,
-    required int estimatedDays,
+    required double totalCost,
     required String notes,
   }) async {
     final response = await _apiManager.PostDate(
       '${Endpoints.centerDashboardPriceOffer}$orderId/price-offer',
       body: {
-        'spareParts': spareParts,
-        'laborCost': laborCost,
-        'inspectionFee': inspectionFee,
-        'deliveryFee': deliveryFee,
-        'estimatedDays': estimatedDays,
+        'totalCost': totalCost,
         'notes': notes,
       },
     );
@@ -244,6 +275,149 @@ class CentersRemoteDataSourceImpl implements CentersRemoteDataSource {
     } else {
       final msg = response.data?['message'] ?? 'فشل في تحديث حالة الطلب';
       throw Exception(msg);
+    }
+  }
+
+  @override
+  Future<CenterDashboardResponseModel> getCenterDashboard() async {
+    final response = await _apiManager.getDate(Endpoints.centerDashboard);
+    if (response.data != null) {
+      return CenterDashboardResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب لوحة إحصائيات مركز الصيانة');
+    }
+  }
+
+  @override
+  Future<CenterSettlementsResponseModel> getCenterSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  }) async {
+    String url = '${Endpoints.centerSettlements}?page=$page&limit=$limit';
+    if (status != null && status.isNotEmpty && status != 'all') {
+      url += '&status=$status';
+    }
+    if (dateFrom != null && dateFrom.isNotEmpty) {
+      url += '&dateFrom=$dateFrom';
+    }
+    if (dateTo != null && dateTo.isNotEmpty) {
+      url += '&dateTo=$dateTo';
+    }
+    if (sort != null && sort.isNotEmpty) {
+      url += '&sort=$sort';
+    }
+    final response = await _apiManager.getDate(url);
+    if (response.data != null) {
+      return CenterSettlementsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب تسويات مركز الصيانة');
+    }
+  }
+
+  @override
+  Future<AddCenterServiceResponseModel> addCenterService({
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    bool isAvailable = true,
+  }) async {
+    final response = await _apiManager.PostDate(
+      Endpoints.centerServices,
+      body: {
+        'serviceName': serviceName,
+        'description': description,
+        'price': price,
+        'estimatedTime': estimatedTime,
+        'isAvailable': isAvailable,
+      },
+    );
+    if (response.data != null) {
+      return AddCenterServiceResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في إضافة الخدمة');
+    }
+  }
+
+  @override
+  Future<CenterServicesResponseModel> getMyCenterServices() async {
+    final response = await _apiManager.getDate(Endpoints.centerServices);
+    if (response.data != null) {
+      return CenterServicesResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب خدمات مركز الصيانة');
+    }
+  }
+
+  @override
+  Future<CenterServiceDetailsResponseModel> getCenterServiceDetails(String serviceId) async {
+    final response = await _apiManager.getDate(
+      Endpoints.centerServiceDetails(serviceId),
+    );
+    if (response.data != null) {
+      return CenterServiceDetailsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب تفاصيل الخدمة');
+    }
+  }
+
+  @override
+  Future<CenterServiceDetailsResponseModel> updateCenterService({
+    required String serviceId,
+    required String serviceName,
+    required String description,
+    required double price,
+    required String estimatedTime,
+    required bool isAvailable,
+  }) async {
+    final response = await _apiManager.UpdateData(
+      Endpoints.centerServiceDetails(serviceId),
+      body: {
+        'serviceName': serviceName,
+        'description': description,
+        'price': price,
+        'estimatedTime': estimatedTime,
+        'isAvailable': isAvailable,
+      },
+    );
+    if (response.data != null) {
+      return CenterServiceDetailsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث الخدمة');
+    }
+  }
+
+  @override
+  Future<UpdateCenterProfileResponseModel> updateCenterProfile({
+    required String name,
+    required String phone,
+    required String email,
+    required String address,
+    String? logoPath,
+  }) async {
+    final formData = FormData();
+    formData.fields.add(MapEntry('name', name));
+    formData.fields.add(MapEntry('phone', phone));
+    formData.fields.add(MapEntry('email', email));
+    formData.fields.add(MapEntry('address', address));
+
+    if (logoPath != null && logoPath.isNotEmpty) {
+      formData.files.add(MapEntry('logo', await _getMultipartFile(logoPath)));
+    }
+
+    final response = await _apiManager.PutFormData(
+      Endpoints.centerDashboardProfile,
+      formData: formData,
+    );
+
+    if (response.data != null) {
+      return UpdateCenterProfileResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث ملف مركز الصيانة');
     }
   }
 }

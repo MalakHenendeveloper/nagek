@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'core/di/di.dart';
 import 'core/routes_manager/route_generator.dart';
 import 'core/storage/secure_storage_service.dart';
+import 'core/widgets/network_status_listener.dart';
 import 'splash_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/home/presentation/screens/client_home.dart';
@@ -43,6 +44,9 @@ class MyApp extends StatelessWidget {
         Locale('ar', 'SA'), // Arabic
       ],
       locale: const Locale('ar', 'SA'), // Force Arabic RTL
+      builder: (context, child) => NetworkStatusListener(
+        child: child ?? const SizedBox.shrink(),
+      ),
       onGenerateRoute: RouteGenerator.getRoute,
       home: const AppNavigator(),
     );

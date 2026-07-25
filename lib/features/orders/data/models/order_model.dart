@@ -20,9 +20,9 @@ class DeviceModel {
   factory DeviceModel.fromJson(Map<dynamic, dynamic>? json) {
     final map = json ?? {};
     return DeviceModel(
-      type: map['type'] ?? '',
-      brand: map['brand'] ?? '',
-      model: map['model'] ?? '',
+      type: map['type'] ?? map['deviceType'] ?? '',
+      brand: map['brand'] ?? map['deviceBrand'] ?? '',
+      model: map['model'] ?? map['deviceModel'] ?? '',
       problemType: map['problemType'] ?? '',
       problemDescription: map['problemDescription'] ?? '',
       images: List<String>.from(map['images'] ?? []),
@@ -71,21 +71,34 @@ class FeesModel {
   final double delivery;
   final double repair;
   final double total;
+  final double delegateFeeValue;
 
   FeesModel({
     required this.inspection,
     required this.delivery,
     required this.repair,
     required this.total,
+    this.delegateFeeValue = 0.0,
   });
 
-  factory FeesModel.fromJson(Map<dynamic, dynamic>? json) {
+  factory FeesModel.fromJson(Map<dynamic, dynamic>? json, {double? rootDelegateFeeValue, double? rootRepairCost}) {
     final map = json ?? {};
+    // fees-level delegateFeeValue (rarely set, usually 0)
+    final feeLevelVal = (map['delegateFeeValue'] is num && (map['delegateFeeValue'] as num) > 0)
+        ? (map['delegateFeeValue'] as num).toDouble()
+        : (map['delegateFee'] is num && (map['delegateFee'] as num) > 0)
+            ? (map['delegateFee'] as num).toDouble()
+            : null;
+    final feeVal = feeLevelVal ?? rootDelegateFeeValue ?? 0.0;
+    final repairVal = (map['repair'] is num && (map['repair'] as num) > 0)
+        ? (map['repair'] as num).toDouble()
+        : rootRepairCost ?? 0.0;
     return FeesModel(
       inspection: (map['inspection'] ?? 0.0).toDouble(),
       delivery: (map['delivery'] ?? 0.0).toDouble(),
-      repair: (map['repair'] ?? 0.0).toDouble(),
+      repair: repairVal,
       total: (map['total'] ?? 0.0).toDouble(),
+      delegateFeeValue: feeVal,
     );
   }
 
@@ -95,6 +108,7 @@ class FeesModel {
       delivery: delivery,
       repair: repair,
       total: total,
+      delegateFeeValue: delegateFeeValue,
     );
   }
 }
@@ -113,6 +127,14 @@ class RepairCenterModel {
   });
 
   factory RepairCenterModel.fromJson(dynamic json) {
+    if (json == null) {
+      return RepairCenterModel(
+        id: '',
+        name: '',
+        phone: '',
+        address: '',
+      );
+    }
     if (json is String) {
       return RepairCenterModel(
         id: json,
@@ -123,10 +145,10 @@ class RepairCenterModel {
     } 
     final map = json as Map? ?? {};
     return RepairCenterModel(
-      id: map['_id'] ?? '',
-      name: map['name'] ?? '',
-      phone: map['phone'] ?? '',
-      address: map['address'] ?? '',
+      id: map['_id'] ?? map['id'] ?? map['repairCenterId'] ?? '',
+      name: map['name'] ?? map['repairCenterName'] ?? '',
+      phone: map['phone'] ?? map['repairCenterPhone'] ?? '',
+      address: map['address'] ?? map['repairCenterAddress'] ?? '',
     );
   }
 
@@ -157,12 +179,20 @@ class StatusHistoryModel {
 
   factory StatusHistoryModel.fromJson(Map<dynamic, dynamic>? json) {
     final map = json ?? {};
+    final updatedByVal = map['updatedBy'];
+    String updatedByStr = '';
+    if (updatedByVal is Map) {
+      updatedByStr = (updatedByVal['name'] ?? updatedByVal['_id'] ?? '').toString();
+    } else if (updatedByVal != null) {
+      updatedByStr = updatedByVal.toString();
+    }
+
     return StatusHistoryModel(
       status: map['status'] ?? '',
-      note: map['note'] ?? '',
-      updatedBy: map['updatedBy'] ?? '',
-      timestamp: map['timestamp'] ?? '',
-      id: map['_id'] ?? '',
+      note: map['note'] ?? map['notes'] ?? '',
+      updatedBy: updatedByStr,
+      timestamp: map['timestamp'] ?? map['createdAt'] ?? '',
+      id: map['_id'] ?? map['id'] ?? '',
     );
   }
 
@@ -199,10 +229,10 @@ class OrderClientModel {
     }
     final map = json as Map? ?? {};
     return OrderClientModel(
-      id: map['_id'] ?? '',
-      name: map['name'] ?? '',
-      phone: map['phone'] ?? '',
-      email: map['email'] ?? '',
+      id: map['_id'] ?? map['id'] ?? map['clientId'] ?? '',
+      name: map['name'] ?? map['clientName'] ?? '',
+      phone: map['phone'] ?? map['clientPhone'] ?? '',
+      email: map['email'] ?? map['clientEmail'] ?? '',
     );
   }
 
@@ -212,6 +242,124 @@ class OrderClientModel {
       name: name,
       phone: phone,
       email: email,
+    );
+  }
+}
+
+class OrderDelegateModel {
+  final String id;
+  final String name;
+  final String phone;
+
+  OrderDelegateModel({
+    required this.id,
+    required this.name,
+    required this.phone,
+  });
+
+  factory OrderDelegateModel.fromJson(dynamic json) {
+    if (json == null) {
+      return OrderDelegateModel(id: '', name: '', phone: '');
+    }
+    if (json is String) {
+      return OrderDelegateModel(id: json, name: '', phone: '');
+    }
+    final map = json as Map? ?? {};
+    return OrderDelegateModel(
+      id: map['_id'] ?? map['id'] ?? map['delegateId'] ?? '',
+      name: map['name'] ?? map['assignedDelegateName'] ?? map['pickupDelegateName'] ?? map['deliveryDelegateName'] ?? '',
+      phone: map['phone'] ?? map['assignedDelegatePhone'] ?? map['pickupDelegatePhone'] ?? map['deliveryDelegatePhone'] ?? '',
+    );
+  }
+
+  OrderDelegateEntity toEntity() {
+    return OrderDelegateEntity(
+      id: id,
+      name: name,
+      phone: phone,
+    );
+  }
+}
+
+class FinancialSnapshotModel {
+  final double repairAmount;
+  final double inspectionFee;
+  final double deliveryFee;
+  final double clientTotal;
+  final double adminCommission;
+  final double delegateFee;
+  final double centerAmount;
+  final String currency;
+
+  FinancialSnapshotModel({
+    required this.repairAmount,
+    required this.inspectionFee,
+    required this.deliveryFee,
+    required this.clientTotal,
+    required this.adminCommission,
+    required this.delegateFee,
+    required this.centerAmount,
+    required this.currency,
+  });
+
+  factory FinancialSnapshotModel.fromJson(Map<dynamic, dynamic>? json) {
+    final map = json ?? {};
+    final pFee = (map['pickupFee'] ?? map['inspectionFee'] ?? 0.0).toDouble();
+    return FinancialSnapshotModel(
+      repairAmount: (map['repairAmount'] ?? 0.0).toDouble(),
+      inspectionFee: pFee,
+      deliveryFee: (map['deliveryFee'] ?? 0.0).toDouble(),
+      clientTotal: (map['clientTotal'] ?? 0.0).toDouble(),
+      adminCommission: (map['adminCommission'] ?? 0.0).toDouble(),
+      delegateFee: (map['delegateFee'] ?? 0.0).toDouble(),
+      centerAmount: (map['centerAmount'] ?? 0.0).toDouble(),
+      currency: map['currency'] ?? 'IQD',
+    );
+  }
+
+  FinancialSnapshotEntity toEntity() {
+    return FinancialSnapshotEntity(
+      repairAmount: repairAmount,
+      inspectionFee: inspectionFee,
+      deliveryFee: deliveryFee,
+      clientTotal: clientTotal,
+      adminCommission: adminCommission,
+      delegateFee: delegateFee,
+      centerAmount: centerAmount,
+      currency: currency,
+    );
+  }
+}
+
+class DelegatePhotosModel {
+  final List<String> atPickup;
+  final List<String> atCenterDrop;
+  final List<String> atCenterPickup;
+  final List<String> atDelivery;
+
+  DelegatePhotosModel({
+    required this.atPickup,
+    required this.atCenterDrop,
+    required this.atCenterPickup,
+    required this.atDelivery,
+  });
+
+  factory DelegatePhotosModel.fromJson(Map<dynamic, dynamic>? json) {
+    final map = json ?? {};
+    return DelegatePhotosModel(
+      atPickup: List<String>.from(map['atPickup'] ?? []),
+      atCenterDrop: List<String>.from(map['atCenterDrop'] ?? []),
+      atCenterPickup: List<String>.from(map['atCenterPickup'] ?? []),
+      atDelivery: List<String>.from(map['atDelivery'] ?? []),
+    );
+  }
+
+  DelegatePhotosEntity toEntity() {
+    return DelegatePhotosEntity(
+      atPickup: atPickup,
+      atCenterDrop: atCenterDrop,
+      atCenterPickup: atCenterPickup,
+      atDelivery: atDelivery,
     );
   }
 }
@@ -233,6 +381,11 @@ class OrderModel {
   final String? clientApprovalStatus;
   final String? clientApprovalTimestamp;
   final OrderClientModel? client;
+  final OrderDelegateModel? delegate;
+  final OrderDelegateModel? pickupDelegate;
+  final OrderDelegateModel? deliveryDelegate;
+  final FinancialSnapshotModel? financialSnapshot;
+  final DelegatePhotosModel? delegatePhotos;
 
   OrderModel({
     required this.id,
@@ -251,24 +404,64 @@ class OrderModel {
     this.clientApprovalStatus,
     this.clientApprovalTimestamp,
     this.client,
+    this.delegate,
+    this.pickupDelegate,
+    this.deliveryDelegate,
+    this.financialSnapshot,
+    this.delegatePhotos,
   });
 
-  factory OrderModel.fromJson(Map<dynamic, dynamic>? json) {
+  factory OrderModel.fromJson(Map<dynamic, dynamic>? json, {double? rootDelegateFeeValue}) {
     final map = json ?? {};
     final historyList = map['statusHistory'] as List<dynamic>? ?? [];
     final pickupOTP = map['pickupOTP'] as Map? ?? {};
     final deliveryOTP = map['deliveryOTP'] as Map? ?? {};
     final clientApproval = map['clientApproval'] as Map? ?? {};
 
+    final clientData = map['client'] ?? (map.containsKey('clientName') && map['clientName'].toString().isNotEmpty ? map : null);
+
+    final pickupDelegateData = map['pickupDelegate'] ?? (map.containsKey('pickupDelegateName') && map['pickupDelegateName'].toString().isNotEmpty ? {
+      'name': map['pickupDelegateName'],
+      'phone': map['pickupDelegatePhone'] ?? map['assignedDelegatePhone'] ?? '',
+    } : null);
+
+    final deliveryDelegateData = map['deliveryDelegate'] ?? (map.containsKey('deliveryDelegateName') && map['deliveryDelegateName'].toString().isNotEmpty ? {
+      'name': map['deliveryDelegateName'],
+      'phone': map['deliveryDelegatePhone'] ?? map['assignedDelegatePhone'] ?? '',
+    } : null);
+
+    final delegateData = map['delegate'] ?? pickupDelegateData ?? deliveryDelegateData ??
+        (map.containsKey('assignedDelegateName') && map['assignedDelegateName'].toString().isNotEmpty ? {
+          'name': map['assignedDelegateName'],
+          'phone': map['assignedDelegatePhone'] ?? '',
+        } : null);
+
+    final deviceData = map['device'] ?? (map.containsKey('deviceBrand') || map.containsKey('deviceType') ? map : null);
+    final centerData = map['repairCenter'] ?? (map.containsKey('repairCenterName') ? map : null);
+
+    final finView = map['financialView'] as Map?;
+    final double? finRepairCost = finView != null
+        ? ((finView['repairCost'] is num) ? (finView['repairCost'] as num).toDouble() : null)
+        : null;
+
+    // Priority: rootDelegateFeeValue (from parent data) > map['delegateFeeValue'] > map['delegateFee']
+    final double? resolvedDelegateFee = rootDelegateFeeValue ??
+        ((map['delegateFeeValue'] is num) ? (map['delegateFeeValue'] as num).toDouble() : null) ??
+        ((map['delegateFee'] is num) ? (map['delegateFee'] as num).toDouble() : null);
+
     return OrderModel(
-      id: map['_id'] ?? '',
+      id: map['_id'] ?? map['id'] ?? map['orderId'] ?? '',
       orderNumber: map['orderNumber'] ?? '',
       status: map['status'] ?? '',
       paymentStatus: map['paymentStatus'] ?? '',
-      device: DeviceModel.fromJson(map['device'] as Map?),
-      fees: FeesModel.fromJson(map['fees'] as Map?),
+      device: DeviceModel.fromJson(deviceData as Map?),
+      fees: FeesModel.fromJson(
+        map['fees'] as Map?,
+        rootDelegateFeeValue: resolvedDelegateFee,
+        rootRepairCost: finRepairCost,
+      ),
       pickupAddress: PickupAddressModel.fromJson(map['pickupAddress'] as Map?),
-      repairCenter: RepairCenterModel.fromJson(map['repairCenter']),
+      repairCenter: RepairCenterModel.fromJson(centerData),
       statusHistory: historyList.map((e) => StatusHistoryModel.fromJson(e as Map?)).toList(),
       createdAt: map['createdAt'] ?? '',
       updatedAt: map['updatedAt'] ?? '',
@@ -276,7 +469,12 @@ class OrderModel {
       deliveryOTPVerified: deliveryOTP['verified'] ?? false,
       clientApprovalStatus: clientApproval['status'],
       clientApprovalTimestamp: clientApproval['timestamp'],
-      client: map['client'] != null ? OrderClientModel.fromJson(map['client']) : null,
+      client: clientData != null ? OrderClientModel.fromJson(clientData) : null,
+      delegate: delegateData != null ? OrderDelegateModel.fromJson(delegateData) : null,
+      pickupDelegate: pickupDelegateData != null ? OrderDelegateModel.fromJson(pickupDelegateData) : null,
+      deliveryDelegate: deliveryDelegateData != null ? OrderDelegateModel.fromJson(deliveryDelegateData) : null,
+      financialSnapshot: map['financialSnapshot'] != null ? FinancialSnapshotModel.fromJson(map['financialSnapshot'] as Map?) : null,
+      delegatePhotos: map['delegatePhotos'] != null ? DelegatePhotosModel.fromJson(map['delegatePhotos'] as Map?) : null,
     );
   }
 
@@ -298,6 +496,11 @@ class OrderModel {
       clientApprovalStatus: clientApprovalStatus,
       clientApprovalTimestamp: clientApprovalTimestamp,
       client: client?.toEntity(),
+      delegate: delegate?.toEntity(),
+      pickupDelegate: pickupDelegate?.toEntity(),
+      deliveryDelegate: deliveryDelegate?.toEntity(),
+      financialSnapshot: financialSnapshot?.toEntity(),
+      delegatePhotos: delegatePhotos?.toEntity(),
     );
   }
 }

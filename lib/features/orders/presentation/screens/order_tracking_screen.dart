@@ -35,7 +35,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     'repairing',
     'repaired',
     'returning',
-    'delivered'
+    'delivered',
   ];
 
   @override
@@ -87,11 +87,23 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     try {
       final date = DateTime.parse(isoString);
       final months = [
-        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        'يناير',
+        'فبراير',
+        'مارس',
+        'أبريل',
+        'مايو',
+        'يونيو',
+        'يوليو',
+        'أغسطس',
+        'سبتمبر',
+        'أكتوبر',
+        'نوفمبر',
+        'ديسمبر',
       ];
       final isPm = date.hour >= 12;
-      final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+      final hour = date.hour > 12
+          ? date.hour - 12
+          : (date.hour == 0 ? 12 : date.hour);
       final minute = date.minute.toString().padLeft(2, '0');
       final period = isPm ? 'م' : 'ص';
       return '${date.day} ${months[date.month - 1]}، $hour:$minute $period';
@@ -126,11 +138,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
           textDirection: TextDirection.rtl,
           child: BlocBuilder<OrderTrackingCubit, OrderTrackingState>(
             builder: (context, state) {
-              if (state is OrderTrackingLoading || state is OrderTrackingInitial) {
+              if (state is OrderTrackingLoading ||
+                  state is OrderTrackingInitial) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFFFC107),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFFFFC107)),
                 );
               } else if (state is OrderTrackingError) {
                 return Center(
@@ -147,16 +158,24 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
                 // Adjust stages if order is rejected or cancelled
                 List<String> activeStages = List.from(_stages);
-                if (tracking.status == 'rejected' || order.status == 'rejected') {
+                if (tracking.status == 'rejected' ||
+                    order.status == 'rejected') {
                   activeStages.remove('approved');
-                  activeStages.insert(activeStages.indexOf('awaiting_approval') + 1, 'rejected');
+                  activeStages.insert(
+                    activeStages.indexOf('awaiting_approval') + 1,
+                    'rejected',
+                  );
                 }
-                if (tracking.status == 'cancelled' || order.status == 'cancelled') {
+                if (tracking.status == 'cancelled' ||
+                    order.status == 'cancelled') {
                   activeStages.add('cancelled');
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -174,7 +193,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black12,
                                     borderRadius: BorderRadius.circular(20),
@@ -211,7 +233,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                const Icon(Icons.build_circle_outlined, color: Colors.black),
+                                const Icon(
+                                  Icons.build_circle_outlined,
+                                  color: Colors.black,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'الحالة الحالية: ${_getStageTitle(tracking.status)}',
@@ -222,7 +247,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                   ),
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -234,12 +259,19 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                           decoration: BoxDecoration(
                             color: Colors.orange.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 1.5),
+                            border: Border.all(
+                              color: Colors.orange.withValues(alpha: 0.5),
+                              width: 1.5,
+                            ),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 26),
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orange,
+                                size: 26,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -276,12 +308,26 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            _buildInfoRow('نوع الجهاز:', _translateDeviceType(order.device.type)),
-                            _buildInfoRow('الماركة والموديل:', '${order.device.brand} ${order.device.model}'),
-                            _buildInfoRow('نوع المشكلة:', _translateProblemType(order.device.problemType)),
-                            _buildInfoRow('وصف المشكلة:', order.device.problemDescription.isNotEmpty ? order.device.problemDescription : 'لا يوجد وصف'),
+                            _buildInfoRow(
+                              'نوع الجهاز:',
+                              _translateDeviceType(order.device.type),
+                            ),
+                            _buildInfoRow(
+                              'الماركة والموديل:',
+                              '${order.device.brand} ${order.device.model}',
+                            ),
+                            _buildInfoRow(
+                              'نوع المشكلة:',
+                              _translateProblemType(order.device.problemType),
+                            ),
+                            _buildInfoRow(
+                              'وصف المشكلة:',
+                              order.device.problemDescription.isNotEmpty
+                                  ? order.device.problemDescription
+                                  : 'لا يوجد وصف',
+                            ),
                             const Divider(color: Colors.white12, height: 24),
-                            
+
                             Text(
                               'عنوان الاستلام والتوصيل',
                               style: GoogleFonts.cairo(
@@ -292,7 +338,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow('المدينة:', order.pickupAddress.city),
-                            _buildInfoRow('العنوان:', order.pickupAddress.address),
+                            _buildInfoRow(
+                              'العنوان:',
+                              order.pickupAddress.address,
+                            ),
                             const Divider(color: Colors.white12, height: 24),
 
                             Text(
@@ -304,9 +353,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            _buildInfoRow('اسم المركز:', order.repairCenter.name),
-                            _buildInfoRow('عنوان المركز:', order.repairCenter.address),
-
+                            _buildInfoRow(
+                              'اسم المركز:',
+                              order.repairCenter.name,
+                            ),
+                            _buildInfoRow(
+                              'عنوان المركز:',
+                              order.repairCenter.address,
+                            ),
 
                             if (order.clientApprovalStatus != null) ...[
                               const Divider(color: Colors.white12, height: 24),
@@ -320,13 +374,20 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                               ),
                               const SizedBox(height: 8),
                               _buildInfoRow(
-                                'حالة الاعتماد:', 
-                                order.clientApprovalStatus == 'approved' 
-                                    ? 'تمت الموافقة من قبلك' 
-                                    : (order.clientApprovalStatus == 'rejected' ? 'تم الرفض' : 'قيد الانتظار')
+                                'حالة الاعتماد:',
+                                order.clientApprovalStatus == 'approved'
+                                    ? 'تمت الموافقة من قبلك'
+                                    : (order.clientApprovalStatus == 'rejected'
+                                          ? 'تم الرفض'
+                                          : 'قيد الانتظار'),
                               ),
                               if (order.clientApprovalTimestamp != null)
-                                _buildInfoRow('تاريخ الاعتماد:', _formatDateTime(order.clientApprovalTimestamp!)),
+                                _buildInfoRow(
+                                  'تاريخ الاعتماد:',
+                                  _formatDateTime(
+                                    order.clientApprovalTimestamp!,
+                                  ),
+                                ),
                             ],
                           ],
                         ),
@@ -335,7 +396,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                       // Fees & Payment Status Section
                       const SizedBox(height: 16),
                       priceOffer != null
-                          ? _buildPriceOfferCard(priceOffer, order.paymentStatus)
+                          ? _buildPriceOfferCard(priceOffer, order)
                           : _buildStandardFeesCard(order),
 
                       // Inspection Report Card (only if inspection exists)
@@ -366,23 +427,36 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                 });
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFC107).withValues(alpha: 0.15),
+                                  color: const Color(
+                                    0xFFFFC107,
+                                  ).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                    color: const Color(
+                                      0xFFFFC107,
+                                    ).withValues(alpha: 0.3),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      _isStepperExpanded ? Icons.expand_less : Icons.expand_more,
+                                      _isStepperExpanded
+                                          ? Icons.expand_less
+                                          : Icons.expand_more,
                                       color: const Color(0xFFFFC107),
                                       size: 18,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _isStepperExpanded ? 'عرض أقل' : 'عرض الكل',
+                                      _isStepperExpanded
+                                          ? 'عرض أقل'
+                                          : 'عرض الكل',
                                       style: GoogleFonts.cairo(
                                         color: const Color(0xFFFFC107),
                                         fontSize: 12,
@@ -402,42 +476,62 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                         // Determine which stages to show
                         List<int> visibleIndices;
                         if (_isStepperExpanded || activeStages.length <= 4) {
-                          visibleIndices = List.generate(activeStages.length, (i) => i);
+                          visibleIndices = List.generate(
+                            activeStages.length,
+                            (i) => i,
+                          );
                         } else {
                           // Find the current active stage index
                           int currentActiveIdx = activeStages.indexWhere(
-                            (s) => s.toLowerCase() == tracking.status.toLowerCase(),
+                            (s) =>
+                                s.toLowerCase() ==
+                                tracking.status.toLowerCase(),
                           );
                           if (currentActiveIdx == -1) currentActiveIdx = 0;
 
                           // Show: first stage, current-1, current, current+1 (unique, sorted)
                           final Set<int> indices = {0};
-                          if (currentActiveIdx > 0) indices.add(currentActiveIdx - 1);
+                          if (currentActiveIdx > 0) {
+                            indices.add(currentActiveIdx - 1);
+                          }
                           indices.add(currentActiveIdx);
-                          if (currentActiveIdx + 1 < activeStages.length) indices.add(currentActiveIdx + 1);
+                          if (currentActiveIdx + 1 < activeStages.length) {
+                            indices.add(currentActiveIdx + 1);
+                          }
                           visibleIndices = indices.toList()..sort();
                         }
 
                         return List.generate(visibleIndices.length, (vi) {
                           final index = visibleIndices[vi];
                           final stage = activeStages[index];
-                          final isAwaitingApproval = stage == 'awaiting_approval';
+                          final isAwaitingApproval =
+                              stage == 'awaiting_approval';
                           final isLastVisible = vi == visibleIndices.length - 1;
 
                           // Check if there's a gap between this and next visible index
-                          final bool hasGapAfter = !isLastVisible && visibleIndices[vi + 1] != index + 1;
+                          final bool hasGapAfter =
+                              !isLastVisible &&
+                              visibleIndices[vi + 1] != index + 1;
 
                           // Find status update in history
-                          final historyIndex = tracking.statusHistory.indexWhere(
-                              (element) => element.status.toLowerCase() == stage.toLowerCase());
+                          final historyIndex = tracking.statusHistory
+                              .indexWhere(
+                                (element) =>
+                                    element.status.toLowerCase() ==
+                                    stage.toLowerCase(),
+                              );
                           final hasCompleted = historyIndex != -1;
 
                           // Check if it's the current active stage
-                          final isActive = tracking.status.toLowerCase() == stage.toLowerCase();
+                          final isActive =
+                              tracking.status.toLowerCase() ==
+                              stage.toLowerCase();
 
                           String timestamp = '';
                           if (hasCompleted) {
-                            timestamp = _formatDateTime(tracking.statusHistory[historyIndex].timestamp);
+                            timestamp = _formatDateTime(
+                              tracking.statusHistory[historyIndex].timestamp,
+                            );
                           }
 
                           // Stepper color configurations
@@ -461,7 +555,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                           shape: BoxShape.circle,
                                           color: isActive
                                               ? const Color(0xFFFFC107)
-                                              : (hasCompleted ? const Color(0xFFFFC107) : Colors.transparent),
+                                              : (hasCompleted
+                                                    ? const Color(0xFFFFC107)
+                                                    : Colors.transparent),
                                           border: Border.all(
                                             color: stepColor,
                                             width: 2,
@@ -469,24 +565,35 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                         ),
                                         child: Center(
                                           child: hasCompleted
-                                              ? const Icon(Icons.check, size: 14, color: Colors.black)
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  size: 14,
+                                                  color: Colors.black,
+                                                )
                                               : (isActive
-                                                  ? Container(
-                                                      width: 8,
-                                                      height: 8,
-                                                      decoration: const BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color: Colors.black,
-                                                      ),
-                                                    )
-                                                  : null),
+                                                    ? Container(
+                                                        width: 8,
+                                                        height: 8,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                      )
+                                                    : null),
                                         ),
                                       ),
                                       if (!isLastVisible)
                                         Container(
                                           width: 2,
-                                          height: isAwaitingApproval && isActive ? 120 : 50,
-                                          color: hasCompleted ? const Color(0xFFFFC107) : Colors.grey[800],
+                                          height: isAwaitingApproval && isActive
+                                              ? 120
+                                              : 50,
+                                          color: hasCompleted
+                                              ? const Color(0xFFFFC107)
+                                              : Colors.grey[800],
                                         ),
                                     ],
                                   ),
@@ -495,17 +602,23 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                   // Content Details column
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           _getStageTitle(stage),
                                           style: GoogleFonts.cairo(
-                                            color: hasCompleted || isActive ? Colors.white : Colors.grey[600],
-                                            fontWeight: hasCompleted || isActive ? FontWeight.bold : FontWeight.normal,
+                                            color: hasCompleted || isActive
+                                                ? Colors.white
+                                                : Colors.grey[600],
+                                            fontWeight: hasCompleted || isActive
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
                                             fontSize: 14,
                                           ),
                                         ),
-                                        if (hasCompleted && timestamp.isNotEmpty)
+                                        if (hasCompleted &&
+                                            timestamp.isNotEmpty)
                                           Text(
                                             timestamp,
                                             style: GoogleFonts.cairo(
@@ -521,11 +634,16 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                             padding: const EdgeInsets.all(12),
                                             decoration: BoxDecoration(
                                               color: Colors.grey[900],
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: const Color(0xFFFFC107), width: 1),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFFFFC107),
+                                                width: 1,
+                                              ),
                                             ),
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
                                               children: [
                                                 Text(
                                                   'يرجى مراجعة تكلفة وطلب الصيانة بالتفصيل للموافقة للبدء بالإصلاح:',
@@ -536,178 +654,303 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                                 ),
                                                 const SizedBox(height: 8),
                                                 if (priceOffer != null) ...[
-                                                  if (priceOffer.spareParts.isNotEmpty) ...[
-                                                    Text(
-                                                      'قطع الغيار:',
-                                                      style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold),
+                                                  if (priceOffer
+                                                      .notes
+                                                      .isNotEmpty) ...[
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'ملاحظات المركز:',
+                                                          style:
+                                                              GoogleFonts.cairo(
+                                                                color:
+                                                                    Colors.grey,
+                                                                fontSize: 11,
+                                                              ),
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            priceOffer.notes,
+                                                            style:
+                                                                GoogleFonts.cairo(
+                                                                  color: Colors
+                                                                      .white70,
+                                                                  fontSize: 11,
+                                                                ),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    ...priceOffer.spareParts.map((part) =>
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          Text('• ${part.name}', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                          Text('${part.cost.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                        ],
-                                                      )
+                                                    const Divider(
+                                                      color: Colors.white12,
                                                     ),
-                                                    const Divider(color: Colors.white12),
                                                   ],
                                                   Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
                                                     children: [
-                                                      Text('أجور اليد:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.laborCost.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('رسوم الفحص:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.inspectionFee.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('رسوم التوصيل:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.deliveryFee.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('المدة المتوقعة:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${priceOffer.estimatedDays} أيام', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  const Divider(color: Colors.white12),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('الإجمالي:', style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      Text('${priceOffer.totalCost.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
+                                                      Text(
+                                                        'الإجمالي شامل التوصيل:',
+                                                        style:
+                                                            GoogleFonts.cairo(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        '${((order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0) ? order.financialSnapshot!.clientTotal : (order.fees.total > 0 ? order.fees.total : (priceOffer.totalCost + (order.fees.delivery > 0 ? order.fees.delivery : (order.fees.inspection > 0 ? order.fees.inspection : 1000))))).toInt()} د.ع',
+                                                        style:
+                                                            GoogleFonts.cairo(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFFFFC107,
+                                                                  ),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 13,
+                                                            ),
+                                                      ),
                                                     ],
                                                   ),
                                                 ] else ...[
-                                                  // Fallback to order fees
                                                   Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
                                                     children: [
-                                                      Text('رسوم الفحص:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.inspection.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('تكلفة التوصيل:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.delivery.toInt()} د.ع', style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('تكلفة الإصلاح المقدرة:', style: GoogleFonts.cairo(color: Colors.grey, fontSize: 11)),
-                                                      Text('${order.fees.repair.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontSize: 11)),
-                                                    ],
-                                                  ),
-                                                  const Divider(color: Colors.white12),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Text('الإجمالي المالي:', style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      Text('${order.fees.total.toInt()} د.ع', style: GoogleFonts.cairo(color: const Color(0xFFFFC107), fontWeight: FontWeight.bold, fontSize: 13)),
+                                                      Text(
+                                                        'الإجمالي المالي:',
+                                                        style:
+                                                            GoogleFonts.cairo(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        '${order.fees.total.toInt()} د.ع',
+                                                        style:
+                                                            GoogleFonts.cairo(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFFFFC107,
+                                                                  ),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 13,
+                                                            ),
+                                                      ),
                                                     ],
                                                   ),
                                                 ],
+                                                const SizedBox(height: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0xFFFFC107,
+                                                    ).withValues(alpha: 0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: const Color(
+                                                        0xFFFFC107,
+                                                      ).withValues(alpha: 0.25),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.info_outline,
+                                                        color: Color(
+                                                          0xFFFFC107,
+                                                        ),
+                                                        size: 16,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'تنبيه: الفحص مجاني داخل المركز. التكلفة تتضمن التوصيل (رايح وراجع). وفي حال رفض العرض، يحاسب العميل على تكلفة التوصيل فقط.',
+                                                          style:
+                                                              GoogleFonts.cairo(
+                                                                color:
+                                                                    const Color(
+                                                                      0xFFFFC107,
+                                                                    ),
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                                 const SizedBox(height: 16),
                                                 Row(
                                                   children: [
                                                     Expanded(
                                                       child: ElevatedButton(
-                                                        onPressed: state.isApproving
+                                                        onPressed:
+                                                            state.isApproving
                                                             ? null
                                                             : () async {
-                                                                final success = await context.read<OrderTrackingCubit>().approvePriceOffer(order.id);
-                                                                if (context.mounted) {
+                                                                final success =
+                                                                    await context
+                                                                        .read<
+                                                                          OrderTrackingCubit
+                                                                        >()
+                                                                        .approvePriceOffer(
+                                                                          order
+                                                                              .id,
+                                                                        );
+                                                                if (context
+                                                                    .mounted) {
                                                                   if (success) {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                    ScaffoldMessenger.of(
+                                                                      context,
+                                                                    ).showSnackBar(
                                                                       const SnackBar(
-                                                                        content: Text('تمت الموافقة على عرض السعر بنجاح'),
-                                                                        backgroundColor: Colors.green,
+                                                                        content:
+                                                                            Text(
+                                                                              'تمت الموافقة على عرض السعر بنجاح',
+                                                                            ),
+                                                                        backgroundColor:
+                                                                            Colors.green,
                                                                       ),
                                                                     );
                                                                     Navigator.pushNamed(
                                                                       context,
-                                                                      Routes.orderPaymentRoute,
-                                                                      arguments: order.id,
+                                                                      Routes
+                                                                          .orderPaymentRoute,
+                                                                      arguments:
+                                                                          order
+                                                                              .id,
                                                                     );
                                                                   } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                    ScaffoldMessenger.of(
+                                                                      context,
+                                                                    ).showSnackBar(
                                                                       const SnackBar(
-                                                                        content: Text('حدث خطأ أثناء الموافقة، يرجى المحاولة لاحقاً'),
-                                                                        backgroundColor: Colors.red,
+                                                                        content:
+                                                                            Text(
+                                                                              'حدث خطأ أثناء الموافقة، يرجى المحاولة لاحقاً',
+                                                                            ),
+                                                                        backgroundColor:
+                                                                            Colors.red,
                                                                       ),
                                                                     );
                                                                   }
                                                                 }
                                                               },
                                                         style: ElevatedButton.styleFrom(
-                                                          backgroundColor: const Color(0xFFFFC107),
-                                                          foregroundColor: Colors.black,
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                          padding: const EdgeInsets.symmetric(vertical: 8),
+                                                          backgroundColor:
+                                                              const Color(
+                                                                0xFFFFC107,
+                                                              ),
+                                                          foregroundColor:
+                                                              Colors.black,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 8,
+                                                              ),
                                                         ),
                                                         child: state.isApproving
                                                             ? const SizedBox(
                                                                 width: 16,
                                                                 height: 16,
                                                                 child: CircularProgressIndicator(
-                                                                  color: Colors.black,
-                                                                  strokeWidth: 2,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  strokeWidth:
+                                                                      2,
                                                                 ),
                                                               )
                                                             : Text(
                                                                 'موافقة',
-                                                                style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 12),
+                                                                style: GoogleFonts.cairo(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 12,
+                                                                ),
                                                               ),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: OutlinedButton(
-                                                        onPressed: state.isApproving
-                                                             ? null
-                                                             : () {
-                                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                                   SnackBar(
-                                                                     content: Text(
-                                                                       'يرجى التواصل مع الدعم الفني لتعديل أو رفض العرض',
-                                                                       style: GoogleFonts.cairo(),
-                                                                     ),
-                                                                     action: SnackBarAction(
-                                                                       label: 'تواصل الآن',
-                                                                       textColor: const Color(0xFFFFC107),
-                                                                       onPressed: () {
-                                                                         _showSupportNumberDialog(context);
-                                                                       },
-                                                                     ),
-                                                                   ),
-                                                                 );
-                                                               },
-                                                         style: OutlinedButton.styleFrom(
-                                                          side: const BorderSide(color: Colors.red),
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                          padding: const EdgeInsets.symmetric(vertical: 8),
+                                                        onPressed:
+                                                            state.isApproving
+                                                            ? null
+                                                            : () {
+                                                                _showRejectConfirmationDialog(
+                                                                  context,
+                                                                  order,
+                                                                );
+                                                              },
+                                                        style: OutlinedButton.styleFrom(
+                                                          side:
+                                                              const BorderSide(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 8,
+                                                              ),
                                                         ),
                                                         child: Text(
                                                           'رفض',
-                                                          style: GoogleFonts.cairo(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
+                                                          style:
+                                                              GoogleFonts.cairo(
+                                                                color:
+                                                                    Colors.red,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 12,
+                                                              ),
                                                         ),
                                                       ),
                                                     ),
                                                   ],
-                                                )
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -725,17 +968,22 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                   child: Row(
                                     children: [
                                       Column(
-                                        children: List.generate(3, (_) => Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 3),
-                                          child: Container(
-                                            width: 6,
-                                            height: 6,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.grey[600],
+                                        children: List.generate(
+                                          3,
+                                          (_) => Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 3,
+                                            ),
+                                            child: Container(
+                                              width: 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.grey[600],
+                                              ),
                                             ),
                                           ),
-                                        )),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -744,7 +992,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                           );
                         });
                       })(),
-
                     ],
                   ),
                 );
@@ -819,9 +1066,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             ],
           ),
           const Divider(color: Colors.white12, height: 24),
-          _buildInfoRow('الفني المسؤول:', inspection.technician.isNotEmpty ? inspection.technician : 'غير محدد'),
+          _buildInfoRow(
+            'الفني المسؤول:',
+            inspection.technician.isNotEmpty
+                ? inspection.technician
+                : 'غير محدد',
+          ),
           if (inspection.inspectedAt.isNotEmpty)
-            _buildInfoRow('تاريخ الفحص:', _formatDateTime(inspection.inspectedAt)),
+            _buildInfoRow(
+              'تاريخ الفحص:',
+              _formatDateTime(inspection.inspectedAt),
+            ),
           const Divider(color: Colors.white12, height: 24),
           Text(
             'المشاكل المكتشفة:',
@@ -835,10 +1090,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
           if (inspection.findings.isEmpty)
             Text(
               'لم يتم تسجيل أي مشاكل.',
-              style: GoogleFonts.cairo(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: GoogleFonts.cairo(color: Colors.grey[500], fontSize: 12),
             )
           else
             ...inspection.findings.map((finding) {
@@ -851,11 +1103,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      severityIcon,
-                      color: severityColor,
-                      size: 18,
-                    ),
+                    Icon(severityIcon, color: severityColor, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -871,11 +1119,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                           ),
                           Container(
                             margin: const EdgeInsets.only(top: 2),
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: severityColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: severityColor.withValues(alpha: 0.3), width: 0.5),
+                              border: Border.all(
+                                color: severityColor.withValues(alpha: 0.3),
+                                width: 0.5,
+                              ),
                             ),
                             child: Text(
                               severityText,
@@ -914,10 +1168,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
               child: Text(
                 inspection.notes,
-                style: GoogleFonts.cairo(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
+                style: GoogleFonts.cairo(color: Colors.white70, fontSize: 12),
               ),
             ),
           ],
@@ -954,16 +1205,26 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                     InteractiveViewer(
                                       child: Image.network(
                                         imageUrl,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          color: Colors.grey[800],
-                                          width: double.infinity,
-                                          height: 300,
-                                          child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
-                                        ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  color: Colors.grey[800],
+                                                  width: double.infinity,
+                                                  height: 300,
+                                                  child: const Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey,
+                                                    size: 50,
+                                                  ),
+                                                ),
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
                                       onPressed: () => Navigator.pop(context),
                                     ),
                                   ],
@@ -983,16 +1244,22 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                                 height: 100,
                                 color: Colors.grey[800],
                                 child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               );
                             },
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 100,
-                              height: 100,
-                              color: Colors.grey[800],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  color: Colors.grey[800],
+                                  child: const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                           ),
                         ),
                       ),
@@ -1046,8 +1313,30 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     }
   }
 
-  Widget _buildPriceOfferCard(PriceOfferEntity priceOffer, String paymentStatus) {
-    final isPaid = paymentStatus.toLowerCase() == 'paid';
+  Widget _buildPriceOfferCard(PriceOfferEntity priceOffer, OrderEntity order) {
+    final statusLower = order.paymentStatus.toLowerCase();
+    final isPaid = statusLower == 'paid' || statusLower == 'confirmed';
+    final isPendingApproval = statusLower == 'pending';
+
+    final String statusText = isPaid
+        ? 'تم الدفع'
+        : (isPendingApproval ? 'في انتظار موافقة الأدمن' : 'غير مدفوع');
+    final Color statusColor = isPaid
+        ? Colors.green
+        : (isPendingApproval ? Colors.orangeAccent : const Color(0xFFFFC107));
+
+    final double totalWithDelivery =
+        (order.financialSnapshot != null &&
+            order.financialSnapshot!.clientTotal > 0)
+        ? order.financialSnapshot!.clientTotal
+        : (order.fees.total > 0
+              ? order.fees.total
+              : priceOffer.totalCost +
+                    (order.fees.delivery > 0
+                        ? order.fees.delivery
+                        : (order.fees.inspection > 0
+                              ? order.fees.inspection
+                              : 1000)));
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1070,21 +1359,22 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: isPaid
-                      ? Colors.green.withValues(alpha: 0.2)
-                      : const Color(0xFFFFC107).withValues(alpha: 0.15),
+                  color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isPaid ? Colors.green : const Color(0xFFFFC107),
+                    color: statusColor,
                     width: 1,
                   ),
                 ),
                 child: Text(
-                  isPaid ? 'تم الدفع' : 'غير مدفوع',
+                  statusText,
                   style: GoogleFonts.cairo(
-                    color: isPaid ? Colors.green : const Color(0xFFFFC107),
+                    color: statusColor,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1092,28 +1382,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
             ],
           ),
-          const Divider(color: Colors.white12, height: 24),
-          if (priceOffer.spareParts.isNotEmpty) ...[
-            Text(
-              'قطع الغيار المطلوبة:',
-              style: GoogleFonts.cairo(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 6),
-            ...priceOffer.spareParts.map((part) =>
-              _buildInfoRow('• ${part.name}:', '${part.cost.toInt()} د.ع')
-            ),
-            const Divider(color: Colors.white12, height: 20),
-          ],
-          _buildInfoRow('أجور الإصلاح (اليد):', '${priceOffer.laborCost.toInt()} د.ع'),
-          _buildInfoRow('رسوم الفحص:', '${priceOffer.inspectionFee.toInt()} د.ع'),
-          _buildInfoRow('رسوم التوصيل:', '${priceOffer.deliveryFee.toInt()} د.ع'),
-          _buildInfoRow('مدة العمل المتوقعة:', '${priceOffer.estimatedDays} أيام'),
           if (priceOffer.notes.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             _buildInfoRow('ملاحظات المركز:', priceOffer.notes),
           ],
           const Divider(color: Colors.white12, height: 24),
@@ -1129,7 +1399,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Text(
-                '${priceOffer.totalCost.toInt()} د.ع',
+                '${totalWithDelivery.toInt()} د.ع',
                 style: GoogleFonts.cairo(
                   color: const Color(0xFFFFC107),
                   fontWeight: FontWeight.bold,
@@ -1138,9 +1408,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
             ],
           ),
-          if (paymentStatus.toLowerCase() != 'paid' &&
-              paymentStatus.toLowerCase() != 'confirmed' &&
-              paymentStatus.toLowerCase() != 'pending') ...[
+          if (order.paymentStatus.toLowerCase() != 'paid' &&
+              order.paymentStatus.toLowerCase() != 'confirmed' &&
+              order.paymentStatus.toLowerCase() != 'pending') ...[
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -1159,12 +1429,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFC107),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 icon: const Icon(Icons.payment, size: 18),
                 label: Text(
                   'انتقل للدفع وإرسال الإثبات',
-                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: GoogleFonts.cairo(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
@@ -1176,6 +1451,29 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   Widget _buildStandardFeesCard(OrderEntity order) {
     final isPaid = order.paymentStatus.toLowerCase() == 'paid';
+    final double calculatedTotal =
+        (order.financialSnapshot != null &&
+            order.financialSnapshot!.clientTotal > 0)
+        ? order.financialSnapshot!.clientTotal
+        : (order.fees.total > 0
+              ? order.fees.total
+              : (order.fees.repair +
+                    order.fees.delivery +
+                    order.fees.inspection));
+
+    final bool isPriceAvailable =
+        (order.financialSnapshot != null &&
+            order.financialSnapshot!.clientTotal > 0) ||
+        (order.fees.repair > 0) ||
+        (![
+              'pending',
+              'delegate_assigned',
+              'picked_up',
+              'at_center',
+              'inspecting',
+            ].contains(order.status.toLowerCase()) &&
+            calculatedTotal > 0);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1198,7 +1496,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isPaid
                       ? Colors.green.withValues(alpha: 0.2)
@@ -1221,9 +1522,57 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             ],
           ),
           const Divider(color: Colors.white12, height: 24),
-          _buildInfoRow('رسوم الفحص:', '${order.fees.inspection.toInt()} د.ع'),
-          _buildInfoRow('تكلفة التوصيل:', '${order.fees.delivery.toInt()} د.ع'),
-          _buildInfoRow('تكلفة الإصلاح المقدرة:', '${order.fees.repair.toInt()} د.ع'),
+          _buildInfoRow(
+            'رسوم الفحص:',
+            order.fees.inspection > 0
+                ? '${order.fees.inspection.toInt()} د.ع'
+                : 'مجاناً',
+          ),
+          Builder(
+            builder: (context) {
+              final double singleLeg = order.fees.delegateFeeValue > 0
+                  ? order.fees.delegateFeeValue
+                  : (order.financialSnapshot?.delegateFee ?? 0) > 0
+                  ? order.financialSnapshot!.delegateFee
+                  : (order.fees.delivery > 0 ? order.fees.delivery : 500.0);
+              final int legAmount = singleLeg.toInt();
+              final int totalDel = legAmount * 2;
+
+              return _buildInfoRow(
+                'تكلفة التوصيل (ذهاب وعودة):',
+                '$totalDel د.ع ($legAmount ذهاب + $legAmount عودة)',
+              );
+            },
+          ),
+          Builder(
+            builder: (context) {
+              final double singleLeg = order.fees.delegateFeeValue > 0
+                  ? order.fees.delegateFeeValue
+                  : (order.financialSnapshot?.delegateFee ?? 0) > 0
+                  ? order.financialSnapshot!.delegateFee
+                  : (order.fees.delivery > 0 ? order.fees.delivery : 500.0);
+              final double totalDel = singleLeg * 2;
+
+              final clientTotalVal =
+                  (order.financialSnapshot != null &&
+                      order.financialSnapshot!.clientTotal > 0)
+                  ? order.financialSnapshot!.clientTotal
+                  : (order.fees.total > 0
+                        ? order.fees.total
+                        : (order.fees.repair + totalDel));
+
+              final displayRepairCost = (clientTotalVal > totalDel)
+                  ? (clientTotalVal - totalDel)
+                  : order.fees.repair;
+
+              return _buildInfoRow(
+                'تكلفة الإصلاح المقدرة:',
+                isPriceAvailable
+                    ? '${displayRepairCost.toInt()} د.ع'
+                    : 'في انتظار ارسال السعر من قبل السنتر',
+              );
+            },
+          ),
           const Divider(color: Colors.white12, height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1237,11 +1586,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
               ),
               Text(
-                '${order.fees.total.toInt()} د.ع',
+                isPriceAvailable
+                    ? '${calculatedTotal.toInt()} د.ع'
+                    : 'في انتظار ارسال السعر من قبل السنتر',
                 style: GoogleFonts.cairo(
                   color: const Color(0xFFFFC107),
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: isPriceAvailable ? 18 : 12,
                 ),
               ),
             ],
@@ -1275,12 +1626,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFC107),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 icon: const Icon(Icons.payment, size: 18),
                 label: Text(
                   'انتقل للدفع وإرسال الإثبات',
-                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: GoogleFonts.cairo(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
@@ -1289,13 +1645,118 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       ),
     );
   }
+
+  void _showRejectConfirmationDialog(BuildContext context, OrderEntity order) {
+    final double deliveryFee = order.fees.delivery;
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF141414),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Colors.redAccent, width: 1),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+              const SizedBox(width: 8),
+              Text(
+                'تأكيد رفض عرض السعر',
+                style: GoogleFonts.cairo(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'عند رفض عرض السعر، لن يتم إجراء أي إصلاح للجهاز وسيقوم المندوب بإرجاع الجهاز إليك.',
+                style: GoogleFonts.cairo(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '⚠️ ملاحظة مهمة بشأن التوصيل:',
+                      style: GoogleFonts.cairo(
+                        color: Colors.redAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'الفحص مجاني داخل المركز، ولكن يلتزم العميل بدفع تكلفة التوصيل (ذهاب وعودة / رايح وراجع)${deliveryFee > 0 ? ' بقيمة ${deliveryFee.toInt()} د.ع' : ''} عند استلام الجهاز من المندوب.',
+                      style: GoogleFonts.cairo(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: Text(
+                'تراجع / إلغاء',
+                style: GoogleFonts.cairo(color: Colors.white70),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(dialogCtx);
+                _showSupportNumberDialog(context);
+              },
+              child: Text(
+                'تأكيد الرفض والتواصل',
+                style: GoogleFonts.cairo(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showSupportNumberDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFFFCFAF5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(
             'رقم الدعم الفني',
             style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
@@ -1311,7 +1772,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1320,7 +1784,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.phone_android_outlined, color: Color(0xFFFFC107)),
+                    const Icon(
+                      Icons.phone_android_outlined,
+                      color: Color(0xFFFFC107),
+                    ),
                     const SizedBox(width: 8),
                     SelectableText(
                       '+9647824774219',
@@ -1366,7 +1833,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFC107),
                 foregroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],

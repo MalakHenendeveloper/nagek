@@ -14,6 +14,8 @@ import '../../../admin/presentation/cubit/admin_create_center_cubit.dart';
 import '../../../admin/presentation/cubit/admin_orders_cubit.dart';
 import '../../../admin/presentation/cubit/admin_delegate_applications_cubit.dart';
 import '../../../admin/presentation/cubit/admin_payments_cubit.dart';
+import '../../../admin/presentation/cubit/admin_payment_settings_cubit.dart';
+import '../../../admin/presentation/cubit/admin_financial_settings_cubit.dart';
 
 // Import Admin Views
 import '../../../admin/presentation/screens/views/admin_dashboard_view.dart';
@@ -24,6 +26,8 @@ import '../../../admin/presentation/screens/views/admin_add_center_view.dart';
 import '../../../admin/presentation/screens/views/admin_orders_view.dart';
 import '../../../admin/presentation/screens/views/admin_delegate_applications_view.dart';
 import '../../../admin/presentation/screens/views/admin_payments_view.dart';
+import '../../../admin/presentation/screens/views/admin_payment_settings_view.dart';
+import '../../../admin/presentation/screens/views/admin_financial_settings_view.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -101,7 +105,7 @@ class _AdminHomeState extends State<AdminHome> {
               backgroundColor: const Color(0xFF141414),
               elevation: 0,
               iconTheme: const IconThemeData(color: Color(0xFFFFC107)),
-              actions: [
+               actions: [
                 IconButton(
                   icon: const Icon(Icons.logout, color: Color(0xFFFFC107)),
                   tooltip: 'تسجيل الخروج',
@@ -208,6 +212,50 @@ class _AdminHomeState extends State<AdminHome> {
                           title: 'التحويلات والمدفوعات',
                           icon: Icons.account_balance_wallet_rounded,
                         ),
+                        ListTile(
+                          dense: true,
+                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
+                          leading: const Icon(Icons.receipt_long_rounded, color: Color(0xFFFFC107), size: 20),
+                          title: Text(
+                            'قائمة تسويات النظام',
+                            style: GoogleFonts.cairo(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, Routes.adminSettlementsRoute);
+                          },
+                        ),
+                        ListTile(
+                          dense: true,
+                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
+                          leading: const Icon(Icons.pie_chart_rounded, color: Color(0xFFFFC107), size: 20),
+                          title: Text(
+                            'ملخص التسويات المجمع',
+                            style: GoogleFonts.cairo(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, Routes.adminSettlementsSummaryRoute);
+                          },
+                        ),
+                        _buildDrawerSubItem(
+                          index: 9,
+                          title: 'إعدادات المحافظ الإلكترونية',
+                          icon: Icons.tune_rounded,
+                        ),
+                        _buildDrawerSubItem(
+                          index: 10,
+                          title: 'الإعدادات المالية والعمولات',
+                          icon: Icons.monetization_on_outlined,
+                        ),
                       ],
                     ),
                   ),
@@ -253,6 +301,10 @@ class _AdminHomeState extends State<AdminHome> {
         return 'طلبات تسجيل المندوبين';
       case 8:
         return 'التحويلات والمدفوعات';
+      case 9:
+        return 'إعدادات المحافظ الإلكترونية';
+      case 10:
+        return 'الإعدادات المالية والعمولات';
       default:
         return 'مدير النظام';
     }
@@ -265,6 +317,7 @@ class _AdminHomeState extends State<AdminHome> {
       case 1:
         return const AdminUsersView();
       case 2:
+      
         return const AdminDelegatesView();
       case 3:
         return const AdminCentersView();
@@ -286,6 +339,16 @@ class _AdminHomeState extends State<AdminHome> {
         return BlocProvider<AdminPaymentsCubit>(
           create: (context) => getIt<AdminPaymentsCubit>(),
           child: const AdminPaymentsView(),
+        );
+      case 9:
+        return BlocProvider<AdminPaymentSettingsCubit>(
+          create: (context) => getIt<AdminPaymentSettingsCubit>(),
+          child: const AdminPaymentSettingsView(),
+        );
+      case 10:
+        return BlocProvider<AdminFinancialSettingsCubit>(
+          create: (context) => getIt<AdminFinancialSettingsCubit>(),
+          child: const AdminFinancialSettingsView(),
         );
       default:
         return const AdminDashboardView();

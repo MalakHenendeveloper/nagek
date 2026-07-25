@@ -12,10 +12,12 @@ class AvailablePickupOrdersScreen extends StatefulWidget {
   const AvailablePickupOrdersScreen({super.key});
 
   @override
-  State<AvailablePickupOrdersScreen> createState() => _AvailablePickupOrdersScreenState();
+  State<AvailablePickupOrdersScreen> createState() =>
+      _AvailablePickupOrdersScreenState();
 }
 
-class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScreen>
+class _AvailablePickupOrdersScreenState
+    extends State<AvailablePickupOrdersScreen>
     with SingleTickerProviderStateMixin {
   late AvailablePickupOrdersCubit _cubit;
   late TabController _tabController;
@@ -35,10 +37,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
@@ -60,8 +59,18 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
     try {
       final date = DateTime.parse(isoString);
       final months = [
-        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        'يناير',
+        'فبراير',
+        'مارس',
+        'أبريل',
+        'مايو',
+        'يونيو',
+        'يوليو',
+        'أغسطس',
+        'سبتمبر',
+        'أكتوبر',
+        'نوفمبر',
+        'ديسمبر',
       ];
       return '${date.day} ${months[date.month - 1]} ${date.year}';
     } catch (e) {
@@ -121,7 +130,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
           child: BlocConsumer<AvailablePickupOrdersCubit, AvailablePickupOrdersState>(
             listener: (context, state) {
               if (state is AvailablePickupOrdersAcceptLoading) {
-                _showAcceptingDialog(context, 'جاري قبول المهمة وتعيينك كابتن للطلب...');
+                _showAcceptingDialog(
+                  context,
+                  'جاري قبول المهمة وتعيينك كابتن للطلب...',
+                );
               } else if (state is AvailablePickupOrdersAcceptSuccess) {
                 Navigator.of(context, rootNavigator: true).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -167,14 +179,16 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                     _buildOrdersList(
                       orders: state.pickupOrders,
                       emptyMessage: 'لا توجد طلبات استلام متاحة',
-                      emptyDescription: 'لا توجد أجهزة بانتظار الاستلام من العملاء حالياً، اسحب للأسفل للتحديث.',
+                      emptyDescription:
+                          'لا توجد أجهزة بانتظار الاستلام من العملاء حالياً، اسحب للأسفل للتحديث.',
                       isDelivery: false,
                     ),
                     // Tab 2: Delivery Orders
                     _buildOrdersList(
                       orders: state.deliveryOrders,
                       emptyMessage: 'لا توجد طلبات توصيل متاحة',
-                      emptyDescription: 'لا توجد أجهزة تم إصلاحها وبانتظار التوصيل للعملاء حالياً، اسحب للأسفل للتحديث.',
+                      emptyDescription:
+                          'لا توجد أجهزة تم إصلاحها وبانتظار التوصيل للعملاء حالياً، اسحب للأسفل للتحديث.',
                       isDelivery: true,
                     ),
                   ],
@@ -248,7 +262,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFC107).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -284,7 +301,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               children: [
                 // Device Info
                 _buildDeviceInfo(order),
-                
+
                 const SizedBox(height: 16),
 
                 // Pickup address
@@ -384,7 +401,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.greenAccent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -392,7 +412,11 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.build_circle, color: Colors.greenAccent, size: 16),
+                      const Icon(
+                        Icons.build_circle,
+                        color: Colors.greenAccent,
+                        size: 16,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'جاهز للتوصيل',
@@ -437,7 +461,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                     decoration: BoxDecoration(
                       color: Colors.blueAccent.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.15), width: 1),
+                      border: Border.all(
+                        color: Colors.blueAccent.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +475,11 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                             color: Colors.blueAccent.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.store, color: Colors.blueAccent, size: 20),
+                          child: const Icon(
+                            Icons.store,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -495,7 +526,8 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                               ),
                             ),
                             icon: const Icon(Icons.phone, size: 18),
-                            onPressed: () => _makePhoneCall(order.repairCenter.phone),
+                            onPressed: () =>
+                                _makePhoneCall(order.repairCenter.phone),
                           ),
                       ],
                     ),
@@ -509,7 +541,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFC107).withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.15), width: 1),
+                    border: Border.all(
+                      color: const Color(0xFFFFC107).withValues(alpha: 0.15),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -520,7 +555,11 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                           color: const Color(0xFFFFC107).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.location_on, color: Color(0xFFFFC107), size: 20),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Color(0xFFFFC107),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -563,12 +602,18 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.25),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 22),
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orangeAccent,
+                        size: 22,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -612,7 +657,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                       ),
                     ),
                     onPressed: () {
-                      _cubit.acceptPickup(order.id);
+                      _cubit.acceptDelivery(order.id);
                     },
                   ),
                 ),
@@ -642,8 +687,8 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
             order.device.type.toLowerCase() == 'phone'
                 ? Icons.phone_iphone
                 : order.device.type.toLowerCase() == 'tablet'
-                    ? Icons.tablet_mac
-                    : Icons.laptop_mac,
+                ? Icons.tablet_mac
+                : Icons.laptop_mac,
             color: const Color(0xFFFFC107),
             size: 28,
           ),
@@ -664,19 +709,13 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               const SizedBox(height: 4),
               Text(
                 'المشكلة: ${_translateProblemType(order.device.problemType)}',
-                style: GoogleFonts.cairo(
-                  fontSize: 13,
-                  color: Colors.white70,
-                ),
+                style: GoogleFonts.cairo(fontSize: 13, color: Colors.white70),
               ),
               if (order.device.problemDescription.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
                   order.device.problemDescription,
-                  style: GoogleFonts.cairo(
-                    fontSize: 13,
-                    color: Colors.white38,
-                  ),
+                  style: GoogleFonts.cairo(fontSize: 13, color: Colors.white38),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -705,7 +744,9 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                 radius: 18,
                 backgroundColor: const Color(0xFFFFC107).withValues(alpha: 0.1),
                 child: Text(
-                  order.client!.name.isNotEmpty ? order.client!.name[0].toUpperCase() : 'ع',
+                  order.client!.name.isNotEmpty
+                      ? order.client!.name[0].toUpperCase()
+                      : 'ع',
                   style: GoogleFonts.cairo(
                     color: const Color(0xFFFFC107),
                     fontWeight: FontWeight.bold,
@@ -753,34 +794,27 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
   }
 
   Widget _buildDateAndFees(String formattedDate, OrderEntity order) {
+    final double feeVal = order.fees.delegateFeeValue > 0
+        ? order.fees.delegateFeeValue
+        : (order.financialSnapshot?.delegateFee ?? 0) > 0
+        ? order.financialSnapshot!.delegateFee
+        : (order.fees.delivery > 0 ? order.fees.delivery : 500.0);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           'تاريخ الإنشاء: $formattedDate',
+          style: GoogleFonts.cairo(fontSize: 12, color: Colors.white38),
+        ),
+        Text(
+          'أجرة التوصيل: ${feeVal.toStringAsFixed(0)} د.ع',
           style: GoogleFonts.cairo(
-            fontSize: 12,
-            color: Colors.white38,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFFFC107),
           ),
         ),
-        if (order.fees.delivery > 0)
-          Text(
-            'رسوم التوصيل: ${order.fees.delivery.toStringAsFixed(0)} د.ع',
-            style: GoogleFonts.cairo(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFFFFC107),
-            ),
-          )
-        else
-          Text(
-            'رسوم التوصيل: مجاني',
-            style: GoogleFonts.cairo(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: Colors.greenAccent,
-            ),
-          ),
       ],
     );
   }
@@ -798,7 +832,9 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
           canPop: false,
           child: AlertDialog(
             backgroundColor: const Color(0xFF141414),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -872,10 +908,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
             const SizedBox(height: 8),
             Text(
               description,
-              style: GoogleFonts.cairo(
-                fontSize: 14,
-                color: Colors.white38,
-              ),
+              style: GoogleFonts.cairo(fontSize: 14, color: Colors.white38),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -883,7 +916,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFC107),
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -908,11 +944,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.redAccent,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
             const SizedBox(height: 16),
             Text(
               'حدث خطأ غير متوقع',
@@ -925,10 +957,7 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
             const SizedBox(height: 8),
             Text(
               errorMsg,
-              style: GoogleFonts.cairo(
-                fontSize: 14,
-                color: Colors.white38,
-              ),
+              style: GoogleFonts.cairo(fontSize: 14, color: Colors.white38),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -936,7 +965,10 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white10,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -982,13 +1014,24 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(width: 120, height: 16, color: Colors.white),
+                          Container(
+                            width: 120,
+                            height: 16,
+                            color: Colors.white,
+                          ),
                           const SizedBox(height: 8),
                           Container(width: 80, height: 12, color: Colors.white),
                         ],
@@ -997,9 +1040,20 @@ class _AvailablePickupOrdersScreenState extends State<AvailablePickupOrdersScree
                   ],
                 ),
                 const SizedBox(height: 16),
-                Container(width: double.infinity, height: 12, color: Colors.white),
+                Container(
+                  width: double.infinity,
+                  height: 12,
+                  color: Colors.white,
+                ),
                 const SizedBox(height: 16),
-                Container(width: double.infinity, height: 50, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

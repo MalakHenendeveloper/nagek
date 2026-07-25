@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
+import '../../../../core/services/image_picker_service.dart';
 import '../cubit/create_order_cubit.dart';
 import '../cubit/create_order_state.dart';
 import '../cubit/device_selection_cubit.dart';
@@ -23,7 +24,6 @@ class CreateOrderScreen extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   late CreateOrderCubit _cubit;
-  final ImagePicker _picker = ImagePicker();
 
   int _currentStep = 0;
 
@@ -60,7 +60,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await ImagePickerService.pickImage(source: ImageSource.gallery);
       if (image != null) {
         setState(() {
           _imagePaths.add(image.path);
@@ -670,6 +670,46 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               _buildReviewRow('عنوان الاستلام:', '${_cityController.text}، ${_addressController.text}'),
               const Divider(),
               _buildReviewRow('عدد الصور المرفقة:', '${_imagePaths.length} صور'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF8E1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFFFC107)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.info_outline, color: Color(0xFF8B7500), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'تنويه مهم بشأن التوصيل والفحص:',
+                      style: GoogleFonts.cairo(
+                        fontSize: 12,
+                        color: const Color(0xFF5D4037),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '• الفحص مجاني تماماً داخل مركز الصيانة.\n• يتضمن الطلب تكلفة التوصيل (ذهاب وعودة).\n• في حال رفض عرض السعر لاحقاً بعد الفحص، يحاسب العميل على تكلفة التوصيل (ذهاب وعودة).',
+                      style: GoogleFonts.cairo(
+                        fontSize: 11,
+                        color: const Color(0xFF5D4037),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

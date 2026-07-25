@@ -26,6 +26,9 @@ class OrderPaymentCubit extends Cubit<OrderPaymentState> {
   Future<bool> submitPaymentProof({
     required String orderId,
     required String senderWalletNumber,
+    required String transferReference,
+    required String paymentMethod,
+    String? screenshotPath,
   }) async {
     final currentState = state;
     if (currentState is! OrderPaymentLoaded) return false;
@@ -35,6 +38,9 @@ class OrderPaymentCubit extends Cubit<OrderPaymentState> {
     final result = await _submitProofUseCase(
       orderId: orderId,
       senderWalletNumber: senderWalletNumber,
+      transferReference: transferReference,
+      paymentMethod: paymentMethod,
+      screenshotPath: screenshotPath,
     );
 
     return result.fold(

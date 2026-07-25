@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/use_cases/get_available_pickup_orders_use_case.dart';
 import '../../domain/use_cases/get_available_delivery_orders_use_case.dart';
 import '../../domain/use_cases/accept_pickup_use_case.dart';
+import '../../domain/use_cases/accept_delivery_use_case.dart';
 import '../../domain/use_cases/upload_pickup_photos_use_case.dart';
 import '../../domain/use_cases/confirm_pickup_use_case.dart';
 import '../../domain/entities/order_entity.dart';
@@ -13,6 +14,7 @@ class AvailablePickupOrdersCubit extends Cubit<AvailablePickupOrdersState> {
   final GetAvailablePickupOrdersUseCase _getAvailablePickupOrdersUseCase;
   final GetAvailableDeliveryOrdersUseCase _getAvailableDeliveryOrdersUseCase;
   final AcceptPickupUseCase _acceptPickupUseCase;
+  final AcceptDeliveryUseCase _acceptDeliveryUseCase;
   final UploadPickupPhotosUseCase _uploadPickupPhotosUseCase;
   final ConfirmPickupUseCase _confirmPickupUseCase;
 
@@ -20,6 +22,7 @@ class AvailablePickupOrdersCubit extends Cubit<AvailablePickupOrdersState> {
     this._getAvailablePickupOrdersUseCase,
     this._getAvailableDeliveryOrdersUseCase,
     this._acceptPickupUseCase,
+    this._acceptDeliveryUseCase,
     this._uploadPickupPhotosUseCase,
     this._confirmPickupUseCase,
   ) : super(AvailablePickupOrdersInitial());
@@ -106,6 +109,20 @@ class AvailablePickupOrdersCubit extends Cubit<AvailablePickupOrdersState> {
     emit(AvailablePickupOrdersAcceptLoading(orderId));
 
     final result = await _acceptPickupUseCase.call(orderId);
+
+    result.fold(
+      (failure) => emit(AvailablePickupOrdersAcceptError(failure.message)),
+      (order) {
+        emit(AvailablePickupOrdersAcceptSuccess(order));
+        fetchAvailablePickupOrders();
+      },
+    );
+  }
+
+  Future<void> acceptDelivery(String orderId) async {
+    emit(AvailablePickupOrdersAcceptLoading(orderId));
+
+    final result = await _acceptDeliveryUseCase.call(orderId);
 
     result.fold(
       (failure) => emit(AvailablePickupOrdersAcceptError(failure.message)),

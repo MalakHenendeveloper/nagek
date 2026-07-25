@@ -12,10 +12,16 @@ class SubmitPaymentProofUseCase {
   Future<Either<Failure, bool>> call({
     required String orderId,
     required String senderWalletNumber,
+    required String transferReference,
+    required String paymentMethod,
+    String? screenshotPath,
   }) {
     return repository.submitPaymentProof(
       orderId: orderId,
       senderWalletNumber: senderWalletNumber,
+      transferReference: transferReference,
+      paymentMethod: paymentMethod,
+      screenshotPath: screenshotPath,
     );
   }
 }

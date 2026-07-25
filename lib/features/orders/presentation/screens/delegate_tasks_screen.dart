@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/di.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../../../core/services/image_picker_service.dart';
 import '../cubit/delegate_orders_cubit.dart';
 import '../cubit/delegate_orders_state.dart';
 
@@ -16,6 +17,8 @@ class DelegateTasksScreen extends StatefulWidget {
   @override
   State<DelegateTasksScreen> createState() => _DelegateTasksScreenState();
 }
+
+enum _TaskStage { awaitingPickup, headingToCenter, atCenter, readyForDelivery }
 
 class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
   late final DelegateOrdersCubit _cubit;
@@ -68,7 +71,10 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
             } else if (state is DelegateOrdersConfirmLoading) {
               // Update the dialog text (pop old, show new)
               Navigator.of(context, rootNavigator: true).pop();
-              _showProgressDialog(context, 'جاري تأكيد استلام الجهاز من العميل...');
+              _showProgressDialog(
+                context,
+                'جاري تأكيد استلام الجهاز من العميل...',
+              );
             } else if (state is DelegateOrdersConfirmSuccess) {
               Navigator.of(context, rootNavigator: true).pop();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -94,7 +100,10 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 ),
               );
             } else if (state is DelegateOrdersDropCenterLoading) {
-              _showProgressDialog(context, 'جاري رفع الصور وتأكيد تسليم الجهاز للمركز...');
+              _showProgressDialog(
+                context,
+                'جاري رفع الصور وتأكيد تسليم الجهاز للمركز...',
+              );
             } else if (state is DelegateOrdersDropCenterSuccess) {
               Navigator.of(context, rootNavigator: true).pop();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +117,64 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 ),
               );
             } else if (state is DelegateOrdersDropCenterError) {
+              Navigator.of(context, rootNavigator: true).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text(
+                    state.message,
+                    style: GoogleFonts.cairo(color: Colors.white),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            } else if (state is DelegateOrdersPickupCenterLoading) {
+              _showProgressDialog(
+                context,
+                'جاري رفع الصور وتأكيد استلام الجهاز من المركز...',
+              );
+            } else if (state is DelegateOrdersPickupCenterSuccess) {
+              Navigator.of(context, rootNavigator: true).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.green,
+                  content: Text(
+                    'تم تأكيد استلام الجهاز من المركز بنجاح ✅',
+                    style: GoogleFonts.cairo(color: Colors.white),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            } else if (state is DelegateOrdersPickupCenterError) {
+              Navigator.of(context, rootNavigator: true).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text(
+                    state.message,
+                    style: GoogleFonts.cairo(color: Colors.white),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            } else if (state is DelegateOrdersConfirmDeliveryLoading) {
+              _showProgressDialog(
+                context,
+                'جاري رفع الصور وتأكيد تسليم الجهاز للعميل...',
+              );
+            } else if (state is DelegateOrdersConfirmDeliverySuccess) {
+              Navigator.of(context, rootNavigator: true).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.green,
+                  content: Text(
+                    'تم تسليم الجهاز للعميل بنجاح ✅',
+                    style: GoogleFonts.cairo(color: Colors.white),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            } else if (state is DelegateOrdersConfirmDeliveryError) {
               Navigator.of(context, rootNavigator: true).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -141,7 +208,10 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     const SizedBox(height: 16),
                     Text(
                       state.message,
-                      style: GoogleFonts.cairo(color: Colors.white70, fontSize: 16),
+                      style: GoogleFonts.cairo(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -151,24 +221,27 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                         backgroundColor: const Color(0xFFFFC107),
                         foregroundColor: Colors.black,
                       ),
-                      child: Text('إعادة المحاولة', style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'إعادة المحاولة',
+                        style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
               );
             } else if (state is DelegateOrdersLoaded) {
-              // Filter active tasks (not completed/delivered)
-              final activeTasks = state.orders.where((o) {
-                final status = o.status.toLowerCase();
-                return status != 'delivered' && status != 'completed';
-              }).toList();
+              final activeTasks = state.orders.where(_isActiveTask).toList();
 
               if (activeTasks.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.task_alt, color: Colors.greenAccent.withValues(alpha: 0.6), size: 80),
+                      Icon(
+                        Icons.task_alt,
+                        color: Colors.greenAccent.withValues(alpha: 0.6),
+                        size: 80,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'لا توجد مهام نشطة حالياً',
@@ -194,12 +267,47 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
               return RefreshIndicator(
                 onRefresh: () => _cubit.fetchDelegateOrders(),
                 color: const Color(0xFFFFC107),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: activeTasks.length,
-                  itemBuilder: (context, index) {
-                    return _buildTaskCard(context, activeTasks[index]);
-                  },
+                child: DefaultTabController(
+                  length: _TaskStage.values.length,
+                  child: Column(
+                    children: [
+                      Container(
+                        color: const Color(0xFF141414),
+                        child: TabBar(
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          dividerColor: Colors.transparent,
+                          indicatorColor: const Color(0xFFFFC107),
+                          labelColor: const Color(0xFFFFC107),
+                          unselectedLabelColor: Colors.white54,
+                          labelStyle: GoogleFonts.cairo(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          tabs: _TaskStage.values
+                              .map(
+                                (stage) => Tab(
+                                  text: '${_stageTitle(stage)} (${_tasksForStage(activeTasks, stage).length})',
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: _TaskStage.values
+                              .map(
+                                (stage) => _buildStageTasksList(
+                                  context,
+                                  _tasksForStage(activeTasks, stage),
+                                  stage,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -208,6 +316,61 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
           },
         ),
       ),
+    );
+  }
+
+  bool _isActiveTask(OrderEntity order) {
+    final status = order.status.toLowerCase();
+    return status != 'delivered' && status != 'completed';
+  }
+
+  _TaskStage _taskStageFor(OrderEntity order) {
+    switch (order.status.toLowerCase()) {
+      case 'delegate_assigned':
+      case 'picking_up':
+        return _TaskStage.awaitingPickup;
+      case 'picked_up':
+        return _TaskStage.headingToCenter;
+      case 'repaired':
+      case 'ready':
+      case 'delivering':
+      case 'returning':
+        return _TaskStage.readyForDelivery;
+      default:
+        return _TaskStage.atCenter;
+    }
+  }
+
+  List<OrderEntity> _tasksForStage(
+    List<OrderEntity> activeTasks,
+    _TaskStage stage,
+  ) => activeTasks.where((task) => _taskStageFor(task) == stage).toList();
+
+  String _stageTitle(_TaskStage stage) => switch (stage) {
+        _TaskStage.awaitingPickup => 'بانتظار الاستلام',
+        _TaskStage.headingToCenter => 'في الطريق للمركز',
+        _TaskStage.atCenter => 'لدى المركز',
+        _TaskStage.readyForDelivery => 'جاهز للتوصيل',
+      };
+
+  Widget _buildStageTasksList(
+    BuildContext context,
+    List<OrderEntity> tasks,
+    _TaskStage stage,
+  ) {
+    if (tasks.isEmpty) {
+      return Center(
+        child: Text(
+          'لا توجد مهام في قسم ${_stageTitle(stage)}',
+          style: GoogleFonts.cairo(color: Colors.white54, fontSize: 15),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: tasks.length,
+      itemBuilder: (context, index) => _buildTaskCard(context, tasks[index]),
     );
   }
 
@@ -228,7 +391,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFFFC107).withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
@@ -238,7 +403,11 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     color: const Color(0xFFFFC107).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.assignment, color: Color(0xFFFFC107), size: 20),
+                  child: const Icon(
+                    Icons.assignment,
+                    color: Color(0xFFFFC107),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -262,11 +431,23 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Device info
-                _buildInfoRow(Icons.phone_android, 'الجهاز', '${order.device.brand} ${order.device.model}'),
+                _buildInfoRow(
+                  Icons.phone_android,
+                  'الجهاز',
+                  '${order.device.brand} ${order.device.model}',
+                ),
                 const SizedBox(height: 8),
-                _buildInfoRow(Icons.build_outlined, 'نوع المشكلة', _translateProblemType(order.device.problemType)),
+                _buildInfoRow(
+                  Icons.build_outlined,
+                  'نوع المشكلة',
+                  _translateProblemType(order.device.problemType),
+                ),
                 const SizedBox(height: 8),
-                _buildInfoRow(Icons.location_on_outlined, 'العنوان', '${order.pickupAddress.address}، ${order.pickupAddress.city}'),
+                _buildInfoRow(
+                  Icons.location_on_outlined,
+                  'العنوان',
+                  '${order.pickupAddress.address}، ${order.pickupAddress.city}',
+                ),
                 const SizedBox(height: 8),
                 // Customer phone
                 Row(
@@ -275,11 +456,16 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'هاتف العميل: ',
-                      style: GoogleFonts.cairo(fontSize: 13, color: Colors.white54),
+                      style: GoogleFonts.cairo(
+                        fontSize: 13,
+                        color: Colors.white54,
+                      ),
                     ),
                     GestureDetector(
                       onTap: order.client?.phone != null
-                          ? () => launchUrl(Uri.parse('tel:${order.client!.phone}'))
+                          ? () => launchUrl(
+                              Uri.parse('tel:${order.client!.phone}'),
+                            )
                           : null,
                       child: Text(
                         order.client?.phone ?? 'غير متوفر',
@@ -294,22 +480,33 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 ),
                 if (order.fees.delivery > 0) ...[
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.monetization_on_outlined, 'رسوم التوصيل', '${order.fees.delivery.toStringAsFixed(0)} د.ع'),
+                  _buildInfoRow(
+                    Icons.monetization_on_outlined,
+                    'رسوم التوصيل',
+                    '${order.fees.delivery.toStringAsFixed(0)} د.ع',
+                  ),
                 ],
                 const SizedBox(height: 16),
-                if (order.status.toLowerCase() == 'delegate_assigned' || order.status.toLowerCase() == 'picking_up') ...[
+                if (order.status.toLowerCase() == 'delegate_assigned' ||
+                    order.status.toLowerCase() == 'picking_up') ...[
                   // Security warning banner
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 22),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orange,
+                          size: 22,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -356,12 +553,18 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     decoration: BoxDecoration(
                       color: Colors.blue.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outline, color: Colors.blue, size: 22),
+                        const Icon(
+                          Icons.info_outline,
+                          color: Colors.blue,
+                          size: 22,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -401,19 +604,28 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                       },
                     ),
                   ),
-                ] else if (order.status.toLowerCase() == 'repaired' || order.status.toLowerCase() == 'ready' || order.status.toLowerCase() == 'delivering' || order.status.toLowerCase() == 'returning') ...[
+                ] else if (order.status.toLowerCase() == 'repaired' ||
+                    order.status.toLowerCase() == 'ready' ||
+                    order.status.toLowerCase() == 'delivering' ||
+                    order.status.toLowerCase() == 'returning') ...[
                   // ⚠️ Warning Banner: Call client to confirm delivery location
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.25),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 22),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orangeAccent,
+                          size: 22,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -429,7 +641,8 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                       ],
                     ),
                   ),
-                  if (order.client?.phone != null && order.client!.phone.isNotEmpty) ...[
+                  if (order.client?.phone != null &&
+                      order.client!.phone.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -450,7 +663,66 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        onPressed: () => launchUrl(Uri.parse('tel:${order.client!.phone}')),
+                        onPressed: () =>
+                            _showCustomerDetailsDialog(context, order),
+                      ),
+                    ),
+                  ],
+                  // Button: Confirm pickup from center with photos
+                  if (order.delegatePhotos != null &&
+                      order.delegatePhotos!.atCenterPickup.isEmpty) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00BCD4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.download_done_outlined),
+                        label: Text(
+                          'تأكيد استلام الجهاز من المركز ورفع الصور',
+                          style: GoogleFonts.cairo(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () {
+                          _showPickupCenterPhotosBottomSheet(context, order.id);
+                        },
+                      ),
+                    ),
+                  ],
+                  // Button: Confirm delivery to client with photos
+                  if (order.delegatePhotos != null &&
+                      order.delegatePhotos!.atCenterPickup.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: Text(
+                          'تأكيد تسليم الجهاز للعميل ورفع الصور',
+                          style: GoogleFonts.cairo(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () {
+                          _showConfirmDeliveryPhotosBottomSheet(context, order.id);
+                        },
                       ),
                     ),
                   ],
@@ -590,7 +862,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           content: Row(
             children: [
               const CircularProgressIndicator(color: Color(0xFFFFC107)),
@@ -608,9 +882,182 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
     );
   }
 
+  void _showCustomerDetailsDialog(BuildContext context, OrderEntity order) {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF141414),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: const Color(0xFFFFC107).withValues(alpha: 0.2),
+            ),
+          ),
+          title: Center(
+            child: Text(
+              'بيانات العميل للتواصل والتسليم',
+              style: GoogleFonts.cairo(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDialogInfoRow(
+                Icons.person_outline,
+                'اسم العميل',
+                order.client?.name ?? 'غير متوفر',
+              ),
+              const SizedBox(height: 12),
+              _buildDialogInfoRow(
+                Icons.location_on_outlined,
+                'منطقة التسليم',
+                '${order.pickupAddress.city}، ${order.pickupAddress.address}',
+              ),
+              const SizedBox(height: 12),
+              _buildDialogInfoRow(
+                Icons.phone_outlined,
+                'رقم الموبايل',
+                order.client?.phone ?? 'غير متوفر',
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFC107),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.phone),
+                      label: Text(
+                        'اتصال بالعميل',
+                        style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        if (order.client?.phone != null) {
+                          launchUrl(Uri.parse('tel:${order.client!.phone}'));
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        'تأكيد العنوان وبدء التوصيل',
+                        style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: Colors.green,
+                            content: Text(
+                              'تم تأكيد العنوان وجاري الانتقال لمرحلة التوصيل ✅',
+                              style: GoogleFonts.cairo(color: Colors.white),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'إلغاء',
+                      style: GoogleFonts.cairo(
+                        color: Colors.white54,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogInfoRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: const Color(0xFFFFC107), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.cairo(
+                    fontSize: 11,
+                    color: Colors.white54,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPickupPhotosBottomSheet(BuildContext context, String orderId) {
     final List<String> selectedImages = [];
-    final ImagePicker picker = ImagePicker();
 
     showModalBottomSheet(
       context: context,
@@ -634,7 +1081,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 return;
               }
               try {
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                final XFile? image = await ImagePickerService.pickImage(
+                  source: ImageSource.gallery,
+                );
                 if (image != null) {
                   setModalState(() {
                     selectedImages.add(image.path);
@@ -684,12 +1133,18 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 22),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orange,
+                          size: 22,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -713,13 +1168,18 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           onTap: hasImage ? null : pickImage,
                           child: Container(
                             height: 140,
-                            margin: EdgeInsets.only(left: index == 0 ? 0 : 6, right: index == 1 ? 0 : 6),
+                            margin: EdgeInsets.only(
+                              left: index == 0 ? 0 : 6,
+                              right: index == 1 ? 0 : 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E1E1E),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: hasImage
-                                    ? const Color(0xFFFFC107).withValues(alpha: 0.5)
+                                    ? const Color(
+                                        0xFFFFC107,
+                                      ).withValues(alpha: 0.5)
                                     : Colors.white12,
                               ),
                             ),
@@ -754,7 +1214,11 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                                               color: Colors.red,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -791,7 +1255,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                         : '📷 اختر ${2 - selectedImages.length} ${selectedImages.isEmpty ? "صورتين" : "صورة إضافية"} للجهاز',
                     style: GoogleFonts.cairo(
                       fontSize: 13,
-                      color: selectedImages.length == 2 ? Colors.greenAccent : Colors.white54,
+                      color: selectedImages.length == 2
+                          ? Colors.greenAccent
+                          : Colors.white54,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -823,12 +1289,17 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                       onPressed: selectedImages.length == 2
                           ? () {
                               Navigator.pop(bottomSheetContext);
-                              _cubit.uploadPhotosAndConfirm(orderId, selectedImages);
+                              _cubit.uploadPhotosAndConfirm(
+                                orderId,
+                                selectedImages,
+                              );
                             }
                           : null,
                     ),
                   ),
-                  SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 8),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewInsets.bottom + 8,
+                  ),
                 ],
               ),
             );
@@ -840,7 +1311,6 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
 
   void _showDropCenterPhotosBottomSheet(BuildContext context, String orderId) {
     final List<String> selectedImages = [];
-    final ImagePicker picker = ImagePicker();
 
     showModalBottomSheet(
       context: context,
@@ -864,7 +1334,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 return;
               }
               try {
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                final XFile? image = await ImagePickerService.pickImage(
+                  source: ImageSource.gallery,
+                );
                 if (image != null) {
                   setModalState(() {
                     selectedImages.add(image.path);
@@ -914,12 +1386,18 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     decoration: BoxDecoration(
                       color: Colors.blue.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outline, color: Colors.blue, size: 22),
+                        const Icon(
+                          Icons.info_outline,
+                          color: Colors.blue,
+                          size: 22,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -943,13 +1421,18 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           onTap: hasImage ? null : pickImage,
                           child: Container(
                             height: 140,
-                            margin: EdgeInsets.only(left: index == 0 ? 0 : 6, right: index == 1 ? 0 : 6),
+                            margin: EdgeInsets.only(
+                              left: index == 0 ? 0 : 6,
+                              right: index == 1 ? 0 : 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E1E1E),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: hasImage
-                                    ? const Color(0xFFFFC107).withValues(alpha: 0.5)
+                                    ? const Color(
+                                        0xFFFFC107,
+                                      ).withValues(alpha: 0.5)
                                     : Colors.white12,
                               ),
                             ),
@@ -984,7 +1467,11 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                                               color: Colors.red,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1021,7 +1508,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                         : '📷 اختر ${2 - selectedImages.length} ${selectedImages.isEmpty ? "صورتين" : "صورة إضافية"} للجهاز',
                     style: GoogleFonts.cairo(
                       fontSize: 13,
-                      color: selectedImages.length == 2 ? Colors.greenAccent : Colors.white54,
+                      color: selectedImages.length == 2
+                          ? Colors.greenAccent
+                          : Colors.white54,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -1058,7 +1547,457 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           : null,
                     ),
                   ),
-                  SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 8),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewInsets.bottom + 8,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showPickupCenterPhotosBottomSheet(BuildContext context, String orderId) {
+    final List<String> selectedImages = [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (builderContext, setModalState) {
+            Future<void> pickImage() async {
+              if (selectedImages.length >= 2) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.orange,
+                    content: Text(
+                      'الحد الأقصى صورتين فقط',
+                      style: GoogleFonts.cairo(color: Colors.white),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                );
+                return;
+              }
+              try {
+                final XFile? image = await ImagePickerService.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) {
+                  setModalState(() {
+                    selectedImages.add(image.path);
+                  });
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('خطأ أثناء اختيار الصورة: $e')),
+                  );
+                }
+              }
+            }
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF141414),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Title
+                  Text(
+                    'رفع صور الجهاز عند الاستلام من المركز',
+                    style: GoogleFonts.cairo(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Warning text
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00BCD4).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF00BCD4).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: Color(0xFF00BCD4),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'تنبيه: يرجى رفع صور الجهاز عند استلامه من مركز الصيانة بعد الإصلاح لتأكيد الاستلام.',
+                            style: GoogleFonts.cairo(
+                              fontSize: 12,
+                              color: const Color(0xFF80DEEA),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Photo slots
+                  Row(
+                    children: List.generate(2, (index) {
+                      final hasImage = index < selectedImages.length;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: hasImage ? null : pickImage,
+                          child: Container(
+                            height: 140,
+                            margin: EdgeInsets.only(
+                              left: index == 0 ? 0 : 6,
+                              right: index == 1 ? 0 : 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E1E1E),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: hasImage
+                                    ? const Color(0xFF00BCD4).withValues(alpha: 0.5)
+                                    : Colors.white12,
+                              ),
+                            ),
+                            child: hasImage
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: kIsWeb
+                                        ? Image.network(
+                                            selectedImages[index],
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          )
+                                        : Image.file(
+                                            File(selectedImages[index]),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          ),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo_outlined,
+                                        color: Colors.white24,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'صورة ${index + 1}',
+                                        style: GoogleFonts.cairo(
+                                          color: Colors.white38,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  // Status text
+                  Text(
+                    selectedImages.length == 2
+                        ? '✅ تم اختيار الصورتين - يمكنك الآن تأكيد الاستلام من المركز'
+                        : '📷 اختر ${2 - selectedImages.length} ${selectedImages.isEmpty ? "صورتين" : "صورة إضافية"} للجهاز',
+                    style: GoogleFonts.cairo(
+                      fontSize: 13,
+                      color: selectedImages.length == 2
+                          ? Colors.greenAccent
+                          : Colors.white54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  // Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedImages.length == 2
+                            ? const Color(0xFF00BCD4)
+                            : Colors.grey[700],
+                        foregroundColor: selectedImages.length == 2
+                            ? Colors.white
+                            : Colors.white38,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.cloud_upload_outlined),
+                      label: Text(
+                        'رفع الصور وتأكيد استلام الجهاز من المركز',
+                        style: GoogleFonts.cairo(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: selectedImages.length == 2
+                          ? () {
+                              Navigator.pop(bottomSheetContext);
+                              _cubit.confirmPickupCenter(orderId, selectedImages);
+                            }
+                          : null,
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewInsets.bottom + 8,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showConfirmDeliveryPhotosBottomSheet(BuildContext context, String orderId) {
+    final List<String> selectedImages = [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (builderContext, setModalState) {
+            Future<void> pickImage() async {
+              if (selectedImages.length >= 2) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.orange,
+                    content: Text(
+                      'الحد الأقصى صورتين فقط',
+                      style: GoogleFonts.cairo(color: Colors.white),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                );
+                return;
+              }
+              try {
+                final XFile? image = await ImagePickerService.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) {
+                  setModalState(() {
+                    selectedImages.add(image.path);
+                  });
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('خطأ أثناء اختيار الصورة: $e')),
+                  );
+                }
+              }
+            }
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF141414),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Title
+                  Text(
+                    'رفع صور التسليم للعميل',
+                    style: GoogleFonts.cairo(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Warning text
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.green.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: Colors.green,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'تنبيه: يرجى رفع صور الجهاز عند تسليمه النهائي للعميل لتأكيد اكتمال الطلب بنجاح.',
+                            style: GoogleFonts.cairo(
+                              fontSize: 12,
+                              color: Colors.green[200],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Photo slots
+                  Row(
+                    children: List.generate(2, (index) {
+                      final hasImage = index < selectedImages.length;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: hasImage ? null : pickImage,
+                          child: Container(
+                            height: 140,
+                            margin: EdgeInsets.only(
+                              left: index == 0 ? 0 : 6,
+                              right: index == 1 ? 0 : 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E1E1E),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: hasImage
+                                    ? Colors.green.withValues(alpha: 0.5)
+                                    : Colors.white12,
+                              ),
+                            ),
+                            child: hasImage
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: kIsWeb
+                                        ? Image.network(
+                                            selectedImages[index],
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          )
+                                        : Image.file(
+                                            File(selectedImages[index]),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          ),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo_outlined,
+                                        color: Colors.white24,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'صورة ${index + 1}',
+                                        style: GoogleFonts.cairo(
+                                          color: Colors.white38,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  // Status text
+                  Text(
+                    selectedImages.length == 2
+                        ? '✅ تم اختيار الصورتين - يمكنك الآن تأكيد تسليم الجهاز للعميل'
+                        : '📷 اختر ${2 - selectedImages.length} ${selectedImages.isEmpty ? "صورتين" : "صورة إضافية"} للجهاز',
+                    style: GoogleFonts.cairo(
+                      fontSize: 13,
+                      color: selectedImages.length == 2
+                          ? Colors.greenAccent
+                          : Colors.white54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  // Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedImages.length == 2
+                            ? Colors.green
+                            : Colors.grey[700],
+                        foregroundColor: selectedImages.length == 2
+                            ? Colors.white
+                            : Colors.white38,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.cloud_upload_outlined),
+                      label: Text(
+                        'رفع الصور وتأكيد تسليم الجهاز للعميل',
+                        style: GoogleFonts.cairo(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: selectedImages.length == 2
+                          ? () {
+                              Navigator.pop(bottomSheetContext);
+                              _cubit.confirmDelivery(orderId, selectedImages);
+                            }
+                          : null,
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewInsets.bottom + 8,
+                  ),
                 ],
               ),
             );

@@ -125,4 +125,19 @@ class ApiManager {
       ),
     );
   }
+
+  Future<Response> PatchData(
+    String endpoint, {
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? body,
+  }) {
+    return dio.patch(
+      Endpoints.Url + endpoint,
+      data: body,
+      options: Options(
+        headers: headers,
+        validateStatus: (status) => true,
+      ),
+    );
+  }
 }

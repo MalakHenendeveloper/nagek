@@ -10,9 +10,44 @@ import '../models/delegate_application_model.dart';
 import '../../../orders/data/models/order_model.dart';
 import '../../../orders/data/models/order_details_response_model.dart';
 import '../models/admin_payments_response_model.dart';
+import '../models/admin_payment_settings_model.dart';
+import '../models/admin_financial_settings_model.dart';
+import '../models/admin_dashboard_response_model.dart';
+import '../models/admin_settlements_response_model.dart';
+import '../models/admin_settlements_summary_response_model.dart';
+import '../models/admin_pay_settlement_response_model.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class AdminRemoteDataSource {
+  Future<AdminDashboardResponseModel> getAdminDashboard();
+
+  Future<AdminPaySettlementResponseModel> payAdminSettlement(
+    String settlementId, {
+    String? paymentMethod,
+    String? notes,
+  });
+
+  Future<AdminSettlementsSummaryResponseModel> getAdminSettlementsSummary({
+    required int page,
+    required int limit,
+    String? recipientType,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  });
+
+  Future<AdminSettlementsResponseModel> getAdminSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? recipientType,
+    String? recipientId,
+    String? order,
+    String? paymentMethod,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  });
   Future<OrdersResponseModel> getOrders({required int page, required int limit});
   Future<OrderDetailsResponseModel> getOrderDetails(String orderId);
   Future<AdminUsersResponseModel> getUsers({required int page, required int limit});
@@ -54,6 +89,22 @@ abstract class AdminRemoteDataSource {
     required String status,
     String? rejectionReason,
   });
+  Future<AdminPaymentSettingsResponseModel> updatePaymentSettings({
+    required String walletOwnerName,
+    required Map<String, String> walletNumbers,
+    required List<String> activePaymentMethods,
+    required String paymentInstructions,
+  });
+  Future<AdminPaymentSettingsResponseModel> getPaymentSettings();
+  Future<AdminFinancialSettingsResponseModel> updateFinancialSettings({
+    required String commissionType,
+    required double commissionValue,
+    required String delegateFeeType,
+    required double delegateFeeValue,
+    required String currency,
+    required bool isActive,
+  });
+  Future<AdminFinancialSettingsResponseModel> getFinancialSettings();
 }
 
 @LazySingleton(as: AdminRemoteDataSource)
@@ -419,6 +470,194 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       return AdminReviewPaymentResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في مراجعة الدفع');
+    }
+  }
+
+  @override
+  Future<AdminPaymentSettingsResponseModel> updatePaymentSettings({
+    required String walletOwnerName,
+    required Map<String, String> walletNumbers,
+    required List<String> activePaymentMethods,
+    required String paymentInstructions,
+  }) async {
+    final response = await _apiManager.UpdateData(
+      Endpoints.adminPaymentSettings,
+      body: {
+        'walletOwnerName': walletOwnerName,
+        'walletNumbers': walletNumbers,
+        'activePaymentMethods': activePaymentMethods,
+        'paymentInstructions': paymentInstructions,
+      },
+    );
+
+    if (response.data != null) {
+      return AdminPaymentSettingsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث إعدادات الدفع');
+    }
+  }
+
+  @override
+  Future<AdminPaymentSettingsResponseModel> getPaymentSettings() async {
+    final response = await _apiManager.getDate(
+      Endpoints.adminPaymentSettings,
+    );
+
+    if (response.data != null) {
+      return AdminPaymentSettingsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب إعدادات الدفع');
+    }
+  }
+
+  @override
+  Future<AdminFinancialSettingsResponseModel> updateFinancialSettings({
+    required String commissionType,
+    required double commissionValue,
+    required String delegateFeeType,
+    required double delegateFeeValue,
+    required String currency,
+    required bool isActive,
+  }) async {
+    final response = await _apiManager.UpdateData(
+      Endpoints.adminFinancialSettings,
+      body: {
+        'commissionType': commissionType,
+        'commissionValue': commissionValue,
+        'delegateFeeType': delegateFeeType,
+        'delegateFeeValue': delegateFeeValue,
+        'currency': currency,
+        'isActive': isActive,
+      },
+    );
+
+    if (response.data != null) {
+      return AdminFinancialSettingsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث الإعدادات المالية');
+    }
+  }
+
+  @override
+  Future<AdminFinancialSettingsResponseModel> getFinancialSettings() async {
+    final response = await _apiManager.getDate(
+      Endpoints.adminFinancialSettings,
+    );
+
+    if (response.data != null) {
+      return AdminFinancialSettingsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب الإعدادات المالية');
+    }
+  }
+
+  @override
+  Future<AdminDashboardResponseModel> getAdminDashboard() async {
+    final response = await _apiManager.getDate(Endpoints.adminDashboard);
+    if (response.data != null) {
+      return AdminDashboardResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب لوحة إحصائيات الإدارة');
+    }
+  }
+
+  @override
+  Future<AdminSettlementsResponseModel> getAdminSettlements({
+    required int page,
+    required int limit,
+    String? status,
+    String? recipientType,
+    String? recipientId,
+    String? order,
+    String? paymentMethod,
+    String? dateFrom,
+    String? dateTo,
+    String? sort,
+  }) async {
+    String url = '${Endpoints.adminSettlements}?page=$page&limit=$limit';
+    if (status != null && status.isNotEmpty && status != 'all') {
+      url += '&status=$status';
+    }
+    if (recipientType != null && recipientType.isNotEmpty && recipientType != 'all') {
+      url += '&recipientType=$recipientType';
+    }
+    if (recipientId != null && recipientId.isNotEmpty) {
+      url += '&recipientId=$recipientId';
+    }
+    if (order != null && order.isNotEmpty) {
+      url += '&order=$order';
+    }
+    if (paymentMethod != null && paymentMethod.isNotEmpty && paymentMethod != 'all') {
+      url += '&paymentMethod=$paymentMethod';
+    }
+    if (dateFrom != null && dateFrom.isNotEmpty) {
+      url += '&dateFrom=$dateFrom';
+    }
+    if (dateTo != null && dateTo.isNotEmpty) {
+      url += '&dateTo=$dateTo';
+    }
+    if (sort != null && sort.isNotEmpty) {
+      url += '&sort=$sort';
+    }
+    final response = await _apiManager.getDate(url);
+    if (response.data != null) {
+      return AdminSettlementsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب تسويات النظام');
+    }
+  }
+
+  @override
+  Future<AdminSettlementsSummaryResponseModel> getAdminSettlementsSummary({
+    required int page,
+    required int limit,
+    String? recipientType,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    String url = '${Endpoints.adminSettlementsSummary}?page=$page&limit=$limit';
+    if (recipientType != null && recipientType.isNotEmpty && recipientType != 'all') {
+      url += '&recipientType=$recipientType';
+    }
+    if (search != null && search.isNotEmpty) {
+      url += '&search=$search';
+    }
+    if (sortBy != null && sortBy.isNotEmpty) {
+      url += '&sortBy=$sortBy';
+    }
+    if (sortOrder != null && sortOrder.isNotEmpty) {
+      url += '&sortOrder=$sortOrder';
+    }
+    final response = await _apiManager.getDate(url);
+    if (response.data != null) {
+      return AdminSettlementsSummaryResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب ملخص التسويات المجمع');
+    }
+  }
+
+  @override
+  Future<AdminPaySettlementResponseModel> payAdminSettlement(
+    String settlementId, {
+    String? paymentMethod,
+    String? notes,
+  }) async {
+    final Map<String, dynamic> body = {};
+    if (paymentMethod != null && paymentMethod.isNotEmpty) {
+      body['paymentMethod'] = paymentMethod;
+    }
+    if (notes != null && notes.isNotEmpty) {
+      body['notes'] = notes;
+    }
+    final response = await _apiManager.PatchData(
+      Endpoints.payAdminSettlement(settlementId),
+      body: body,
+    );
+    if (response.data != null) {
+      return AdminPaySettlementResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تأكيد دفع التسوية');
     }
   }
 }

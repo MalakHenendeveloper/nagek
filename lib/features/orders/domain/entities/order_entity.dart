@@ -31,12 +31,17 @@ class FeesEntity {
   final double delivery;
   final double repair;
   final double total;
+  final double delegateFeeValue;
+
+  double get pickupFee => inspection;
+  double get deliveryFee => delivery;
 
   FeesEntity({
     required this.inspection,
     required this.delivery,
     required this.repair,
     required this.total,
+    this.delegateFeeValue = 0.0,
   });
 }
 
@@ -84,6 +89,56 @@ class OrderClientEntity {
   });
 }
 
+class OrderDelegateEntity {
+  final String id;
+  final String name;
+  final String phone;
+
+  OrderDelegateEntity({
+    required this.id,
+    required this.name,
+    required this.phone,
+  });
+}
+
+class FinancialSnapshotEntity {
+  final double repairAmount;
+  final double inspectionFee;
+  final double deliveryFee;
+  final double clientTotal;
+  final double adminCommission;
+  final double delegateFee;
+  final double centerAmount;
+  final String currency;
+
+  double get pickupFee => inspectionFee;
+
+  FinancialSnapshotEntity({
+    required this.repairAmount,
+    required this.inspectionFee,
+    required this.deliveryFee,
+    required this.clientTotal,
+    required this.adminCommission,
+    required this.delegateFee,
+    required this.centerAmount,
+    required this.currency,
+  });
+}
+
+class DelegatePhotosEntity {
+  final List<String> atPickup;
+  final List<String> atCenterDrop;
+  final List<String> atCenterPickup;
+  final List<String> atDelivery;
+
+  DelegatePhotosEntity({
+    required this.atPickup,
+    required this.atCenterDrop,
+    required this.atCenterPickup,
+    required this.atDelivery,
+  });
+}
+
 class OrderEntity {
   final String id;
   final String orderNumber;
@@ -101,6 +156,11 @@ class OrderEntity {
   final String? clientApprovalStatus;
   final String? clientApprovalTimestamp;
   final OrderClientEntity? client;
+  final OrderDelegateEntity? delegate;
+  final OrderDelegateEntity? pickupDelegate;
+  final OrderDelegateEntity? deliveryDelegate;
+  final FinancialSnapshotEntity? financialSnapshot;
+  final DelegatePhotosEntity? delegatePhotos;
 
   OrderEntity({
     required this.id,
@@ -119,6 +179,11 @@ class OrderEntity {
     this.clientApprovalStatus,
     this.clientApprovalTimestamp,
     this.client,
+    this.delegate,
+    this.pickupDelegate,
+    this.deliveryDelegate,
+    this.financialSnapshot,
+    this.delegatePhotos,
   });
 }
 
