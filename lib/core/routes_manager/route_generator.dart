@@ -18,11 +18,7 @@ import '../../features/centers/presentation/screens/center_order_details_screen.
 import '../../features/centers/presentation/screens/submit_inspection_screen.dart';
 import '../../features/centers/presentation/screens/submit_price_offer_screen.dart';
 import '../../features/orders/presentation/screens/order_payment_screen.dart';
-import '../../features/orders/presentation/screens/delegate_settlements_screen.dart';
 import '../../features/orders/presentation/screens/delegate_earnings_screen.dart';
-import '../../features/centers/presentation/screens/center_settlements_screen.dart';
-import '../../features/admin/presentation/screens/admin_settlements_screen.dart';
-import '../../features/admin/presentation/screens/admin_settlements_summary_screen.dart';
 import '../../features/centers/presentation/screens/add_center_service_screen.dart';
 import '../../features/centers/presentation/screens/center_services_screen.dart';
 import '../../features/centers/presentation/screens/center_service_details_screen.dart';
@@ -81,14 +77,6 @@ class RouteGenerator {
       case Routes.orderPaymentRoute:
         final orderId = settings.arguments as String;
         return MaterialPageRoute(builder: (_) => OrderPaymentScreen(orderId: orderId));
-      case Routes.delegateSettlementsRoute:
-        return MaterialPageRoute(builder: (_) => const DelegateSettlementsScreen());
-      case Routes.centerSettlementsRoute:
-        return MaterialPageRoute(builder: (_) => const CenterSettlementsScreen());
-      case Routes.adminSettlementsRoute:
-        return MaterialPageRoute(builder: (_) => const AdminSettlementsScreen());
-      case Routes.adminSettlementsSummaryRoute:
-        return MaterialPageRoute(builder: (_) => const AdminSettlementsSummaryScreen());
       case Routes.addCenterServiceRoute:
         return MaterialPageRoute(builder: (_) => const AddCenterServiceScreen());
       case Routes.centerServicesRoute:

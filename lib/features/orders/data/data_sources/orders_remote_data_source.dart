@@ -18,7 +18,6 @@ import '../models/pickup_photos_response_model.dart';
 import '../models/order_payment_response_model.dart';
 import '../models/payment_proof_response_model.dart';
 import '../models/delegate_dashboard_response_model.dart';
-import '../models/delegate_settlements_response_model.dart';
 
 abstract class OrdersRemoteDataSource {
   Future<OrdersResponseModel> getOrders({
@@ -91,15 +90,6 @@ abstract class OrdersRemoteDataSource {
   );
 
   Future<DelegateDashboardResponseModel> getDelegateDashboard();
-
-  Future<DelegateSettlementsResponseModel> getDelegateSettlements({
-    int page = 1,
-    int limit = 10,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  });
 }
 
 @LazySingleton(as: OrdersRemoteDataSource)
@@ -472,45 +462,6 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
       return DelegateDashboardResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في جلب لوحة إحصائيات المندوب');
-    }
-  }
-
-  @override
-  Future<DelegateSettlementsResponseModel> getDelegateSettlements({
-    int page = 1,
-    int limit = 10,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-    };
-
-    if (status != null && status.isNotEmpty && status != 'all') {
-      queryParams['status'] = status;
-    }
-    if (dateFrom != null && dateFrom.isNotEmpty) {
-      queryParams['dateFrom'] = dateFrom;
-    }
-    if (dateTo != null && dateTo.isNotEmpty) {
-      queryParams['dateTo'] = dateTo;
-    }
-    if (sort != null && sort.isNotEmpty) {
-      queryParams['sort'] = sort;
-    }
-
-    final response = await _apiManager.getDate(
-      Endpoints.delegateSettlements,
-      queryParameters: queryParams,
-    );
-
-    if (response.data != null) {
-      return DelegateSettlementsResponseModel.fromJson(response.data);
-    } else {
-      throw Exception('فشل في جلب قائمة تسويات المندوب');
     }
   }
 

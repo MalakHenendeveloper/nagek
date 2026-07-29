@@ -127,18 +127,6 @@ class DelegateDashboardDrawer extends StatelessWidget {
                         );
                       },
                     ),
-                    _buildNavItem(
-                      context: context,
-                      title: 'تسويات وأرباح المندوب المالية',
-                      subtitle: 'عرض التسويات المالية والأرباح',
-                      icon: Icons.receipt_long_outlined,
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.delegateSettlementsRoute,
-                        );
-                      },
-                    ),
 
                     const SizedBox(height: 20),
                   ],

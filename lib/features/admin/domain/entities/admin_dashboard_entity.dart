@@ -63,8 +63,6 @@ class AdminFinancialSummaryEntity {
   final double totalCenterRevenue;
   final double totalDelegateEarnings;
   final double totalAdminCommission;
-  final double pendingSettlementsAmount;
-  final double paidSettlementsAmount;
   final List<AdminCenterBreakdownEntity> centerBreakdown;
   final List<AdminDelegateBreakdownEntity> delegateBreakdown;
 
@@ -75,8 +73,6 @@ class AdminFinancialSummaryEntity {
     required this.totalCenterRevenue,
     required this.totalDelegateEarnings,
     required this.totalAdminCommission,
-    required this.pendingSettlementsAmount,
-    required this.paidSettlementsAmount,
     required this.centerBreakdown,
     required this.delegateBreakdown,
   });
@@ -96,11 +92,9 @@ class AdminUsersSummaryEntity {
 
 class AdminRecentActivityEntity {
   final List<AdminRecentOrderEntity> recentOrders;
-  final List<AdminRecentSettlementEntity> recentSettlements;
 
   AdminRecentActivityEntity({
     required this.recentOrders,
-    required this.recentSettlements,
   });
 }
 
@@ -119,25 +113,5 @@ class AdminRecentOrderEntity {
     required this.status,
     required this.createdAt,
     this.repairCenterName,
-  });
-}
-
-class AdminRecentSettlementEntity {
-  final String id;
-  final double amount;
-  final String stage;
-  final String status;
-  final String recipientName;
-  final String orderNumber;
-  final String createdAt;
-
-  AdminRecentSettlementEntity({
-    required this.id,
-    required this.amount,
-    required this.stage,
-    required this.status,
-    required this.recipientName,
-    required this.orderNumber,
-    required this.createdAt,
   });
 }

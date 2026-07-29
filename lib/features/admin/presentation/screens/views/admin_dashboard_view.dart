@@ -33,21 +33,6 @@ class AdminDashboardView extends StatelessWidget {
     }
   }
 
-  String _translateStage(String stage) {
-    switch (stage.toLowerCase()) {
-      case 'admin':
-        return 'إدارة';
-      case 'repair':
-        return 'صيانة';
-      case 'delivery':
-        return 'توصيل';
-      case 'pickup':
-        return 'استلام';
-      default:
-        return stage.isNotEmpty ? stage : 'عام';
-    }
-  }
-
   String _translateStatus(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -219,7 +204,7 @@ class AdminDashboardView extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'متابعة فورية للطلبات، المحفظة والمدفوعات، إيرادات الكيانات، والتسويات المالية.',
+                  'متابعة فورية للطلبات، المحفظة والمدفوعات، وإيرادات الكيانات.',
                   style: GoogleFonts.cairo(
                     fontSize: 12,
                     color: Colors.white70,
@@ -489,15 +474,6 @@ class AdminDashboardView extends StatelessWidget {
                 color: Colors.greenAccent,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildFinancialCard(
-                title: 'تسويات معلقة',
-                value: '${financial.pendingSettlementsAmount.toStringAsFixed(0)} د.ع',
-                icon: Icons.receipt_long_outlined,
-                color: Colors.purpleAccent,
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -652,37 +628,6 @@ class AdminDashboardView extends StatelessWidget {
           ),
 
         const SizedBox(height: 16),
-
-        // Recent Settlements Sub-Section
-        Text(
-          'أحدث التسويات المالية',
-          style: GoogleFonts.cairo(
-            color: Colors.white70,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (activity.recentSettlements.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF141414),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'لا توجد تسويات حديثة',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.cairo(color: Colors.white38, fontSize: 12),
-            ),
-          )
-        else
-          Column(
-            children: activity.recentSettlements
-                .map((settlement) => _buildSettlementCard(settlement))
-                .toList(),
-          ),
       ],
     );
   }
@@ -841,77 +786,6 @@ class AdminDashboardView extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               _formatDate(order.createdAt),
-              style: GoogleFonts.cairo(color: Colors.white38, fontSize: 10),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettlementCard(AdminRecentSettlementEntity settlement) {
-    final statusColor = _getStatusColor(settlement.status);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                settlement.orderNumber,
-                style: GoogleFonts.cairo(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _translateStatus(settlement.status),
-                  style: GoogleFonts.cairo(
-                    color: statusColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'المستلم: ${settlement.recipientName.isNotEmpty ? settlement.recipientName : "غير محدد"} (${_translateStage(settlement.stage)})',
-                style: GoogleFonts.cairo(color: Colors.white70, fontSize: 11),
-              ),
-              Text(
-                '${settlement.amount.toStringAsFixed(0)} د.ع',
-                style: GoogleFonts.cairo(
-                  color: const Color(0xFFFFC107),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          if (settlement.createdAt.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              _formatDate(settlement.createdAt),
               style: GoogleFonts.cairo(color: Colors.white38, fontSize: 10),
             ),
           ],

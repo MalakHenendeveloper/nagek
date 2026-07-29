@@ -44,10 +44,6 @@ import '../../features/admin/domain/use_cases/get_admin_orders_use_case.dart'
     as _i687;
 import '../../features/admin/domain/use_cases/get_admin_payments_use_case.dart'
     as _i803;
-import '../../features/admin/domain/use_cases/get_admin_settlements_summary_use_case.dart'
-    as _i711;
-import '../../features/admin/domain/use_cases/get_admin_settlements_use_case.dart'
-    as _i42;
 import '../../features/admin/domain/use_cases/get_admin_user_details_use_case.dart'
     as _i191;
 import '../../features/admin/domain/use_cases/get_admin_users_use_case.dart'
@@ -58,8 +54,6 @@ import '../../features/admin/domain/use_cases/get_financial_settings_use_case.da
     as _i108;
 import '../../features/admin/domain/use_cases/get_payment_settings_use_case.dart'
     as _i114;
-import '../../features/admin/domain/use_cases/pay_admin_settlement_use_case.dart'
-    as _i588;
 import '../../features/admin/domain/use_cases/reject_delegate_application_use_case.dart'
     as _i379;
 import '../../features/admin/domain/use_cases/review_admin_payment_use_case.dart'
@@ -94,10 +88,6 @@ import '../../features/admin/presentation/cubit/admin_payment_settings_cubit.dar
     as _i108;
 import '../../features/admin/presentation/cubit/admin_payments_cubit.dart'
     as _i1017;
-import '../../features/admin/presentation/cubit/admin_settlements_cubit.dart'
-    as _i559;
-import '../../features/admin/presentation/cubit/admin_settlements_summary_cubit.dart'
-    as _i585;
 import '../../features/admin/presentation/cubit/admin_user_details_cubit.dart'
     as _i608;
 import '../../features/admin/presentation/cubit/admin_users_cubit.dart'
@@ -141,8 +131,6 @@ import '../../features/centers/domain/use_cases/get_center_service_details_use_c
     as _i775;
 import '../../features/centers/domain/use_cases/get_center_services_use_case.dart'
     as _i101;
-import '../../features/centers/domain/use_cases/get_center_settlements_use_case.dart'
-    as _i766;
 import '../../features/centers/domain/use_cases/get_centers_use_case.dart'
     as _i235;
 import '../../features/centers/domain/use_cases/get_my_center_services_use_case.dart'
@@ -153,6 +141,8 @@ import '../../features/centers/domain/use_cases/submit_price_offer_use_case.dart
     as _i294;
 import '../../features/centers/domain/use_cases/update_center_order_status_use_case.dart'
     as _i390;
+import '../../features/centers/domain/use_cases/update_center_profile_use_case.dart'
+    as _i781;
 import '../../features/centers/domain/use_cases/update_center_service_use_case.dart'
     as _i1012;
 import '../../features/centers/presentation/cubit/add_center_service_cubit.dart'
@@ -167,8 +157,6 @@ import '../../features/centers/presentation/cubit/center_order_details_cubit.dar
     as _i547;
 import '../../features/centers/presentation/cubit/center_service_details_cubit.dart'
     as _i435;
-import '../../features/centers/presentation/cubit/center_settlements_cubit.dart'
-    as _i388;
 import '../../features/centers/presentation/cubit/centers_cubit.dart' as _i997;
 import '../../features/centers/presentation/cubit/my_center_services_cubit.dart'
     as _i1037;
@@ -176,6 +164,8 @@ import '../../features/centers/presentation/cubit/submit_inspection_cubit.dart'
     as _i684;
 import '../../features/centers/presentation/cubit/submit_price_offer_cubit.dart'
     as _i843;
+import '../../features/centers/presentation/cubit/update_center_profile_cubit.dart'
+    as _i347;
 import '../../features/centers/presentation/cubit/update_center_service_cubit.dart'
     as _i361;
 import '../../features/orders/data/data_sources/device_local_data_source.dart'
@@ -214,8 +204,6 @@ import '../../features/orders/domain/use_cases/get_delegate_dashboard_use_case.d
     as _i1018;
 import '../../features/orders/domain/use_cases/get_delegate_orders_use_case.dart'
     as _i279;
-import '../../features/orders/domain/use_cases/get_delegate_settlements_use_case.dart'
-    as _i927;
 import '../../features/orders/domain/use_cases/get_inspection_report_use_case.dart'
     as _i282;
 import '../../features/orders/domain/use_cases/get_order_details_use_case.dart'
@@ -240,8 +228,6 @@ import '../../features/orders/presentation/cubit/delegate_dashboard_cubit.dart'
     as _i178;
 import '../../features/orders/presentation/cubit/delegate_orders_cubit.dart'
     as _i705;
-import '../../features/orders/presentation/cubit/delegate_settlements_cubit.dart'
-    as _i906;
 import '../../features/orders/presentation/cubit/device_selection_cubit.dart'
     as _i490;
 import '../../features/orders/presentation/cubit/order_payment_cubit.dart'
@@ -382,9 +368,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i279.GetDelegateOrdersUseCase>(
       () => _i279.GetDelegateOrdersUseCase(gh<_i992.OrdersRepository>()),
     );
-    gh.lazySingleton<_i927.GetDelegateSettlementsUseCase>(
-      () => _i927.GetDelegateSettlementsUseCase(gh<_i992.OrdersRepository>()),
-    );
     gh.lazySingleton<_i282.GetInspectionReportUseCase>(
       () => _i282.GetInspectionReportUseCase(gh<_i992.OrdersRepository>()),
     );
@@ -427,11 +410,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i282.GetInspectionReportUseCase>(),
         gh<_i994.GetPriceOfferUseCase>(),
         gh<_i171.ApprovePriceOfferUseCase>(),
-      ),
-    );
-    gh.factory<_i906.DelegateSettlementsCubit>(
-      () => _i906.DelegateSettlementsCubit(
-        gh<_i927.GetDelegateSettlementsUseCase>(),
       ),
     );
     gh.factory<_i12.OrderPaymentCubit>(
@@ -521,13 +499,6 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i13.GetAdminDelegateApplicationsUseCase(gh<_i583.AdminRepository>()),
     );
-    gh.lazySingleton<_i711.GetAdminSettlementsSummaryUseCase>(
-      () =>
-          _i711.GetAdminSettlementsSummaryUseCase(gh<_i583.AdminRepository>()),
-    );
-    gh.lazySingleton<_i42.GetAdminSettlementsUseCase>(
-      () => _i42.GetAdminSettlementsUseCase(gh<_i583.AdminRepository>()),
-    );
     gh.lazySingleton<_i385.GetDelegateApplicationDetailsUseCase>(
       () => _i385.GetDelegateApplicationDetailsUseCase(
         gh<_i583.AdminRepository>(),
@@ -538,9 +509,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i114.GetPaymentSettingsUseCase>(
       () => _i114.GetPaymentSettingsUseCase(gh<_i583.AdminRepository>()),
-    );
-    gh.lazySingleton<_i588.PayAdminSettlementUseCase>(
-      () => _i588.PayAdminSettlementUseCase(gh<_i583.AdminRepository>()),
     );
     gh.lazySingleton<_i379.RejectDelegateApplicationUseCase>(
       () => _i379.RejectDelegateApplicationUseCase(gh<_i583.AdminRepository>()),
@@ -641,9 +609,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i101.GetCenterServicesUseCase>(
       () => _i101.GetCenterServicesUseCase(gh<_i105.CentersRepository>()),
     );
-    gh.lazySingleton<_i766.GetCenterSettlementsUseCase>(
-      () => _i766.GetCenterSettlementsUseCase(gh<_i105.CentersRepository>()),
-    );
     gh.lazySingleton<_i235.GetCentersUseCase>(
       () => _i235.GetCentersUseCase(gh<_i105.CentersRepository>()),
     );
@@ -659,6 +624,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i390.UpdateCenterOrderStatusUseCase>(
       () => _i390.UpdateCenterOrderStatusUseCase(gh<_i105.CentersRepository>()),
     );
+    gh.lazySingleton<_i781.UpdateCenterProfileUseCase>(
+      () => _i781.UpdateCenterProfileUseCase(gh<_i105.CentersRepository>()),
+    );
     gh.lazySingleton<_i1012.UpdateCenterServiceUseCase>(
       () => _i1012.UpdateCenterServiceUseCase(gh<_i105.CentersRepository>()),
     );
@@ -671,20 +639,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i415.AdminOrdersCubit>(
       () => _i415.AdminOrdersCubit(gh<_i687.GetAdminOrdersUseCase>()),
     );
-    gh.factory<_i559.AdminSettlementsCubit>(
-      () => _i559.AdminSettlementsCubit(
-        gh<_i42.GetAdminSettlementsUseCase>(),
-        gh<_i588.PayAdminSettlementUseCase>(),
-      ),
-    );
     gh.factory<_i883.AdminOrderDetailsCubit>(
       () =>
           _i883.AdminOrderDetailsCubit(gh<_i977.GetAdminOrderDetailsUseCase>()),
-    );
-    gh.factory<_i585.AdminSettlementsSummaryCubit>(
-      () => _i585.AdminSettlementsSummaryCubit(
-        gh<_i711.GetAdminSettlementsSummaryUseCase>(),
-      ),
     );
     gh.factory<_i608.AdminUserDetailsCubit>(
       () => _i608.AdminUserDetailsCubit(
@@ -694,9 +651,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i114.UpdateAdminUserStatusUseCase>(),
       ),
     );
-    gh.factory<_i388.CenterSettlementsCubit>(
-      () =>
-          _i388.CenterSettlementsCubit(gh<_i766.GetCenterSettlementsUseCase>()),
+    gh.factory<_i347.UpdateCenterProfileCubit>(
+      () => _i347.UpdateCenterProfileCubit(
+        gh<_i781.UpdateCenterProfileUseCase>(),
+      ),
     );
     gh.factory<_i361.UpdateCenterServiceCubit>(
       () => _i361.UpdateCenterServiceCubit(

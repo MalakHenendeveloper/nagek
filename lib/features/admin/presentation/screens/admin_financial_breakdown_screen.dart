@@ -193,11 +193,6 @@ class _AdminFinancialBreakdownScreenState
               _buildSummaryRow('إجمالي إيرادات المراكز', widget.financial.totalCenterRevenue, const Color(0xFFFF9800)),
               _buildSummaryRow('إجمالي مستحقات المندوبين', widget.financial.totalDelegateEarnings, const Color(0xFF4CAF50)),
 
-              const SizedBox(height: 20),
-              _buildSectionHeader('التسويات المالية'),
-              const SizedBox(height: 8),
-              _buildSummaryRow('تسويات مدفوعة', widget.financial.paidSettlementsAmount, const Color(0xFF81C784)),
-              _buildSummaryRow('تسويات معلقة', widget.financial.pendingSettlementsAmount, const Color(0xFFBA68C8)),
             ],
           ),
         ),

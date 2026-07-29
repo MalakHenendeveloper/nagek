@@ -7,7 +7,6 @@ import '../entities/service_entity.dart';
 import '../entities/center_order_details_entity.dart';
 import '../entities/price_offer_entity.dart';
 import '../entities/center_dashboard_entity.dart';
-import '../entities/center_settlement_entity.dart';
 
 abstract class CentersRepository {
   Future<Either<Failure, CentersResultEntity>> getCenters({
@@ -68,15 +67,6 @@ abstract class CentersRepository {
   });
 
   Future<Either<Failure, CenterDashboardEntity>> getCenterDashboard();
-
-  Future<Either<Failure, CenterSettlementsResultEntity>> getCenterSettlements({
-    required int page,
-    required int limit,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  });
 
   Future<Either<Failure, CenterEntity>> updateCenterProfile({
     required String name,

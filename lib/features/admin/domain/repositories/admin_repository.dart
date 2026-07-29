@@ -9,40 +9,10 @@ import '../entities/admin_payment_entity.dart';
 import '../entities/admin_payment_settings_entity.dart';
 import '../entities/admin_financial_settings_entity.dart';
 import '../entities/admin_dashboard_entity.dart';
-import '../entities/admin_settlement_entity.dart';
-import '../entities/admin_settlements_summary_entity.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 abstract class AdminRepository {
   Future<Either<Failure, AdminDashboardEntity>> getAdminDashboard();
-
-  Future<Either<Failure, AdminSettlementEntity>> payAdminSettlement(
-    String settlementId, {
-    String? paymentMethod,
-    String? notes,
-  });
-
-  Future<Either<Failure, AdminSettlementsSummaryResultEntity>> getAdminSettlementsSummary({
-    required int page,
-    required int limit,
-    String? recipientType,
-    String? search,
-    String? sortBy,
-    String? sortOrder,
-  });
-
-  Future<Either<Failure, AdminSettlementsResultEntity>> getAdminSettlements({
-    required int page,
-    required int limit,
-    String? status,
-    String? recipientType,
-    String? recipientId,
-    String? order,
-    String? paymentMethod,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  });
   Future<Either<Failure, OrdersResultEntity>> getOrders({required int page, required int limit});
   Future<Either<Failure, OrderEntity>> getOrderDetails(String orderId);
   Future<Either<Failure, AdminUsersResult>> getUsers({required int page, required int limit});

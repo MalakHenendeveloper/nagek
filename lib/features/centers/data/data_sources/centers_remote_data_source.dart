@@ -14,7 +14,6 @@ import '../models/price_offer_response_model.dart';
 
 import '../models/center_details_response.dart';
 import '../models/center_dashboard_response_model.dart';
-import '../models/center_settlements_response_model.dart';
 import '../models/add_center_service_response_model.dart';
 import '../models/center_service_details_response_model.dart';
 import '../models/update_center_profile_response_model.dart';
@@ -51,15 +50,6 @@ abstract class CentersRemoteDataSource {
     bool isAvailable = true,
   });
   Future<CenterDashboardResponseModel> getCenterDashboard();
-
-  Future<CenterSettlementsResponseModel> getCenterSettlements({
-    required int page,
-    required int limit,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  });
   Future<CentersResponseModel> getCenters({
     required int page,
     required int limit,
@@ -285,36 +275,6 @@ class CentersRemoteDataSourceImpl implements CentersRemoteDataSource {
       return CenterDashboardResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في جلب لوحة إحصائيات مركز الصيانة');
-    }
-  }
-
-  @override
-  Future<CenterSettlementsResponseModel> getCenterSettlements({
-    required int page,
-    required int limit,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  }) async {
-    String url = '${Endpoints.centerSettlements}?page=$page&limit=$limit';
-    if (status != null && status.isNotEmpty && status != 'all') {
-      url += '&status=$status';
-    }
-    if (dateFrom != null && dateFrom.isNotEmpty) {
-      url += '&dateFrom=$dateFrom';
-    }
-    if (dateTo != null && dateTo.isNotEmpty) {
-      url += '&dateTo=$dateTo';
-    }
-    if (sort != null && sort.isNotEmpty) {
-      url += '&sort=$sort';
-    }
-    final response = await _apiManager.getDate(url);
-    if (response.data != null) {
-      return CenterSettlementsResponseModel.fromJson(response.data);
-    } else {
-      throw Exception('فشل في جلب تسويات مركز الصيانة');
     }
   }
 

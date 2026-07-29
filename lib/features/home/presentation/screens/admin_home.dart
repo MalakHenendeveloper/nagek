@@ -212,40 +212,6 @@ class _AdminHomeState extends State<AdminHome> {
                           title: 'التحويلات والمدفوعات',
                           icon: Icons.account_balance_wallet_rounded,
                         ),
-                        ListTile(
-                          dense: true,
-                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
-                          leading: const Icon(Icons.receipt_long_rounded, color: Color(0xFFFFC107), size: 20),
-                          title: Text(
-                            'قائمة تسويات النظام',
-                            style: GoogleFonts.cairo(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, Routes.adminSettlementsRoute);
-                          },
-                        ),
-                        ListTile(
-                          dense: true,
-                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
-                          leading: const Icon(Icons.pie_chart_rounded, color: Color(0xFFFFC107), size: 20),
-                          title: Text(
-                            'ملخص التسويات المجمع',
-                            style: GoogleFonts.cairo(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, Routes.adminSettlementsSummaryRoute);
-                          },
-                        ),
                         _buildDrawerSubItem(
                           index: 9,
                           title: 'إعدادات المحافظ الإلكترونية',

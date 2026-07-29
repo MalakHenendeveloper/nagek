@@ -7,7 +7,6 @@ import '../../domain/entities/service_entity.dart';
 import '../../domain/entities/center_order_details_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
 import '../../domain/entities/center_dashboard_entity.dart';
-import '../../domain/entities/center_settlement_entity.dart';
 import '../../domain/repositories/centers_repository.dart';
 import '../data_sources/centers_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -212,36 +211,6 @@ class CentersRepositoryImpl implements CentersRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء جلب لوحة إحصائيات مركز الصيانة'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, CenterSettlementsResultEntity>> getCenterSettlements({
-    required int page,
-    required int limit,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  }) async {
-    try {
-      final responseModel = await _remoteDataSource.getCenterSettlements(
-        page: page,
-        limit: limit,
-        status: status,
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-        sort: sort,
-      );
-      if (responseModel.success) {
-        return Right(responseModel.toEntity());
-      } else {
-        return Left(ServerFailure(responseModel.message));
-      }
-    } catch (e) {
-      return Left(ServerFailure(e.toString().contains('SocketException')
-          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
-          : 'حدث خطأ أثناء جلب تسويات مركز الصيانة'));
     }
   }
 

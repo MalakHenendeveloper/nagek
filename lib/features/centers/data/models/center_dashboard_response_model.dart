@@ -28,12 +28,10 @@ class CenterDashboardResponseModel {
 
 class CenterDashboardDataModel {
   final CenterDashboardSummaryModel summary;
-  final List<CenterRecentSettlementModel> recentSettlements;
   final List<CenterRecentOrderModel> recentOrders;
 
   CenterDashboardDataModel({
     required this.summary,
-    required this.recentSettlements,
     required this.recentOrders,
   });
 
@@ -41,10 +39,6 @@ class CenterDashboardDataModel {
     final summaryObj = json['summary'] as Map<String, dynamic>? ?? json;
     return CenterDashboardDataModel(
       summary: CenterDashboardSummaryModel.fromJson(summaryObj),
-      recentSettlements: (json['recentSettlements'] as List<dynamic>?)
-              ?.map((e) => CenterRecentSettlementModel.fromJson(e))
-              .toList() ??
-          [],
       recentOrders: (json['recentOrders'] as List<dynamic>?)
               ?.map((e) => CenterRecentOrderModel.fromJson(e))
               .toList() ??
@@ -55,7 +49,6 @@ class CenterDashboardDataModel {
   factory CenterDashboardDataModel.empty() {
     return CenterDashboardDataModel(
       summary: CenterDashboardSummaryModel.empty(),
-      recentSettlements: [],
       recentOrders: [],
     );
   }
@@ -63,7 +56,6 @@ class CenterDashboardDataModel {
   CenterDashboardEntity toEntity() {
     return CenterDashboardEntity(
       summary: summary.toEntity(),
-      recentSettlements: recentSettlements.map((e) => e.toEntity()).toList(),
       recentOrders: recentOrders.map((e) => e.toEntity()).toList(),
     );
   }
@@ -112,50 +104,6 @@ class CenterDashboardSummaryModel {
       paidRevenue: paidRevenue,
       completedOrdersCount: completedOrdersCount,
       currentCenterOrdersCount: currentCenterOrdersCount,
-    );
-  }
-}
-
-class CenterRecentSettlementModel {
-  final String id;
-  final double amount;
-  final String stage;
-  final String status;
-  final String recipientName;
-  final String orderNumber;
-  final String createdAt;
-
-  CenterRecentSettlementModel({
-    required this.id,
-    required this.amount,
-    required this.stage,
-    required this.status,
-    required this.recipientName,
-    required this.orderNumber,
-    required this.createdAt,
-  });
-
-  factory CenterRecentSettlementModel.fromJson(Map<String, dynamic> json) {
-    return CenterRecentSettlementModel(
-      id: json['id'] ?? json['_id'] ?? json['settlementId'] ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      stage: json['stage'] ?? '',
-      status: json['status'] ?? '',
-      recipientName: json['recipientName'] ?? '',
-      orderNumber: json['orderNumber'] ?? '',
-      createdAt: json['createdAt'] ?? '',
-    );
-  }
-
-  CenterRecentSettlementEntity toEntity() {
-    return CenterRecentSettlementEntity(
-      id: id,
-      amount: amount,
-      stage: stage,
-      status: status,
-      recipientName: recipientName,
-      orderNumber: orderNumber,
-      createdAt: createdAt,
     );
   }
 }

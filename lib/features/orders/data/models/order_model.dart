@@ -90,14 +90,34 @@ class FeesModel {
             ? (map['delegateFee'] as num).toDouble()
             : null;
     final feeVal = feeLevelVal ?? rootDelegateFeeValue ?? 0.0;
-    final repairVal = (map['repair'] is num && (map['repair'] as num) > 0)
+
+    final double? rawRepair = (map['repair'] is num && (map['repair'] as num) > 0)
         ? (map['repair'] as num).toDouble()
-        : rootRepairCost ?? 0.0;
+        : (map['repairCost'] is num && (map['repairCost'] as num) > 0)
+            ? (map['repairCost'] as num).toDouble()
+            : (map['repairAmount'] is num && (map['repairAmount'] as num) > 0)
+                ? (map['repairAmount'] as num).toDouble()
+                : (map['centerAmount'] is num && (map['centerAmount'] as num) > 0)
+                    ? (map['centerAmount'] as num).toDouble()
+                    : (map['price'] is num && (map['price'] as num) > 0)
+                        ? (map['price'] as num).toDouble()
+                        : null;
+
+    final repairVal = rawRepair ?? rootRepairCost ?? 0.0;
+
+    final double rawTotal = (map['total'] is num && (map['total'] as num) > 0)
+        ? (map['total'] as num).toDouble()
+        : (map['totalCost'] is num && (map['totalCost'] as num) > 0)
+            ? (map['totalCost'] as num).toDouble()
+            : (map['clientTotal'] is num && (map['clientTotal'] as num) > 0)
+                ? (map['clientTotal'] as num).toDouble()
+                : 0.0;
+
     return FeesModel(
-      inspection: (map['inspection'] ?? 0.0).toDouble(),
-      delivery: (map['delivery'] ?? 0.0).toDouble(),
+      inspection: ((map['inspection'] ?? map['inspectionFee'] ?? 0.0) as num).toDouble(),
+      delivery: ((map['delivery'] ?? map['deliveryFee'] ?? 0.0) as num).toDouble(),
       repair: repairVal,
-      total: (map['total'] ?? 0.0).toDouble(),
+      total: rawTotal > 0 ? rawTotal : repairVal,
       delegateFeeValue: feeVal,
     );
   }
@@ -304,16 +324,22 @@ class FinancialSnapshotModel {
 
   factory FinancialSnapshotModel.fromJson(Map<dynamic, dynamic>? json) {
     final map = json ?? {};
-    final pFee = (map['pickupFee'] ?? map['inspectionFee'] ?? 0.0).toDouble();
+    final pFee = ((map['pickupFee'] ?? map['inspectionFee'] ?? map['inspection'] ?? 0.0) as num).toDouble();
+    final dFee = ((map['deliveryFee'] ?? map['delivery'] ?? 0.0) as num).toDouble();
+    final rAmt = ((map['repairAmount'] ?? map['repairCost'] ?? map['repair'] ?? map['serviceCost'] ?? map['price'] ?? 0.0) as num).toDouble();
+    final cAmt = ((map['centerAmount'] ?? map['centerPayout'] ?? map['repairIncome'] ?? 0.0) as num).toDouble();
+    final resolvedCenterAmt = cAmt > 0 ? cAmt : rAmt;
+    final cTotal = ((map['clientTotal'] ?? map['total'] ?? map['totalCost'] ?? 0.0) as num).toDouble();
+
     return FinancialSnapshotModel(
-      repairAmount: (map['repairAmount'] ?? 0.0).toDouble(),
+      repairAmount: rAmt,
       inspectionFee: pFee,
-      deliveryFee: (map['deliveryFee'] ?? 0.0).toDouble(),
-      clientTotal: (map['clientTotal'] ?? 0.0).toDouble(),
-      adminCommission: (map['adminCommission'] ?? 0.0).toDouble(),
-      delegateFee: (map['delegateFee'] ?? 0.0).toDouble(),
-      centerAmount: (map['centerAmount'] ?? 0.0).toDouble(),
-      currency: map['currency'] ?? 'IQD',
+      deliveryFee: dFee,
+      clientTotal: cTotal > 0 ? cTotal : (rAmt + dFee + pFee),
+      adminCommission: ((map['adminCommission'] ?? 0.0) as num).toDouble(),
+      delegateFee: ((map['delegateFee'] ?? dFee) as num).toDouble(),
+      centerAmount: resolvedCenterAmt,
+      currency: (map['currency'] ?? 'IQD').toString(),
     );
   }
 
@@ -440,9 +466,22 @@ class OrderModel {
     final centerData = map['repairCenter'] ?? (map.containsKey('repairCenterName') ? map : null);
 
     final finView = map['financialView'] as Map?;
+    final finSnap = map['financialSnapshot'] as Map?;
     final double? finRepairCost = finView != null
         ? ((finView['repairCost'] is num) ? (finView['repairCost'] as num).toDouble() : null)
         : null;
+
+    final double? rootRepairVal = finRepairCost ??
+        ((map['repairCost'] is num) ? (map['repairCost'] as num).toDouble() : null) ??
+        ((map['repairAmount'] is num) ? (map['repairAmount'] as num).toDouble() : null) ??
+        ((map['centerAmount'] is num) ? (map['centerAmount'] as num).toDouble() : null) ??
+        ((map['serviceCost'] is num) ? (map['serviceCost'] as num).toDouble() : null) ??
+        ((map['price'] is num) ? (map['price'] as num).toDouble() : null) ??
+        (finSnap != null
+            ? (((finSnap['repairAmount'] ?? finSnap['repairCost'] ?? finSnap['centerAmount']) is num)
+                ? ((finSnap['repairAmount'] ?? finSnap['repairCost'] ?? finSnap['centerAmount']) as num).toDouble()
+                : null)
+            : null);
 
     // Priority: rootDelegateFeeValue (from parent data) > map['delegateFeeValue'] > map['delegateFee']
     final double? resolvedDelegateFee = rootDelegateFeeValue ??
@@ -458,7 +497,7 @@ class OrderModel {
       fees: FeesModel.fromJson(
         map['fees'] as Map?,
         rootDelegateFeeValue: resolvedDelegateFee,
-        rootRepairCost: finRepairCost,
+        rootRepairCost: rootRepairVal,
       ),
       pickupAddress: PickupAddressModel.fromJson(map['pickupAddress'] as Map?),
       repairCenter: RepairCenterModel.fromJson(centerData),

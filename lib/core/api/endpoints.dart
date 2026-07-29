@@ -23,10 +23,8 @@ class Endpoints {
   static const String delegateOrders = '/delegate/orders';
   static const String delegateTasks = '/delegate/tasks';
   static const String delegateDashboard = '/delegate/dashboard';
-  static const String delegateSettlements = '/delegate/settlements';
   static const String centerDashboard = '/centers/dashboard';
   static const String centerDashboardProfile = '/centers/dashboard/profile';
-  static const String centerSettlements = '/centers/settlements';
   static const String centerDashboardOrders = '/centers/dashboard/orders';
   static const String centerDashboardOrderDetails =
       '/centers/dashboard/orders/';
@@ -37,9 +35,6 @@ class Endpoints {
       '/center/services/$serviceId';
 
   static const String adminDashboard = '/admin/dashboard';
-  static const String adminSettlements = '/admin/settlements';
-  static const String adminSettlementsSummary = '/admin/settlements/summary';
-  static String payAdminSettlement(String id) => '/admin/settlements/$id/pay';
   static const String adminDelegates = '/admin/delegates';
   static const String adminUsers = '/admin/users';
   static const String adminCenters = '/admin/centers';

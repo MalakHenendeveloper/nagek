@@ -5,7 +5,6 @@ import '../../domain/entities/inspection_entity.dart';
 import '../../domain/entities/price_offer_entity.dart';
 import '../../domain/entities/order_payment_entity.dart';
 import '../../domain/entities/delegate_dashboard_entity.dart';
-import '../../domain/entities/delegate_settlement_entity.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../data_sources/orders_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -346,34 +345,6 @@ class OrdersRepositoryImpl implements OrdersRepository {
       }
     } catch (e) {
       return Left(ServerFailure('حدث خطأ أثناء جلب لوحة إحصائيات المندوب: ${e.toString()}'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, DelegateSettlementsResultEntity>> getDelegateSettlements({
-    int page = 1,
-    int limit = 10,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  }) async {
-    try {
-      final responseModel = await _remoteDataSource.getDelegateSettlements(
-        page: page,
-        limit: limit,
-        status: status,
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-        sort: sort,
-      );
-      if (responseModel.success) {
-        return Right(responseModel.toEntity());
-      } else {
-        return Left(ServerFailure(responseModel.message));
-      }
-    } catch (e) {
-      return Left(ServerFailure('حدث خطأ أثناء جلب قائمة تسويات المندوب: ${e.toString()}'));
     }
   }
 }

@@ -5,7 +5,6 @@ import '../entities/inspection_entity.dart';
 import '../entities/price_offer_entity.dart';
 import '../entities/order_payment_entity.dart';
 import '../entities/delegate_dashboard_entity.dart';
-import '../entities/delegate_settlement_entity.dart';
 
 abstract class OrdersRepository {
   Future<Either<Failure, OrdersResultEntity>> getOrders({
@@ -66,13 +65,4 @@ abstract class OrdersRepository {
   Future<Either<Failure, OrderEntity>> confirmDelivery(String orderId, List<String> imagePaths);
 
   Future<Either<Failure, DelegateDashboardEntity>> getDelegateDashboard();
-
-  Future<Either<Failure, DelegateSettlementsResultEntity>> getDelegateSettlements({
-    int page = 1,
-    int limit = 10,
-    String? status,
-    String? dateFrom,
-    String? dateTo,
-    String? sort,
-  });
 }

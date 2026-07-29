@@ -1,11 +1,9 @@
 class CenterDashboardEntity {
   final CenterDashboardSummaryEntity summary;
-  final List<CenterRecentSettlementEntity> recentSettlements;
   final List<CenterRecentOrderEntity> recentOrders;
 
   CenterDashboardEntity({
     required this.summary,
-    required this.recentSettlements,
     required this.recentOrders,
   });
 }
@@ -23,26 +21,6 @@ class CenterDashboardSummaryEntity {
     required this.paidRevenue,
     required this.completedOrdersCount,
     required this.currentCenterOrdersCount,
-  });
-}
-
-class CenterRecentSettlementEntity {
-  final String id;
-  final double amount;
-  final String stage;
-  final String status;
-  final String recipientName;
-  final String orderNumber;
-  final String createdAt;
-
-  CenterRecentSettlementEntity({
-    required this.id,
-    required this.amount,
-    required this.stage,
-    required this.status,
-    required this.recipientName,
-    required this.orderNumber,
-    required this.createdAt,
   });
 }
 

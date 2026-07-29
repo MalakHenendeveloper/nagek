@@ -192,8 +192,6 @@ class AdminFinancialSummaryModel {
   final double totalCenterRevenue;
   final double totalDelegateEarnings;
   final double totalAdminCommission;
-  final double pendingSettlementsAmount;
-  final double paidSettlementsAmount;
   final List<AdminCenterBreakdownModel> centerBreakdown;
   final List<AdminDelegateBreakdownModel> delegateBreakdown;
 
@@ -204,8 +202,6 @@ class AdminFinancialSummaryModel {
     required this.totalCenterRevenue,
     required this.totalDelegateEarnings,
     required this.totalAdminCommission,
-    required this.pendingSettlementsAmount,
-    required this.paidSettlementsAmount,
     required this.centerBreakdown,
     required this.delegateBreakdown,
   });
@@ -218,8 +214,6 @@ class AdminFinancialSummaryModel {
       totalCenterRevenue: (json['totalCenterRevenue'] as num?)?.toDouble() ?? 0.0,
       totalDelegateEarnings: (json['totalDelegateEarnings'] as num?)?.toDouble() ?? 0.0,
       totalAdminCommission: (json['totalAdminCommission'] as num?)?.toDouble() ?? 0.0,
-      pendingSettlementsAmount: (json['pendingSettlementsAmount'] as num?)?.toDouble() ?? 0.0,
-      paidSettlementsAmount: (json['paidSettlementsAmount'] as num?)?.toDouble() ?? 0.0,
       centerBreakdown: (json['centerBreakdown'] as List<dynamic>?)
               ?.map((e) => AdminCenterBreakdownModel.fromJson(e))
               .toList() ??
@@ -239,8 +233,6 @@ class AdminFinancialSummaryModel {
       totalCenterRevenue: 0.0,
       totalDelegateEarnings: 0.0,
       totalAdminCommission: 0.0,
-      pendingSettlementsAmount: 0.0,
-      paidSettlementsAmount: 0.0,
       centerBreakdown: [],
       delegateBreakdown: [],
     );
@@ -254,8 +246,6 @@ class AdminFinancialSummaryModel {
       totalCenterRevenue: totalCenterRevenue,
       totalDelegateEarnings: totalDelegateEarnings,
       totalAdminCommission: totalAdminCommission,
-      pendingSettlementsAmount: pendingSettlementsAmount,
-      paidSettlementsAmount: paidSettlementsAmount,
       centerBreakdown: centerBreakdown.map((e) => e.toEntity()).toList(),
       delegateBreakdown: delegateBreakdown.map((e) => e.toEntity()).toList(),
     );
@@ -300,11 +290,9 @@ class AdminUsersSummaryModel {
 
 class AdminRecentActivityModel {
   final List<AdminRecentOrderModel> recentOrders;
-  final List<AdminRecentSettlementModel> recentSettlements;
 
   AdminRecentActivityModel({
     required this.recentOrders,
-    required this.recentSettlements,
   });
 
   factory AdminRecentActivityModel.fromJson(Map<String, dynamic> json) {
@@ -313,24 +301,18 @@ class AdminRecentActivityModel {
               ?.map((e) => AdminRecentOrderModel.fromJson(e))
               .toList() ??
           [],
-      recentSettlements: (json['recentSettlements'] as List<dynamic>?)
-              ?.map((e) => AdminRecentSettlementModel.fromJson(e))
-              .toList() ??
-          [],
     );
   }
 
   factory AdminRecentActivityModel.empty() {
     return AdminRecentActivityModel(
       recentOrders: [],
-      recentSettlements: [],
     );
   }
 
   AdminRecentActivityEntity toEntity() {
     return AdminRecentActivityEntity(
       recentOrders: recentOrders.map((e) => e.toEntity()).toList(),
-      recentSettlements: recentSettlements.map((e) => e.toEntity()).toList(),
     );
   }
 }
@@ -371,50 +353,6 @@ class AdminRecentOrderModel {
       status: status,
       createdAt: createdAt,
       repairCenterName: repairCenterName,
-    );
-  }
-}
-
-class AdminRecentSettlementModel {
-  final String id;
-  final double amount;
-  final String stage;
-  final String status;
-  final String recipientName;
-  final String orderNumber;
-  final String createdAt;
-
-  AdminRecentSettlementModel({
-    required this.id,
-    required this.amount,
-    required this.stage,
-    required this.status,
-    required this.recipientName,
-    required this.orderNumber,
-    required this.createdAt,
-  });
-
-  factory AdminRecentSettlementModel.fromJson(Map<String, dynamic> json) {
-    return AdminRecentSettlementModel(
-      id: json['id'] ?? json['_id'] ?? json['settlementId'] ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      stage: json['stage'] ?? '',
-      status: json['status'] ?? '',
-      recipientName: json['recipientName'] ?? '',
-      orderNumber: json['orderNumber'] ?? '',
-      createdAt: json['createdAt'] ?? '',
-    );
-  }
-
-  AdminRecentSettlementEntity toEntity() {
-    return AdminRecentSettlementEntity(
-      id: id,
-      amount: amount,
-      stage: stage,
-      status: status,
-      recipientName: recipientName,
-      orderNumber: orderNumber,
-      createdAt: createdAt,
     );
   }
 }

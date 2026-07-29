@@ -880,9 +880,13 @@ class _CenterHomeState extends State<CenterHome> {
                         final double centerPrice =
                             (order.financialSnapshot?.centerAmount ?? 0) > 0
                             ? order.financialSnapshot!.centerAmount
-                            : (order.fees.repair > 0
-                                  ? order.fees.repair
-                                  : order.fees.total);
+                            : ((order.financialSnapshot?.repairAmount ?? 0) > 0
+                                ? order.financialSnapshot!.repairAmount
+                                : (order.fees.repair > 0
+                                      ? order.fees.repair
+                                      : (order.fees.total > 0
+                                            ? order.fees.total
+                                            : (order.financialSnapshot?.clientTotal ?? 0))));
                         return Text(
                           '${centerPrice.toInt()} د.ع',
                           style: GoogleFonts.cairo(
