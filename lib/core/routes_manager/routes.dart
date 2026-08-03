@@ -28,4 +28,7 @@ class Routes {
   static const String centerServiceDetailsRoute = '/center_service_details';
   static const String editCenterServiceRoute = '/edit_center_service';
   static const String delegateEarningsRoute = '/delegate_earnings';
+  static const String mapPickerRoute = '/map_picker';
+  static const String delegateRouteViewRoute = '/delegate_route_view';
 }
+

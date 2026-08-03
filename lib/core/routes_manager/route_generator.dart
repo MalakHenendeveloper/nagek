@@ -28,6 +28,9 @@ import '../../features/centers/presentation/screens/center_services_screen.dart'
 import '../../features/centers/presentation/screens/center_service_details_screen.dart';
 import '../../features/centers/presentation/screens/edit_center_service_screen.dart';
 import '../../features/centers/domain/entities/service_entity.dart';
+import '../../features/map/domain/entities/map_location_entity.dart';
+import '../../features/map/presentation/pages/map_picker_screen.dart';
+import '../../features/map/presentation/pages/delegate_route_view_screen.dart';
 import 'routes.dart';
 
 
@@ -101,8 +104,24 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => EditCenterServiceScreen(service: service));
       case Routes.delegateEarningsRoute:
         return MaterialPageRoute(builder: (_) => const DelegateEarningsScreen());
+      case Routes.mapPickerRoute:
+        final initialLoc = settings.arguments as MapLocationEntity?;
+        return MaterialPageRoute(builder: (_) => MapPickerScreen(initialLocation: initialLoc));
+      case Routes.delegateRouteViewRoute:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => DelegateRouteViewScreen(
+            originLat: args['originLat'] as double,
+            originLng: args['originLng'] as double,
+            destLat: args['destLat'] as double,
+            destLng: args['destLng'] as double,
+            destinationTitle: args['destinationTitle'] as String? ?? 'الموقع المستهدف',
+            destinationAddress: args['destinationAddress'] as String?,
+          ),
+        );
       default:
         return unDefinedRoute();
+
     }
   }
 

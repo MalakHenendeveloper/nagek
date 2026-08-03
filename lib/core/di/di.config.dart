@@ -153,6 +153,8 @@ import '../../features/centers/domain/use_cases/submit_price_offer_use_case.dart
     as _i294;
 import '../../features/centers/domain/use_cases/update_center_order_status_use_case.dart'
     as _i390;
+import '../../features/centers/domain/use_cases/update_center_profile_use_case.dart'
+    as _i781;
 import '../../features/centers/domain/use_cases/update_center_service_use_case.dart'
     as _i1012;
 import '../../features/centers/presentation/cubit/add_center_service_cubit.dart'
@@ -176,8 +178,22 @@ import '../../features/centers/presentation/cubit/submit_inspection_cubit.dart'
     as _i684;
 import '../../features/centers/presentation/cubit/submit_price_offer_cubit.dart'
     as _i843;
+import '../../features/centers/presentation/cubit/update_center_profile_cubit.dart'
+    as _i347;
 import '../../features/centers/presentation/cubit/update_center_service_cubit.dart'
     as _i361;
+import '../../features/map/data/datasources/map_remote_data_source.dart'
+    as _i341;
+import '../../features/map/data/repositories/map_repository_impl.dart' as _i457;
+import '../../features/map/domain/repositories/map_repository.dart' as _i973;
+import '../../features/map/domain/usecases/geocode_address_usecase.dart'
+    as _i385;
+import '../../features/map/domain/usecases/get_current_location_usecase.dart'
+    as _i801;
+import '../../features/map/domain/usecases/get_route_usecase.dart' as _i601;
+import '../../features/map/domain/usecases/reverse_geocode_usecase.dart'
+    as _i397;
+import '../../features/map/presentation/cubit/map_cubit.dart' as _i523;
 import '../../features/orders/data/data_sources/device_local_data_source.dart'
     as _i468;
 import '../../features/orders/data/data_sources/orders_remote_data_source.dart'
@@ -278,6 +294,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.secureStorage,
     );
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
+    gh.lazySingleton<_i341.MapRemoteDataSource>(
+      () => _i341.MapRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i402.CloudinaryService>(
       () => _i402.CloudinaryService(gh<_i361.Dio>()),
     );
@@ -296,8 +315,31 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(gh<_i558.FlutterSecureStorage>()),
     );
+    gh.lazySingleton<_i973.MapRepository>(
+      () => _i457.MapRepositoryImpl(gh<_i341.MapRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i385.GeocodeAddressUseCase>(
+      () => _i385.GeocodeAddressUseCase(gh<_i973.MapRepository>()),
+    );
+    gh.lazySingleton<_i801.GetCurrentLocationUseCase>(
+      () => _i801.GetCurrentLocationUseCase(gh<_i973.MapRepository>()),
+    );
+    gh.lazySingleton<_i601.GetRouteUseCase>(
+      () => _i601.GetRouteUseCase(gh<_i973.MapRepository>()),
+    );
+    gh.lazySingleton<_i397.ReverseGeocodeUseCase>(
+      () => _i397.ReverseGeocodeUseCase(gh<_i973.MapRepository>()),
+    );
     gh.factory<_i490.DeviceSelectionCubit>(
       () => _i490.DeviceSelectionCubit(gh<_i850.DeviceRepository>()),
+    );
+    gh.factory<_i523.MapCubit>(
+      () => _i523.MapCubit(
+        getCurrentLocationUseCase: gh<_i801.GetCurrentLocationUseCase>(),
+        reverseGeocodeUseCase: gh<_i397.ReverseGeocodeUseCase>(),
+        geocodeAddressUseCase: gh<_i385.GeocodeAddressUseCase>(),
+        getRouteUseCase: gh<_i601.GetRouteUseCase>(),
+      ),
     );
     gh.lazySingleton<_i1047.ApiManager>(
       () =>
@@ -659,6 +701,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i390.UpdateCenterOrderStatusUseCase>(
       () => _i390.UpdateCenterOrderStatusUseCase(gh<_i105.CentersRepository>()),
     );
+    gh.lazySingleton<_i781.UpdateCenterProfileUseCase>(
+      () => _i781.UpdateCenterProfileUseCase(gh<_i105.CentersRepository>()),
+    );
     gh.lazySingleton<_i1012.UpdateCenterServiceUseCase>(
       () => _i1012.UpdateCenterServiceUseCase(gh<_i105.CentersRepository>()),
     );
@@ -697,6 +742,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i388.CenterSettlementsCubit>(
       () =>
           _i388.CenterSettlementsCubit(gh<_i766.GetCenterSettlementsUseCase>()),
+    );
+    gh.factory<_i347.UpdateCenterProfileCubit>(
+      () => _i347.UpdateCenterProfileCubit(
+        gh<_i781.UpdateCenterProfileUseCase>(),
+      ),
     );
     gh.factory<_i361.UpdateCenterServiceCubit>(
       () => _i361.UpdateCenterServiceCubit(

@@ -14,3 +14,8 @@ class NetworkFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure(super.message);
 }
+
+class QuotaFailure extends Failure {
+  const QuotaFailure(super.message);
+}
+

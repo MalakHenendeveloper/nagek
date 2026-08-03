@@ -2,10 +2,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/di.dart';
+import '../../../../core/routes_manager/routes.dart';
+import '../../../map/data/datasources/map_remote_data_source.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../../../core/services/image_picker_service.dart';
 import '../cubit/delegate_orders_cubit.dart';
@@ -520,6 +523,41 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  // Navigate to client location button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1E88E5),
+                        side: const BorderSide(color: Color(0xFF1E88E5), width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.map_outlined),
+                      label: Text(
+                        'عرض المسار لموقع العميل على الخريطة',
+                        style: GoogleFonts.cairo(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () {
+                        final addr = order.pickupAddress.address;
+                        final city = order.pickupAddress.city;
+                        final fullAddr = (city.isNotEmpty && !addr.contains(city))
+                            ? '$addr، $city'
+                            : addr;
+                        _navigateToMapRoute(
+                          context,
+                          fullAddr,
+                          'موقع العميل',
+                        );
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   // Upload photos & confirm button
                   SizedBox(
@@ -576,6 +614,34 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Navigate to center location button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1E88E5),
+                        side: const BorderSide(color: Color(0xFF1E88E5), width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.map_outlined),
+                      label: Text(
+                        'عرض المسار لمركز الصيانة على الخريطة',
+                        style: GoogleFonts.cairo(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () => _navigateToMapRoute(
+                        context,
+                        order.repairCenter.address,
+                        order.repairCenter.name,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -2027,6 +2093,236 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
         return 'مشكلة أخرى';
       default:
         return type.isNotEmpty ? type : 'أخرى';
+    }
+  }
+
+  Future<Position?> _getDelegateLocationWithPermission(BuildContext context) async {
+    // 1. Check if location service (GPS) is enabled on the device
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E1E),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.location_off_rounded, color: Color(0xFFFFC107)),
+                const SizedBox(width: 8),
+                Text(
+                  'خدمة الموقع (GPS) مغلقة',
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'يرجى تفعيل خدمة تحديد الموقع (GPS) من إعدادات الهاتف لتتمكن من عرض المسار.',
+              style: GoogleFonts.cairo(color: Colors.white70, fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('إلغاء', style: GoogleFonts.cairo(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFC107),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Geolocator.openLocationSettings();
+                },
+                child: Text(
+                  'فتح إعدادات الموقع',
+                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return null;
+    }
+
+    // 2. Check location permissions
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.orange.shade800,
+              content: Text(
+                'تم رفض صلاحية تحديد الموقع. يرجى الموافقة لعرض المسار.',
+                style: GoogleFonts.cairo(color: Colors.white),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E1E),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.gpp_maybe_rounded, color: Colors.redAccent),
+                const SizedBox(width: 8),
+                Text(
+                  'صلاحية الموقع مرفوضة دائمًا',
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'تم رفض صلاحية الموقع بشكل دائم لهذا التطبيق. يرجى تفعيلها من إعدادات التطبيق.',
+              style: GoogleFonts.cairo(color: Colors.white70, fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('إلغاء', style: GoogleFonts.cairo(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFC107),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Geolocator.openAppSettings();
+                },
+                child: Text(
+                  'إعدادات التطبيق',
+                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return null;
+    }
+
+    // 3. Obtain current position
+    return await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+    );
+  }
+
+  /// Geocode the destination address, get current delegate GPS, then open the route map
+  Future<void> _navigateToMapRoute(
+    BuildContext context,
+    String destinationAddress,
+    String destinationTitle,
+  ) async {
+    // 1. First verify GPS & permissions before showing loading dialog
+    final position = await _getDelegateLocationWithPermission(context);
+    if (position == null) return;
+
+    if (!context.mounted) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: Color(0xFFFFC107)),
+              const SizedBox(height: 16),
+              Text(
+                'جاري تحديد الموقع وتحميل المسار...',
+                style: GoogleFonts.cairo(
+                  color: Colors.white,
+                  fontSize: 14,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // 2. Geocode the destination address to get lat/lng
+      final dataSource = getIt<MapRemoteDataSource>();
+      final results = await dataSource.geocodeAddress(destinationAddress);
+
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.orange.shade800,
+            content: Text(
+              'تعذر العثور على الموقع من العنوان "$destinationAddress"',
+              style: GoogleFonts.cairo(color: Colors.white),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        );
+        return;
+      }
+
+      final dest = results.first;
+
+      // 3. Open route view screen
+      Navigator.pushNamed(
+        context,
+        Routes.delegateRouteViewRoute,
+        arguments: {
+          'originLat': position.latitude,
+          'originLng': position.longitude,
+          'destLat': dest.latitude,
+          'destLng': dest.longitude,
+          'destinationTitle': destinationTitle,
+          'destinationAddress': destinationAddress,
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red.shade700,
+            content: Text(
+              'خطأ في تحديد الموقع: ${e.toString()}',
+              style: GoogleFonts.cairo(color: Colors.white),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        );
+      }
     }
   }
 }

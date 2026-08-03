@@ -1,0 +1,19 @@
+class ServerException implements Exception {
+  final String message;
+  const ServerException(this.message);
+}
+
+class NetworkException implements Exception {
+  final String message;
+  const NetworkException(this.message);
+}
+
+class QuotaException implements Exception {
+  final String message;
+  const QuotaException(this.message);
+}
+
+class CacheException implements Exception {
+  final String message;
+  const CacheException(this.message);
+}

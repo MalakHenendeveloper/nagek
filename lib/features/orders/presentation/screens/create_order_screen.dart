@@ -12,6 +12,7 @@ import '../cubit/create_order_state.dart';
 import '../cubit/device_selection_cubit.dart';
 import '../cubit/device_selection_state.dart';
 import '../widgets/device_selector_widget.dart';
+import '../../../map/domain/entities/map_location_entity.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String centerId;
@@ -585,7 +586,42 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             'أين يمكننا استلام الجهاز منك؟',
             style: GoogleFonts.cairo(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: const BorderSide(color: Color(0xFF1E88E5), width: 1.5),
+              ),
+              onPressed: () async {
+                final selectedLoc = await Navigator.pushNamed(
+                  context,
+                  Routes.mapPickerRoute,
+                ) as MapLocationEntity?;
+                if (selectedLoc != null) {
+                  setState(() {
+                    if (selectedLoc.address != null && selectedLoc.address!.isNotEmpty) {
+                      _addressController.text = selectedLoc.address!;
+                    }
+                    if (selectedLoc.city != null && selectedLoc.city!.isNotEmpty) {
+                      _cityController.text = selectedLoc.city!;
+                    }
+                  });
+                }
+              },
+              icon: const Icon(Icons.map_outlined, color: Color(0xFF1E88E5)),
+              label: Text(
+                'تحديد وتأكيد الموقع على الخريطة',
+                style: GoogleFonts.cairo(
+                  color: const Color(0xFF1E88E5),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
           TextFormField(
             controller: _cityController,
             decoration: InputDecoration(

@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 class Endpoints {
-  static const String Url = 'https://gamma-five-65.vercel.app/api';
+  static const String Url = 'https://nine-theta-76.vercel.app/api';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';
