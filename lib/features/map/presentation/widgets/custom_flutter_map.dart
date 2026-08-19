@@ -39,8 +39,11 @@ class CustomFlutterMap extends StatelessWidget {
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          subdomains: const ['a', 'b', 'c'],
           userAgentPackageName: 'com.nagek.app',
+          maxZoom: 19,
+          tileDisplay: const TileDisplay.fadeIn(duration: Duration(milliseconds: 150)),
         ),
 
         // Polyline layer for navigation routes

@@ -378,33 +378,6 @@ class DelegateHome extends StatelessWidget {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 16),
-
-                              // Button 3: Delegate Settlements List
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side: const BorderSide(color: Colors.white24, width: 1.5),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.receipt_long, color: Color(0xFFFFC107)),
-                                  label: Text(
-                                    'سجل التسويات المالية للمندوب',
-                                    style: GoogleFonts.cairo(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, Routes.delegateSettlementsRoute);
-                                  },
-                                ),
-                              ),
                             ],
                           ),
                         ),

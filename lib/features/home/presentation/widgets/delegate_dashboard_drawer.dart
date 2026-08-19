@@ -112,9 +112,9 @@ class DelegateDashboardDrawer extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // ----------------------------------------------------
-                    // CATEGORY 4: الأمور المالية والتسويات
+                    // CATEGORY 4: الأمور المالية والأرباح
                     // ----------------------------------------------------
-                    _buildCategoryHeader('الإدارة المالية والتسويات'),
+                    _buildCategoryHeader('الإدارة المالية والأرباح'),
                     _buildNavItem(
                       context: context,
                       title: 'شاشة أرباح وإحصائيات المندوب',
@@ -124,18 +124,6 @@ class DelegateDashboardDrawer extends StatelessWidget {
                         Navigator.pushNamed(
                           context,
                           Routes.delegateEarningsRoute,
-                        );
-                      },
-                    ),
-                    _buildNavItem(
-                      context: context,
-                      title: 'تسويات وأرباح المندوب المالية',
-                      subtitle: 'عرض التسويات المالية والأرباح',
-                      icon: Icons.receipt_long_outlined,
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.delegateSettlementsRoute,
                         );
                       },
                     ),

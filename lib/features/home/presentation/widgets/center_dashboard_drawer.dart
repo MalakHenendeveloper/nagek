@@ -84,22 +84,6 @@ class CenterDashboardDrawer extends StatelessWidget {
                       },
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // ----------------------------------------------------
-                    // CATEGORY 3: الأمور المالية
-                    // ----------------------------------------------------
-                    _buildCategoryHeader('الإدارة المالية والتسويات'),
-                    _buildNavItem(
-                      context: context,
-                      title: 'تسويات وأرباح مركز الصيانة',
-                      subtitle: 'عرض التسويات المالية والأرباح',
-                      icon: Icons.account_balance_wallet_outlined,
-                      onTap: () {
-                        Navigator.pushNamed(context, Routes.centerSettlementsRoute);
-                      },
-                    ),
-
                     const SizedBox(height: 20),
                   ],
                 ),

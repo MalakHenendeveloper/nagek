@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/di/di.dart';
-import '../../../../core/routes_manager/routes.dart';
 import '../../domain/entities/delegate_dashboard_entity.dart';
 import '../cubit/delegate_dashboard_cubit.dart';
 import '../cubit/delegate_dashboard_state.dart';
@@ -195,30 +194,7 @@ class _DelegateEarningsBody extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // ── Link to Settlements ──
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFFFC107),
-                        side: const BorderSide(color: Color(0xFFFFC107), width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      icon: const Icon(Icons.receipt_long_outlined),
-                      label: Text(
-                        'عرض سجل التسويات المالية التفصيلي',
-                        style: GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, Routes.delegateSettlementsRoute);
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 12),
 
                   // ── Earning History Title ──
                   Text(

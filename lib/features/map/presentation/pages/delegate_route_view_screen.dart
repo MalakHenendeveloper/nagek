@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/di/di.dart';
@@ -61,7 +62,8 @@ class _DelegateRouteViewScreenState extends State<DelegateRouteViewScreen>
       _mapController.fitCamera(
         CameraFit.bounds(
           bounds: bounds,
-          padding: const EdgeInsets.only(top: 90, bottom: 200, left: 50, right: 50),
+          padding: const EdgeInsets.only(top: 80, bottom: 210, left: 50, right: 50),
+          maxZoom: 16.0,
         ),
       );
     } catch (_) {}
@@ -122,7 +124,7 @@ class _DelegateRouteViewScreenState extends State<DelegateRouteViewScreen>
         body: BlocConsumer<MapCubit, MapState>(
           listener: (context, state) {
             if (state is MapRouteLoaded) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              Future.delayed(const Duration(milliseconds: 150), () {
                 if (mounted) {
                   _fitRouteBounds(originLatLng, destLatLng, state.routeInfo.polylinePoints);
                 }
@@ -152,13 +154,20 @@ class _DelegateRouteViewScreenState extends State<DelegateRouteViewScreen>
           },
           builder: (context, state) {
             if (state is MapLoading) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 12),
-                    Text('جاري جلب المسار من HERE Routing API...'),
+                    const CircularProgressIndicator(color: Color(0xFFFFC107)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'جاري تحضير المسار على الخريطة...',
+                      style: GoogleFonts.cairo(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               );
