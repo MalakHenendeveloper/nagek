@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/routes_manager/routes.dart';
@@ -500,6 +501,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                         onTap: () {
                           _showSupportNumberDialog(context);
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.green),
+                        ),
+                        title: Text(
+                          'تواصل معنا عبر واتساب',
+                          style: GoogleFonts.cairo(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                        onTap: () async {
+                          final Uri url = Uri.parse('https://wa.me/9647824774219');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('تعذر فتح واتساب', style: GoogleFonts.cairo()),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                       ),
                     ],

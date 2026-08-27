@@ -265,7 +265,7 @@ class _DelegateLoginScreenState extends State<DelegateLoginScreen> {
                           const SizedBox(height: 8),
                           _buildTextField(
                             controller: _phoneController,
-                            hintText: '05XXXXXXXX',
+                            hintText: '07XXXXXXXX',
                             prefixIcon: Icons.phone_android_outlined,
                             keyboardType: TextInputType.phone,
                             textDirection: TextDirection.ltr,

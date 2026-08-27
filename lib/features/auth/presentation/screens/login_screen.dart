@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             textDirection: TextDirection.ltr,
                             enabled: !isLoading,
                             decoration: InputDecoration(
-                              hintText: '05XXXXXXXX',
+                              hintText: '07XXXXXXXX',
                               hintStyle: GoogleFonts.cairo(
                                 color: Colors.black38,
                                 fontSize: 14,

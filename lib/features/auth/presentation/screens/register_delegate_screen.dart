@@ -27,6 +27,7 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  String? _facePhotoPath;
 
   @override
   void dispose() {
@@ -48,6 +49,11 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
       if (pickedFile != null) {
         final path = pickedFile.path;
         switch (docType) {
+          case 'facePhoto':
+            setState(() {
+              _facePhotoPath = path;
+            });
+            break;
           case 'nationalIdFront':
             cubit.selectNationalIdFront(path);
             break;
@@ -246,7 +252,7 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
                               const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _phoneController,
-                                hintText: '05XXXXXXXX',
+                                hintText: '07XXXXXXXX',
                                 prefixIcon: Icons.phone_android_outlined,
                                 keyboardType: TextInputType.phone,
                                 textDirection: TextDirection.ltr,
@@ -359,6 +365,22 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
                                 children: [
                                   Expanded(
                                     child: _buildDocPickerCard(
+                                      title: 'صورة الوجه',
+                                      filePath: _facePhotoPath,
+                                      onTap: () => _pickImage(
+                                        context,
+                                        'facePhoto',
+                                      ),
+                                      enabled: !isRunning,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildDocPickerCard(
                                       title: 'الهوية الوطنية (الوجه)',
                                       filePath: nationalIdFrontPath,
                                       onTap: () => _pickImage(
@@ -395,7 +417,7 @@ class _RegisterDelegateScreenState extends State<RegisterDelegateScreen> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: _buildDocPickerCard(
-                                      title: 'رخصة الدراجة النارية',
+                                      title: 'رخصة الدراجة النارية\n(إن وجدت)',
                                       filePath: motorcycleLicensePath,
                                       onTap: () => _pickImage(
                                         context,

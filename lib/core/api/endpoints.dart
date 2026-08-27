@@ -3,7 +3,7 @@
 class Endpoints {
   //Deployment
 
-  static const String Url = 'https://3gra4rwnt-8fxd1ygau-nagek.vercel.app/api';
+  static const String Url = 'https://3gra4rwnt-iwsk9yq2z-nagek.vercel.app/api' ;
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';

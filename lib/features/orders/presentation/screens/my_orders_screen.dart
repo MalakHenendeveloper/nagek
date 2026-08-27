@@ -71,6 +71,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                     children: [
                       Row(
                         children: [
+                          /*
                           Container(
                             width: 40,
                             height: 40,
@@ -84,6 +85,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          */
                           Text(
                             'طلباتي',
                             style: GoogleFonts.cairo(
