@@ -364,6 +364,43 @@ class DelegatePhotosModel {
   }
 }
 
+class OrderCouponModel {
+  final String id;
+  final String code;
+  final String discountType;
+  final num discountValue;
+  final num discountAmount;
+
+  OrderCouponModel({
+    required this.id,
+    required this.code,
+    required this.discountType,
+    required this.discountValue,
+    required this.discountAmount,
+  });
+
+  factory OrderCouponModel.fromJson(Map<dynamic, dynamic>? json) {
+    final map = json ?? {};
+    return OrderCouponModel(
+      id: map['id'] ?? map['_id'] ?? '',
+      code: map['code'] ?? '',
+      discountType: map['discountType'] ?? 'fixed',
+      discountValue: map['discountValue'] ?? 0,
+      discountAmount: map['discountAmount'] ?? 0,
+    );
+  }
+
+  OrderCouponEntity toEntity() {
+    return OrderCouponEntity(
+      id: id,
+      code: code,
+      discountType: discountType,
+      discountValue: discountValue,
+      discountAmount: discountAmount,
+    );
+  }
+}
+
 class OrderModel {
   final String id;
   final String orderNumber;
@@ -386,6 +423,7 @@ class OrderModel {
   final OrderDelegateModel? deliveryDelegate;
   final FinancialSnapshotModel? financialSnapshot;
   final DelegatePhotosModel? delegatePhotos;
+  final OrderCouponModel? coupon;
 
   OrderModel({
     required this.id,
@@ -409,6 +447,7 @@ class OrderModel {
     this.deliveryDelegate,
     this.financialSnapshot,
     this.delegatePhotos,
+    this.coupon,
   });
 
   factory OrderModel.fromJson(Map<dynamic, dynamic>? json, {double? rootDelegateFeeValue}) {
@@ -475,6 +514,7 @@ class OrderModel {
       deliveryDelegate: deliveryDelegateData != null ? OrderDelegateModel.fromJson(deliveryDelegateData) : null,
       financialSnapshot: map['financialSnapshot'] != null ? FinancialSnapshotModel.fromJson(map['financialSnapshot'] as Map?) : null,
       delegatePhotos: map['delegatePhotos'] != null ? DelegatePhotosModel.fromJson(map['delegatePhotos'] as Map?) : null,
+      coupon: map['coupon'] != null ? OrderCouponModel.fromJson(map['coupon'] as Map?) : null,
     );
   }
 
@@ -501,6 +541,7 @@ class OrderModel {
       deliveryDelegate: deliveryDelegate?.toEntity(),
       financialSnapshot: financialSnapshot?.toEntity(),
       delegatePhotos: delegatePhotos?.toEntity(),
+      coupon: coupon?.toEntity(),
     );
   }
 }

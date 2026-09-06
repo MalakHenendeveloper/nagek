@@ -559,21 +559,6 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
               ),
               const SizedBox(height: 16),
             ],
-
-            // ─── Status History Timeline ──────────────────────────
-            _buildSectionTitle('سجل حالة الطلب', Icons.timeline_outlined),
-            const SizedBox(height: 8),
-            _buildCard(
-              child: Column(
-                children: order.statusHistory.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final history = entry.value;
-                  final isLast = index == order.statusHistory.length - 1;
-                  return _buildTimelineItem(history, isLast);
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -656,72 +641,6 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
               fontSize: isHighlighted ? 16 : 14,
               fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
               color: isHighlighted ? (highlightColor ?? const Color(0xFFFFC107)) : Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimelineItem(StatusHistoryEntity history, bool isLast) {
-    final date = _formatDateTime(history.timestamp);
-    final statusLabel = _getStatusLabel(history.status);
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Timeline indicator
-          Column(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFC107),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF141414), width: 2),
-                ),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    color: const Color(0xFFFFC107).withValues(alpha: 0.3),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 16),
-          // Content
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    statusLabel,
-                    style: GoogleFonts.cairo(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (history.note.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      history.note,
-                      style: GoogleFonts.cairo(fontSize: 12, color: Colors.white54),
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  Text(
-                    date,
-                    style: GoogleFonts.cairo(fontSize: 11, color: Colors.white30),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

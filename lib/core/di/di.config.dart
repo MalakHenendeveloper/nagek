@@ -24,6 +24,8 @@ import '../../features/admin/domain/use_cases/approve_delegate_application_use_c
     as _i78;
 import '../../features/admin/domain/use_cases/create_center_use_case.dart'
     as _i232;
+import '../../features/admin/domain/use_cases/create_coupon_use_case.dart'
+    as _i330;
 import '../../features/admin/domain/use_cases/delete_admin_delegate_use_case.dart'
     as _i671;
 import '../../features/admin/domain/use_cases/delete_admin_user_use_case.dart'
@@ -52,6 +54,8 @@ import '../../features/admin/domain/use_cases/get_admin_user_details_use_case.da
     as _i191;
 import '../../features/admin/domain/use_cases/get_admin_users_use_case.dart'
     as _i767;
+import '../../features/admin/domain/use_cases/get_coupons_use_case.dart'
+    as _i969;
 import '../../features/admin/domain/use_cases/get_delegate_application_details_use_case.dart'
     as _i385;
 import '../../features/admin/domain/use_cases/get_financial_settings_use_case.dart'
@@ -68,6 +72,8 @@ import '../../features/admin/domain/use_cases/update_admin_center_status_use_cas
     as _i360;
 import '../../features/admin/domain/use_cases/update_admin_user_status_use_case.dart'
     as _i114;
+import '../../features/admin/domain/use_cases/update_coupon_use_case.dart'
+    as _i360;
 import '../../features/admin/domain/use_cases/update_financial_settings_use_case.dart'
     as _i335;
 import '../../features/admin/domain/use_cases/update_payment_settings_use_case.dart'
@@ -76,6 +82,8 @@ import '../../features/admin/presentation/cubit/admin_center_details_cubit.dart'
     as _i150;
 import '../../features/admin/presentation/cubit/admin_centers_cubit.dart'
     as _i1001;
+import '../../features/admin/presentation/cubit/admin_coupons_cubit.dart'
+    as _i705;
 import '../../features/admin/presentation/cubit/admin_create_center_cubit.dart'
     as _i319;
 import '../../features/admin/presentation/cubit/admin_dashboard_cubit.dart'
@@ -222,6 +230,8 @@ import '../../features/orders/domain/use_cases/confirm_pickup_use_case.dart'
     as _i628;
 import '../../features/orders/domain/use_cases/create_order_use_case.dart'
     as _i945;
+import '../../features/orders/domain/use_cases/get_available_coupons_use_case.dart'
+    as _i828;
 import '../../features/orders/domain/use_cases/get_available_delivery_orders_use_case.dart'
     as _i23;
 import '../../features/orders/domain/use_cases/get_available_pickup_orders_use_case.dart'
@@ -248,6 +258,10 @@ import '../../features/orders/domain/use_cases/submit_payment_proof_use_case.dar
     as _i519;
 import '../../features/orders/domain/use_cases/upload_pickup_photos_use_case.dart'
     as _i898;
+import '../../features/orders/domain/use_cases/validate_coupon_use_case.dart'
+    as _i647;
+import '../../features/orders/presentation/cubit/available_coupons_cubit.dart'
+    as _i916;
 import '../../features/orders/presentation/cubit/available_pickup_orders_cubit.dart'
     as _i731;
 import '../../features/orders/presentation/cubit/create_order_cubit.dart'
@@ -265,6 +279,8 @@ import '../../features/orders/presentation/cubit/order_payment_cubit.dart'
 import '../../features/orders/presentation/cubit/order_tracking_cubit.dart'
     as _i934;
 import '../../features/orders/presentation/cubit/orders_cubit.dart' as _i1028;
+import '../../features/orders/presentation/cubit/validate_coupon_cubit.dart'
+    as _i123;
 import '../../features/profile/data/data_sources/profile_remote_data_source.dart'
     as _i1012;
 import '../../features/profile/data/repositories/profile_repository_impl.dart'
@@ -369,6 +385,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i992.OrdersRepository>(
       () => _i368.OrdersRepositoryImpl(gh<_i310.OrdersRemoteDataSource>()),
     );
+    gh.lazySingleton<_i828.GetAvailableCouponsUseCase>(
+      () => _i828.GetAvailableCouponsUseCase(gh<_i992.OrdersRepository>()),
+    );
+    gh.lazySingleton<_i647.ValidateCouponUseCase>(
+      () => _i647.ValidateCouponUseCase(gh<_i992.OrdersRepository>()),
+    );
     gh.factory<_i69.LoginCubit>(
       () => _i69.LoginCubit(gh<_i1038.LoginUseCase>()),
     );
@@ -459,6 +481,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1018.GetDelegateDashboardUseCase>(),
       ),
     );
+    gh.factory<_i123.ValidateCouponCubit>(
+      () => _i123.ValidateCouponCubit(gh<_i647.ValidateCouponUseCase>()),
+    );
     gh.factory<_i759.RegisterCubit>(
       () => _i759.RegisterCubit(gh<_i1010.RegisterUseCase>()),
     );
@@ -513,6 +538,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i743.CreateOrderCubit>(
       () => _i743.CreateOrderCubit(gh<_i945.CreateOrderUseCase>()),
+    );
+    gh.factory<_i916.AvailableCouponsCubit>(
+      () => _i916.AvailableCouponsCubit(gh<_i828.GetAvailableCouponsUseCase>()),
     );
     gh.factory<_i232.CreateCenterUseCase>(
       () => _i232.CreateCenterUseCase(gh<_i583.AdminRepository>()),
@@ -595,6 +623,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i908.UpdatePaymentSettingsUseCase>(
       () => _i908.UpdatePaymentSettingsUseCase(gh<_i583.AdminRepository>()),
+    );
+    gh.factory<_i330.CreateCouponUseCase>(
+      () => _i330.CreateCouponUseCase(gh<_i583.AdminRepository>()),
+    );
+    gh.factory<_i969.GetCouponsUseCase>(
+      () => _i969.GetCouponsUseCase(gh<_i583.AdminRepository>()),
+    );
+    gh.factory<_i360.UpdateCouponUseCase>(
+      () => _i360.UpdateCouponUseCase(gh<_i583.AdminRepository>()),
     );
     gh.factory<_i150.AdminCenterDetailsCubit>(
       () => _i150.AdminCenterDetailsCubit(
@@ -751,6 +788,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i361.UpdateCenterServiceCubit>(
       () => _i361.UpdateCenterServiceCubit(
         gh<_i1012.UpdateCenterServiceUseCase>(),
+      ),
+    );
+    gh.factory<_i705.AdminCouponsCubit>(
+      () => _i705.AdminCouponsCubit(
+        gh<_i330.CreateCouponUseCase>(),
+        gh<_i969.GetCouponsUseCase>(),
+        gh<_i360.UpdateCouponUseCase>(),
       ),
     );
     gh.factory<_i1041.AdminUsersCubit>(

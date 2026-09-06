@@ -6,6 +6,8 @@ import '../../domain/entities/price_offer_entity.dart';
 import '../../domain/entities/order_payment_entity.dart';
 import '../../domain/entities/delegate_dashboard_entity.dart';
 import '../../domain/entities/delegate_settlement_entity.dart';
+import '../../domain/entities/validate_coupon_entity.dart';
+import '../../domain/entities/available_coupon_entity.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../data_sources/orders_remote_data_source.dart';
 import 'package:injectable/injectable.dart';
@@ -54,6 +56,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   }) async {
     try {
       final responseModel = await _remoteDataSource.createOrder(
@@ -66,6 +69,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
         imagePaths: imagePaths,
         address: address,
         city: city,
+        couponCode: couponCode,
       );
 
       if (responseModel.success && responseModel.order != null) {
@@ -376,4 +380,44 @@ class OrdersRepositoryImpl implements OrdersRepository {
       return Left(ServerFailure('حدث خطأ أثناء جلب قائمة تسويات المندوب: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Either<Failure, ValidateCouponEntity>> validateCoupon({
+    required String code,
+    required num amount,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.validateCoupon(
+        code: code,
+        amount: amount,
+      );
+      if (responseModel.success && responseModel.data != null) {
+        return Right(responseModel.data!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء التحقق من الكوبون: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AvailableCouponEntity>>> getAvailableCoupons() async {
+    try {
+      final responseModel = await _remoteDataSource.getAvailableCoupons();
+      if (responseModel.success) {
+        return Right(responseModel.coupons.map((c) => c.toEntity()).toList());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب الكوبونات المتاحة: ${e.toString()}'));
+    }
+  }
 }
+
+

@@ -11,6 +11,7 @@ import '../entities/admin_financial_settings_entity.dart';
 import '../entities/admin_dashboard_entity.dart';
 import '../entities/admin_settlement_entity.dart';
 import '../entities/admin_settlements_summary_entity.dart';
+import '../entities/coupon_entity.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 abstract class AdminRepository {
@@ -100,4 +101,17 @@ abstract class AdminRepository {
     required bool isActive,
   });
   Future<Either<Failure, AdminFinancialSettingsEntity>> getFinancialSettings();
+  
+  Future<Either<Failure, CouponEntity>> createCoupon({
+    required String code,
+    required num discountValue,
+  });
+
+  Future<Either<Failure, CouponEntity>> updateCoupon({
+    required String id,
+    num? discountValue,
+    bool? isActive,
+  });
+
+  Future<Either<Failure, List<CouponEntity>>> getCoupons();
 }

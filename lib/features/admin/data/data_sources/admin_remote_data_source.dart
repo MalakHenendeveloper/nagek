@@ -16,6 +16,8 @@ import '../models/admin_dashboard_response_model.dart';
 import '../models/admin_settlements_response_model.dart';
 import '../models/admin_settlements_summary_response_model.dart';
 import '../models/admin_pay_settlement_response_model.dart';
+import '../models/coupon_response_model.dart';
+import '../models/coupons_list_response_model.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class AdminRemoteDataSource {
@@ -105,6 +107,16 @@ abstract class AdminRemoteDataSource {
     required bool isActive,
   });
   Future<AdminFinancialSettingsResponseModel> getFinancialSettings();
+  Future<CouponResponseModel> createCoupon({
+    required String code,
+    required num discountValue,
+  });
+  Future<CouponResponseModel> updateCoupon({
+    required String id,
+    num? discountValue,
+    bool? isActive,
+  });
+  Future<CouponsListResponseModel> getCoupons();
 }
 
 @LazySingleton(as: AdminRemoteDataSource)
@@ -524,7 +536,6 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       body: {
         'commissionType': commissionType,
         'commissionValue': commissionValue,
-        'delegateFeeType': delegateFeeType,
         'delegateFeeValue': delegateFeeValue,
         'currency': currency,
         'isActive': isActive,
@@ -660,4 +671,60 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       throw Exception('فشل في تأكيد دفع التسوية');
     }
   }
+
+  @override
+  Future<CouponResponseModel> createCoupon({
+    required String code,
+    required num discountValue,
+  }) async {
+    final response = await _apiManager.PostDate(
+      Endpoints.adminCoupons,
+      body: {
+        'code': code,
+        'discountValue': discountValue,
+      },
+    );
+
+    if (response.data != null) {
+      return CouponResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في إنشاء الكوبون');
+    }
+  }
+
+  @override
+  Future<CouponResponseModel> updateCoupon({
+    required String id,
+    num? discountValue,
+    bool? isActive,
+  }) async {
+    final Map<String, dynamic> body = {};
+    if (discountValue != null) body['discountValue'] = discountValue;
+    if (isActive != null) body['isActive'] = isActive;
+
+    final response = await _apiManager.UpdateData(
+      Endpoints.adminUpdateCoupon(id),
+      body: body,
+    );
+
+    if (response.data != null) {
+      return CouponResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث الكوبون');
+    }
+  }
+
+  @override
+  Future<CouponsListResponseModel> getCoupons() async {
+    final response = await _apiManager.getDate(
+      Endpoints.adminCoupons,
+    );
+
+    if (response.data != null) {
+      return CouponsListResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب الكوبونات');
+    }
+  }
 }
+

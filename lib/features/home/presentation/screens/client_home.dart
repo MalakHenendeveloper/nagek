@@ -11,8 +11,11 @@ import '../../../orders/presentation/screens/my_orders_screen.dart';
 import '../../../centers/presentation/screens/all_centers_screen.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:shimmer/shimmer.dart';                     
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../orders/presentation/cubit/available_coupons_cubit.dart';
+import '../../../orders/presentation/cubit/available_coupons_state.dart';
+import '../../../orders/presentation/widgets/available_coupons_bottom_sheet.dart';
 
 
 
@@ -27,6 +30,7 @@ class ClientHome extends StatefulWidget {
 class _ClientHomeState extends State<ClientHome> {
   late CentersCubit _centersCubit;
   late OrdersCubit _ordersCubit;
+  late AvailableCouponsCubit _availableCouponsCubit;
   int _selectedIndex = 3;
 
   @override
@@ -34,12 +38,14 @@ class _ClientHomeState extends State<ClientHome> {
     super.initState();
     _centersCubit = getIt<CentersCubit>()..fetchCenters(limit: 4);
     _ordersCubit = getIt<OrdersCubit>()..fetchOrders(limit: 10);
+    _availableCouponsCubit = getIt<AvailableCouponsCubit>()..fetchAvailableCoupons();
   }
 
   @override
   void dispose() {
     _centersCubit.close();
     _ordersCubit.close();
+    _availableCouponsCubit.close();
     super.dispose();
   }
 
@@ -109,7 +115,10 @@ class _ClientHomeState extends State<ClientHome> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+
+                // Offers Card
+                _buildOffersCard(),
 
                 // Nearest Centers Header
                 Row(
@@ -289,12 +298,14 @@ class _ClientHomeState extends State<ClientHome> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<CentersCubit>.value(value: _centersCubit),
-        BlocProvider<OrdersCubit>.value(value: _ordersCubit),
+        BlocProvider.value(value: _centersCubit),
+        BlocProvider.value(value: _ordersCubit),
+        BlocProvider.value(value: _availableCouponsCubit),
       ],
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFAF5),
@@ -516,4 +527,169 @@ class _ClientHomeState extends State<ClientHome> {
       ),
     );
   }
+
+  Widget _buildOffersCard() {
+    return BlocBuilder<AvailableCouponsCubit, AvailableCouponsState>(
+      builder: (context, state) {
+        if (state is AvailableCouponsLoading) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                height: 90,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (state is AvailableCouponsLoaded && state.coupons.isNotEmpty) {
+          final couponsCount = state.coupons.length;
+          final highestDiscount = state.coupons
+              .map((c) => c.discountValue)
+              .reduce((a, b) => a > b ? a : b);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: InkWell(
+              onTap: () {
+                AvailableCouponsBottomSheet.show(context, _availableCouponsCubit);
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      Color(0xFF231F14),
+                      Color(0xFF141414),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFFC107).withValues(alpha: 0.4),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFC107).withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Icon badge
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFFFFC107).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.local_offer_rounded,
+                        color: Color(0xFFFFC107),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Text content
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'عروض وكوبونات حصرية',
+                                style: GoogleFonts.cairo(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFC107),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$couponsCount متاح',
+                                  style: GoogleFonts.cairo(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'وفّر حتى $highestDiscount د.ع على طلباتك القادمة!',
+                            style: GoogleFonts.cairo(
+                              color: Colors.white70,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Action Button
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'عرض',
+                            style: GoogleFonts.cairo(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.black,
+                            size: 11,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
 }
+

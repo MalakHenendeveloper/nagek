@@ -16,6 +16,7 @@ import '../../../admin/presentation/cubit/admin_delegate_applications_cubit.dart
 import '../../../admin/presentation/cubit/admin_payments_cubit.dart';
 import '../../../admin/presentation/cubit/admin_payment_settings_cubit.dart';
 import '../../../admin/presentation/cubit/admin_financial_settings_cubit.dart';
+import '../../../admin/presentation/cubit/admin_coupons_cubit.dart';
 
 // Import Admin Views
 import '../../../admin/presentation/screens/views/admin_dashboard_view.dart';
@@ -28,6 +29,8 @@ import '../../../admin/presentation/screens/views/admin_delegate_applications_vi
 import '../../../admin/presentation/screens/views/admin_payments_view.dart';
 import '../../../admin/presentation/screens/views/admin_payment_settings_view.dart';
 import '../../../admin/presentation/screens/views/admin_financial_settings_view.dart';
+import '../../../admin/presentation/screens/views/admin_add_coupon_view.dart';
+import '../../../admin/presentation/screens/views/admin_coupons_view.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -86,6 +89,9 @@ class _AdminHomeState extends State<AdminHome> {
         ),
         BlocProvider<AdminDelegateApplicationsCubit>(
           create: (context) => getIt<AdminDelegateApplicationsCubit>(),
+        ),
+        BlocProvider<AdminCouponsCubit>(
+          create: (context) => getIt<AdminCouponsCubit>(),
         ),
       ],
       child: Builder(
@@ -212,40 +218,6 @@ class _AdminHomeState extends State<AdminHome> {
                           title: 'التحويلات والمدفوعات',
                           icon: Icons.account_balance_wallet_rounded,
                         ),
-                        ListTile(
-                          dense: true,
-                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
-                          leading: const Icon(Icons.receipt_long_rounded, color: Color(0xFFFFC107), size: 20),
-                          title: Text(
-                            'قائمة تسويات النظام',
-                            style: GoogleFonts.cairo(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, Routes.adminSettlementsRoute);
-                          },
-                        ),
-                        ListTile(
-                          dense: true,
-                          contentPadding: const EdgeInsets.only(right: 28, left: 16),
-                          leading: const Icon(Icons.pie_chart_rounded, color: Color(0xFFFFC107), size: 20),
-                          title: Text(
-                            'ملخص التسويات المجمع',
-                            style: GoogleFonts.cairo(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, Routes.adminSettlementsSummaryRoute);
-                          },
-                        ),
                         _buildDrawerSubItem(
                           index: 9,
                           title: 'إعدادات المحافظ الإلكترونية',
@@ -255,6 +227,18 @@ class _AdminHomeState extends State<AdminHome> {
                           index: 10,
                           title: 'الإعدادات المالية والعمولات',
                           icon: Icons.monetization_on_outlined,
+                        ),
+                        
+                        _buildDrawerCategory('إدارة الكوبونات'),
+                        _buildDrawerSubItem(
+                          index: 12,
+                          title: 'قائمة الكوبونات',
+                          icon: Icons.list_alt_rounded,
+                        ),
+                        _buildDrawerSubItem(
+                          index: 11,
+                          title: 'إضافة كوبون',
+                          icon: Icons.local_offer_rounded,
                         ),
                       ],
                     ),
@@ -305,6 +289,10 @@ class _AdminHomeState extends State<AdminHome> {
         return 'إعدادات المحافظ الإلكترونية';
       case 10:
         return 'الإعدادات المالية والعمولات';
+      case 11:
+        return 'إضافة كوبون';
+      case 12:
+        return 'قائمة الكوبونات';
       default:
         return 'مدير النظام';
     }
@@ -350,6 +338,17 @@ class _AdminHomeState extends State<AdminHome> {
           create: (context) => getIt<AdminFinancialSettingsCubit>(),
           child: const AdminFinancialSettingsView(),
         );
+      case 11:
+        return AdminAddCouponView(
+          onSuccess: () {
+            setState(() {
+              _selectedMenuIndex = 12;
+            });
+            context.read<AdminCouponsCubit>().fetchCoupons();
+          },
+        );
+      case 12:
+        return const AdminCouponsView();
       default:
         return const AdminDashboardView();
     }

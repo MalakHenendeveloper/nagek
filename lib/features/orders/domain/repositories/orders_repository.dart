@@ -6,6 +6,8 @@ import '../entities/price_offer_entity.dart';
 import '../entities/order_payment_entity.dart';
 import '../entities/delegate_dashboard_entity.dart';
 import '../entities/delegate_settlement_entity.dart';
+import '../entities/validate_coupon_entity.dart';
+import '../entities/available_coupon_entity.dart';
 
 abstract class OrdersRepository {
   Future<Either<Failure, OrdersResultEntity>> getOrders({
@@ -23,6 +25,7 @@ abstract class OrdersRepository {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   });
 
   Future<Either<Failure, OrderEntity>> getOrderDetails(String id);
@@ -75,4 +78,11 @@ abstract class OrdersRepository {
     String? dateTo,
     String? sort,
   });
+
+  Future<Either<Failure, ValidateCouponEntity>> validateCoupon({
+    required String code,
+    required num amount,
+  });
+
+  Future<Either<Failure, List<AvailableCouponEntity>>> getAvailableCoupons();
 }

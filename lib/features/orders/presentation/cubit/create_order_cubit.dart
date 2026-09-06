@@ -19,6 +19,7 @@ class CreateOrderCubit extends Cubit<CreateOrderState> {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   }) async {
     emit(CreateOrderLoading());
 
@@ -32,6 +33,7 @@ class CreateOrderCubit extends Cubit<CreateOrderState> {
       imagePaths: imagePaths,
       address: address,
       city: city,
+      couponCode: couponCode,
     );
 
     result.fold(

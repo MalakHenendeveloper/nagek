@@ -11,6 +11,7 @@ import '../../domain/entities/admin_financial_settings_entity.dart';
 import '../../domain/entities/admin_dashboard_entity.dart';
 import '../../domain/entities/admin_settlement_entity.dart';
 import '../../domain/entities/admin_settlements_summary_entity.dart';
+import '../../domain/entities/coupon_entity.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../data_sources/admin_remote_data_source.dart';
@@ -565,6 +566,68 @@ class AdminRepositoryImpl implements AdminRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء تأكيد دفع التسوية'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CouponEntity>> createCoupon({
+    required String code,
+    required num discountValue,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.createCoupon(
+        code: code,
+        discountValue: discountValue,
+      );
+      if (responseModel.success && responseModel.coupon != null) {
+        return Right(responseModel.coupon!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException') 
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CouponEntity>> updateCoupon({
+    required String id,
+    num? discountValue,
+    bool? isActive,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.updateCoupon(
+        id: id,
+        discountValue: discountValue,
+        isActive: isActive,
+      );
+      if (responseModel.success && responseModel.coupon != null) {
+        return Right(responseModel.coupon!.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء تحديث الكوبون'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<CouponEntity>>> getCoupons() async {
+    try {
+      final responseModel = await _remoteDataSource.getCoupons();
+      if (responseModel.success) {
+        return Right(responseModel.coupons.map((e) => e.toEntity()).toList());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب الكوبونات'));
     }
   }
 }

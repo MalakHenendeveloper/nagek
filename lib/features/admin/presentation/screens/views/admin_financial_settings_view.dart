@@ -218,57 +218,14 @@ class _AdminFinancialSettingsViewState
                       ),
                       const SizedBox(height: 24),
 
-                      _buildSectionTitle('أجرة/عمولة المندوب عن التوصيل'),
+                      _buildSectionTitle('أجرة المندوب الثابتة عن التوصيل'),
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _delegateFeeType,
-                              dropdownColor: const Color(0xFF141414),
-                              style: GoogleFonts.cairo(
-                                  color: Colors.white, fontSize: 13),
-                              decoration: InputDecoration(
-                                labelText: 'نوع رسوم المندوب',
-                                labelStyle: GoogleFonts.cairo(
-                                    color: Colors.white30, fontSize: 12),
-                                filled: true,
-                                fillColor: const Color(0xFF141414),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide:
-                                      const BorderSide(color: Colors.white10),
-                                ),
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                    value: 'fixed', child: Text('مبلغ ثابت')),
-                                DropdownMenuItem(
-                                    value: 'percentage',
-                                    child: Text('نسبة مئوية (%)')),
-                              ],
-                              onChanged: isUpdating
-                                  ? null
-                                  : (val) {
-                                      if (val != null) {
-                                        setState(() => _delegateFeeType = val);
-                                      }
-                                    },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            flex: 3,
-                            child: _buildInputField(
-                              controller: _delegateFeeValueController,
-                              label: 'قيمة أجرة المندوب',
-                              icon: Icons.attach_money,
-                              enabled: !isUpdating,
-                              textInputType: TextInputType.number,
-                            ),
-                          ),
-                        ],
+                      _buildInputField(
+                        controller: _delegateFeeValueController,
+                        label: 'قيمة أجرة المندوب (مبلغ ثابت)',
+                        icon: Icons.attach_money,
+                        enabled: !isUpdating,
+                        textInputType: TextInputType.number,
                       ),
                       const SizedBox(height: 24),
 

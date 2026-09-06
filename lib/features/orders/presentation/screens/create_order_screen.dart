@@ -7,10 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
 import '../../../../core/services/image_picker_service.dart';
+import '../cubit/available_coupons_cubit.dart';
 import '../cubit/create_order_cubit.dart';
 import '../cubit/create_order_state.dart';
 import '../cubit/device_selection_cubit.dart';
 import '../cubit/device_selection_state.dart';
+import '../widgets/available_coupons_bottom_sheet.dart';
 import '../widgets/device_selector_widget.dart';
 import '../../../map/domain/entities/map_location_entity.dart';
 
@@ -25,6 +27,7 @@ class CreateOrderScreen extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   late CreateOrderCubit _cubit;
+  late AvailableCouponsCubit _availableCouponsCubit;
 
   int _currentStep = 0;
 
@@ -37,6 +40,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   final List<String> _imagePaths = [];
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _couponCodeController = TextEditingController();
 
   final _formKeyStep2 = GlobalKey<FormState>();
   final _formKeyStep4 = GlobalKey<FormState>();
@@ -45,6 +49,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   void initState() {
     super.initState();
     _cubit = getIt<CreateOrderCubit>();
+    _availableCouponsCubit = getIt<AvailableCouponsCubit>();
     _cityController.text = 'الرياض'; // default
   }
 
@@ -55,7 +60,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     _descriptionController.dispose();
     _addressController.dispose();
     _cityController.dispose();
+    _couponCodeController.dispose();
     _cubit.close();
+    _availableCouponsCubit.close();
     super.dispose();
   }
 
@@ -106,6 +113,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         imagePaths: _imagePaths,
         address: _addressController.text,
         city: _cityController.text,
+        couponCode: _couponCodeController.text.trim().isNotEmpty
+            ? _couponCodeController.text.trim()
+            : null,
       );
     }
   }
@@ -706,6 +716,91 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               _buildReviewRow('عنوان الاستلام:', '${_cityController.text}، ${_addressController.text}'),
               const Divider(),
               _buildReviewRow('عدد الصور المرفقة:', '${_imagePaths.length} صور'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.local_offer_outlined, color: Color(0xFF8B7500), size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'كوبون الخصم (اختياري)',
+                        style: GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      AvailableCouponsBottomSheet.show(context, _availableCouponsCubit);
+                    },
+                    icon: const Icon(Icons.confirmation_num_outlined, size: 16, color: Color(0xFFB388FF)),
+                    label: Text(
+                      'الكوبونات المتاحة',
+                      style: GoogleFonts.cairo(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF7C4DFF),
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      backgroundColor: const Color(0xFF7C4DFF).withValues(alpha: 0.08),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _couponCodeController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  hintText: 'أدخل كود الكوبون إن وجد...',
+                  hintStyle: GoogleFonts.cairo(fontSize: 12, color: Colors.grey),
+                  filled: true,
+                  fillColor: const Color(0xFFF9F9F9),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  prefixIcon: const Icon(Icons.discount_outlined, color: Color(0xFFFFC107), size: 20),
+                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _couponCodeController,
+                    builder: (context, value, _) {
+                      if (value.text.isNotEmpty) {
+                        return IconButton(
+                          icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                          onPressed: () => _couponCodeController.clear(),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.black12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.black12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFFFC107)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

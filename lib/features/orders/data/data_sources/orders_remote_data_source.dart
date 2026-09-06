@@ -19,6 +19,8 @@ import '../models/order_payment_response_model.dart';
 import '../models/payment_proof_response_model.dart';
 import '../models/delegate_dashboard_response_model.dart';
 import '../models/delegate_settlements_response_model.dart';
+import '../models/validate_coupon_response_model.dart';
+import '../models/available_coupons_response_model.dart';
 
 abstract class OrdersRemoteDataSource {
   Future<OrdersResponseModel> getOrders({
@@ -36,6 +38,7 @@ abstract class OrdersRemoteDataSource {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   });
 
   Future<OrderDetailsResponseModel> getOrderDetails(String id);
@@ -100,6 +103,13 @@ abstract class OrdersRemoteDataSource {
     String? dateTo,
     String? sort,
   });
+
+  Future<ValidateCouponResponseModel> validateCoupon({
+    required String code,
+    required num amount,
+  });
+
+  Future<AvailableCouponsResponseModel> getAvailableCoupons();
 }
 
 @LazySingleton(as: OrdersRemoteDataSource)
@@ -135,11 +145,16 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   }) async {
     final formData = FormData();
 
     // repair center
     formData.fields.add(MapEntry('repairCenter', centerId));
+
+    if (couponCode != null && couponCode.trim().isNotEmpty) {
+      formData.fields.add(MapEntry('couponCode', couponCode.trim()));
+    }
 
     // device object
     formData.fields.add(
@@ -543,4 +558,39 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
       return await MultipartFile.fromFile(path, filename: path.split('/').last);
     }
   }
+
+  @override
+  Future<ValidateCouponResponseModel> validateCoupon({
+    required String code,
+    required num amount,
+  }) async {
+    final response = await _apiManager.PostDate(
+      Endpoints.validateCoupon,
+      body: {
+        'code': code,
+        'amount': amount,
+      },
+    );
+
+    if (response.data != null) {
+      return ValidateCouponResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في التحقق من الكوبون');
+    }
+  }
+
+  @override
+  Future<AvailableCouponsResponseModel> getAvailableCoupons() async {
+    final response = await _apiManager.getDate(
+      Endpoints.availableCoupons,
+    );
+
+    if (response.data != null) {
+      return AvailableCouponsResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب الكوبونات المتاحة');
+    }
+  }
 }
+
+

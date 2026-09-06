@@ -139,6 +139,22 @@ class DelegatePhotosEntity {
   });
 }
 
+class OrderCouponEntity {
+  final String id;
+  final String code;
+  final String discountType;
+  final num discountValue;
+  final num discountAmount;
+
+  OrderCouponEntity({
+    required this.id,
+    required this.code,
+    required this.discountType,
+    required this.discountValue,
+    required this.discountAmount,
+  });
+}
+
 class OrderEntity {
   final String id;
   final String orderNumber;
@@ -161,6 +177,7 @@ class OrderEntity {
   final OrderDelegateEntity? deliveryDelegate;
   final FinancialSnapshotEntity? financialSnapshot;
   final DelegatePhotosEntity? delegatePhotos;
+  final OrderCouponEntity? coupon;
 
   OrderEntity({
     required this.id,
@@ -184,6 +201,7 @@ class OrderEntity {
     this.deliveryDelegate,
     this.financialSnapshot,
     this.delegatePhotos,
+    this.coupon,
   });
 }
 

@@ -20,7 +20,6 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
   late OrderPaymentCubit _cubit;
   String? _selectedMethod;
 
-
   @override
   void initState() {
     super.initState();
@@ -510,14 +509,24 @@ class _OrderPaymentScreenState extends State<OrderPaymentScreen> {
                           financial.walletInfo ?? state.details.paymentInfo,
                           _selectedMethod ?? 'zain_cash',
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
 
                         // ─── Action Button ───────────────────────
                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton.icon(
-                            onPressed: () => _showPaymentBottomSheet(financial.orderTotal > 0 ? financial.orderTotal : order.fees.total, financial.currency),
+                            onPressed: () {
+                              final baseTotal = financial.orderTotal > 0
+                                  ? financial.orderTotal
+                                  : ((order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0)
+                                      ? order.financialSnapshot!.clientTotal
+                                      : order.fees.total);
+                              _showPaymentBottomSheet(
+                                baseTotal.toDouble(),
+                                financial.currency,
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFC107),
                               foregroundColor: Colors.black87,

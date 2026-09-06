@@ -3,7 +3,7 @@
 class Endpoints {
   //Deployment
 
-  static const String Url = 'https://3gra4rwnt-iwsk9yq2z-nagek.vercel.app/api' ;
+  static const String Url = 'https://3gra4rwnt-44fzzxukn-nagek.vercel.app/api';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';
@@ -13,6 +13,8 @@ class Endpoints {
   static const String centerDetails = '/centers/';
   static const String centerDetailsServices = '/centers/';
   static const String orders = '/orders';
+  static const String validateCoupon = '/orders/validate-coupon';
+  static const String availableCoupons = '/coupons/available';
   static const String orderPayment = '/orders/';
   static const String inspection = '/inspection';
   static const String priceOffer = '/price-offer';
@@ -45,6 +47,8 @@ class Endpoints {
   static const String adminDelegates = '/admin/delegates';
   static const String adminUsers = '/admin/users';
   static const String adminCenters = '/admin/centers';
+  static const String adminCoupons = '/admin/coupons';
+  static String adminUpdateCoupon(String id) => '/admin/coupons/$id';
   static const String adminUserDetails = '/admin/users/';
   static const String adminOrders = '/admin/orders';
   static const String adminDelegateApplications =

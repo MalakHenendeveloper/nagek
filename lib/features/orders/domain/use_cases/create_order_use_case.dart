@@ -20,6 +20,7 @@ class CreateOrderUseCase {
     required List<String> imagePaths,
     required String address,
     required String city,
+    String? couponCode,
   }) {
     return repository.createOrder(
       centerId: centerId,
@@ -31,6 +32,7 @@ class CreateOrderUseCase {
       imagePaths: imagePaths,
       address: address,
       city: city,
+      couponCode: couponCode,
     );
   }
 }
