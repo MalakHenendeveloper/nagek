@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../cubit/delegate_login_cubit.dart';
 import '../cubit/delegate_login_state.dart';
 
@@ -180,6 +181,7 @@ class _DelegateLoginScreenState extends State<DelegateLoginScreen> {
                 child: BlocConsumer<DelegateLoginCubit, DelegateLoginState>(
                   listener: (context, state) {
                     if (state is DelegateLoginSuccessState) {
+                      NotificationService.instance.sendTokenToBackend();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

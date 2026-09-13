@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380523431838",
+    "project_id": "nagek-ea022",
+    "storage_bucket": "nagek-ea022.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380523431838:android:4faeb26f58f68fbc2a788f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_nagek"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl-VbPFLHqNfZ0ZHx5_HXwBzun8KkJWGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

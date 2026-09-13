@@ -3,7 +3,7 @@
 class Endpoints {
   //Deployment
 
-  static const String Url = 'https://3gra4rwnt-k6v9by0pl-nagek.vercel.app/api';
+  static const String Url = 'https://3gra4rwnt-ciauy5rso-nagek.vercel.app/api';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';
@@ -64,4 +64,5 @@ class Endpoints {
       '/delegate/tasks/$orderId/confirm-pickup-center';
   static String confirmDelivery(String orderId) =>
       '/delegate/tasks/$orderId/confirm-delivery';
+  static const String delegatePushTokens = '/delegate/push-tokens';
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
 
@@ -64,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           break;
                         case 'delegate':
                           routeName = Routes.delegateHomeRoute;
+                          NotificationService.instance.sendTokenToBackend();
                           break;
                         case 'center':
                           routeName = Routes.centerHomeRoute;

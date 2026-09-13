@@ -12,10 +12,15 @@ import 'features/home/presentation/screens/admin_home.dart';
 import 'features/home/presentation/screens/delegate_home.dart';
 import 'features/home/presentation/screens/center_home.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'core/services/notification_service.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
   configureDependencies();
+  await Firebase.initializeApp();
+  await NotificationService.instance.init();
   runApp(const MyApp());
 }
 
@@ -79,6 +84,9 @@ class _AppNavigatorState extends State<AppNavigator> {
         _isLoggedIn = true;
         _userRole = role.toLowerCase();
       });
+      if (_userRole == 'delegate') {
+        NotificationService.instance.sendTokenToBackend();
+      }
     }
   }
 
