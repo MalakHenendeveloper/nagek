@@ -18,9 +18,17 @@ import '../models/admin_settlements_summary_response_model.dart';
 import '../models/admin_pay_settlement_response_model.dart';
 import '../models/coupon_response_model.dart';
 import '../models/coupons_list_response_model.dart';
+import '../models/admin_settlements_report_response_model.dart';
+import '../models/admin_update_order_settlement_response_model.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class AdminRemoteDataSource {
+  Future<AdminUpdateOrderSettlementResponseModel> updateOrderSettlement({
+    required String orderId,
+    required String party,
+    required bool settled,
+  });
+  Future<AdminSettlementsReportResponseModel> getAdminSettlementsReport();
   Future<AdminDashboardResponseModel> getAdminDashboard();
 
   Future<AdminPaySettlementResponseModel> payAdminSettlement(
@@ -724,6 +732,40 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       return CouponsListResponseModel.fromJson(response.data);
     } else {
       throw Exception('فشل في جلب الكوبونات');
+    }
+  }
+
+  @override
+  Future<AdminSettlementsReportResponseModel> getAdminSettlementsReport() async {
+    final response = await _apiManager.getDate(
+      Endpoints.adminSettlements,
+    );
+
+    if (response.data != null) {
+      return AdminSettlementsReportResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في جلب تقرير التسويات');
+    }
+  }
+
+  @override
+  Future<AdminUpdateOrderSettlementResponseModel> updateOrderSettlement({
+    required String orderId,
+    required String party,
+    required bool settled,
+  }) async {
+    final response = await _apiManager.UpdateData(
+      Endpoints.updateOrderSettlement(orderId),
+      body: {
+        'party': party,
+        'settled': settled,
+      },
+    );
+
+    if (response.data != null) {
+      return AdminUpdateOrderSettlementResponseModel.fromJson(response.data);
+    } else {
+      throw Exception('فشل في تحديث حالة التسوية');
     }
   }
 }

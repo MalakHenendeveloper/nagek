@@ -11,6 +11,7 @@ import '../../domain/entities/admin_financial_settings_entity.dart';
 import '../../domain/entities/admin_dashboard_entity.dart';
 import '../../domain/entities/admin_settlement_entity.dart';
 import '../../domain/entities/admin_settlements_summary_entity.dart';
+import '../../domain/entities/admin_settlements_report_entity.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../../orders/domain/entities/order_entity.dart';
@@ -628,6 +629,46 @@ class AdminRepositoryImpl implements AdminRepository {
       return Left(ServerFailure(e.toString().contains('SocketException')
           ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
           : 'حدث خطأ أثناء جلب الكوبونات'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AdminSettlementsReportEntity>> getAdminSettlementsReport() async {
+    try {
+      final responseModel = await _remoteDataSource.getAdminSettlementsReport();
+      if (responseModel.success) {
+        return Right(responseModel.toEntity());
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء جلب تقرير التسويات'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> updateOrderSettlement({
+    required String orderId,
+    required String party,
+    required bool settled,
+  }) async {
+    try {
+      final responseModel = await _remoteDataSource.updateOrderSettlement(
+        orderId: orderId,
+        party: party,
+        settled: settled,
+      );
+      if (responseModel.success) {
+        return const Right(true);
+      } else {
+        return Left(ServerFailure(responseModel.message));
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString().contains('SocketException')
+          ? 'تعذر الاتصال بالإنترنت، يرجى التحقق من الشبكة'
+          : 'حدث خطأ أثناء تحديث حالة التسوية'));
     }
   }
 }

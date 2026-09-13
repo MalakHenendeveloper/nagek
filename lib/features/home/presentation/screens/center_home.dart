@@ -203,8 +203,6 @@ class _CenterHomeState extends State<CenterHome> {
   ) {
     int totalCount = 0;
     int pendingCount = 0;
-    int ongoingCount = 0;
-    int completedCount = 0;
     List<OrderEntity> orders = [];
     bool hasReachedMax = false;
     bool isLoading = state is CenterDashboardOrdersLoading;
@@ -212,8 +210,6 @@ class _CenterHomeState extends State<CenterHome> {
     if (state is CenterDashboardOrdersLoaded) {
       totalCount = state.totalCount;
       pendingCount = state.pendingCount;
-      ongoingCount = state.inProgressCount;
-      completedCount = state.completedCount;
       orders = state.orders;
       hasReachedMax = state.hasReachedMax;
     }
@@ -302,24 +298,6 @@ class _CenterHomeState extends State<CenterHome> {
                         value: pendingCount.toString(),
                         icon: Icons.new_releases_outlined,
                         color: Colors.orangeAccent,
-                        isLoading:
-                            state is CenterDashboardOrdersInitial ||
-                            (isLoading && orders.isEmpty),
-                      ),
-                      _buildStatCard(
-                        title: 'تحت الصيانة',
-                        value: ongoingCount.toString(),
-                        icon: Icons.build_outlined,
-                        color: Colors.blueAccent,
-                        isLoading:
-                            state is CenterDashboardOrdersInitial ||
-                            (isLoading && orders.isEmpty),
-                      ),
-                      _buildStatCard(
-                        title: 'طلبات منجزة',
-                        value: completedCount.toString(),
-                        icon: Icons.check_circle_outline,
-                        color: Colors.greenAccent,
                         isLoading:
                             state is CenterDashboardOrdersInitial ||
                             (isLoading && orders.isEmpty),
@@ -857,43 +835,18 @@ class _CenterHomeState extends State<CenterHome> {
             // Delegate Info Row(s)
             ..._buildDelegateInfoRows(order),
 
-            // Footer Row: Date & Price
+            // Footer: Date
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 13,
+                  color: Colors.white38,
+                ),
+                const SizedBox(width: 6),
                 Text(
                   formattedDate,
                   style: GoogleFonts.cairo(fontSize: 12, color: Colors.white38),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'رسوم الصيانة',
-                      style: GoogleFonts.cairo(
-                        fontSize: 10,
-                        color: Colors.white38,
-                      ),
-                    ),
-                    Builder(
-                      builder: (context) {
-                        final double centerPrice =
-                            (order.financialSnapshot?.centerAmount ?? 0) > 0
-                            ? order.financialSnapshot!.centerAmount
-                            : (order.fees.repair > 0
-                                  ? order.fees.repair
-                                  : order.fees.total);
-                        return Text(
-                          '${centerPrice.toInt()} د.ع',
-                          style: GoogleFonts.cairo(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFFC107),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -920,7 +873,11 @@ class _CenterHomeState extends State<CenterHome> {
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: [
-              Icon(Icons.two_wheeler, size: 16, color: Colors.greenAccent.withValues(alpha: 0.7)),
+              Icon(
+                Icons.two_wheeler,
+                size: 16,
+                color: Colors.greenAccent.withValues(alpha: 0.7),
+              ),
               const SizedBox(width: 8),
               Text(
                 'العميل → المركز: ',
@@ -929,7 +886,11 @@ class _CenterHomeState extends State<CenterHome> {
               Expanded(
                 child: Text(
                   pickupDel.name,
-                  style: GoogleFonts.cairo(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -941,7 +902,11 @@ class _CenterHomeState extends State<CenterHome> {
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: [
-              Icon(Icons.local_shipping_outlined, size: 16, color: const Color(0xFFFFC107).withValues(alpha: 0.7)),
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 16,
+                color: const Color(0xFFFFC107).withValues(alpha: 0.7),
+              ),
               const SizedBox(width: 8),
               Text(
                 'المركز → العميل: ',
@@ -950,7 +915,11 @@ class _CenterHomeState extends State<CenterHome> {
               Expanded(
                 child: Text(
                   deliveryDel.name,
-                  style: GoogleFonts.cairo(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -1584,7 +1553,8 @@ class _CenterProfileView extends StatelessWidget {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (_) => _EditCenterProfileBottomSheet(initialName: centerName),
+                  builder: (_) =>
+                      _EditCenterProfileBottomSheet(initialName: centerName),
                 );
               },
             ),
@@ -1636,8 +1606,9 @@ class _EditCenterProfileBottomSheet extends StatefulWidget {
 class __EditCenterProfileBottomSheetState
     extends State<_EditCenterProfileBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController =
-      TextEditingController(text: widget.initialName);
+  late final TextEditingController _nameController = TextEditingController(
+    text: widget.initialName,
+  );
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();

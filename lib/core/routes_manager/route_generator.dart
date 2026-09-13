@@ -63,8 +63,21 @@ class RouteGenerator {
       case Routes.myOrdersRoute:
         return MaterialPageRoute(builder: (_) => const MyOrdersScreen());
       case Routes.createOrderRoute:
-        final centerId = settings.arguments as String;
-        return MaterialPageRoute(builder: (_) => CreateOrderScreen(centerId: centerId));
+        final arguments = settings.arguments;
+        if (arguments is Map<String, dynamic>) {
+          return MaterialPageRoute(
+            builder: (_) => CreateOrderScreen(
+              centerId: arguments['centerId'] as String,
+              supportedDeviceTypes: (arguments['supportedDeviceTypes'] as List<dynamic>?)
+                  ?.cast<String>() ?? [],
+            ),
+          );
+        } else {
+          final centerId = arguments as String;
+          return MaterialPageRoute(
+            builder: (_) => CreateOrderScreen(centerId: centerId),
+          );
+        }
       case Routes.orderTrackingRoute:
         final orderId = settings.arguments as String;
         return MaterialPageRoute(builder: (_) => OrderTrackingScreen(orderId: orderId));

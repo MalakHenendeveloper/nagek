@@ -209,13 +209,33 @@ class _ClientHomeState extends State<ClientHome> {
                 const SizedBox(height: 30),
 
                 // Recent Orders
-                Text(
-                  'الطلبات الأخيرة',
-                  style: GoogleFonts.cairo(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'الطلبات الأخيرة',
+                      style: GoogleFonts.cairo(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = 2;
+                        });
+                      },
+                      child: Text(
+                        'رؤية الكل',
+                        style: GoogleFonts.cairo(
+                          fontSize: 14,
+                          color: const Color(0xFF8B7500),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                  BlocBuilder<OrdersCubit, OrdersState>(
@@ -248,17 +268,27 @@ class _ClientHomeState extends State<ClientHome> {
                         ),
                       );
                     } else if (state is OrdersLoaded) {
-                      final pendingOrders = state.orders
-                          .where((order) => order.status.toLowerCase() == 'pending')
+                      final previousStatuses = [
+                        'delivered',
+                        'completed',
+                        'done',
+                        'cancelled',
+                        'rejected',
+                      ];
+
+                      final completedOrders = state.orders
+                          .where((order) =>
+                              previousStatuses.contains(order.status.toLowerCase()))
                           .toList();
 
-                      if (pendingOrders.isEmpty) {
+                      if (completedOrders.isEmpty) {
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Text(
-                              'لا توجد طلبات معلقة حالياً',
-                              style: GoogleFonts.cairo(color: Colors.grey, fontSize: 14),
+                              'لا توجد طلبات سابقة أو تم تسليمها حالياً',
+                              style: GoogleFonts.cairo(
+                                  color: Colors.grey, fontSize: 14),
                             ),
                           ),
                         );
@@ -267,21 +297,32 @@ class _ClientHomeState extends State<ClientHome> {
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: pendingOrders.length,
+                        itemCount: completedOrders.length > 5 ? 5 : completedOrders.length,
                         itemBuilder: (context, index) {
-                          final order = pendingOrders[index];
+                          final order = completedOrders[index];
+                          final badge = _getStatusBadgeData(order.status);
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
-                            child: _buildRecentOrderCard(
-                              title: '${order.device.brand} ${order.device.model}',
-                              orderId: '#${order.orderNumber.split('-').last}',
-                              status: 'قيد التنفيذ',
-                              time: _formatDate(order.createdAt),
-                              statusColor: const Color(0xFFFFF9C4),
-                              statusTextColor: const Color(0xFF8B7500),
-                              icon: order.device.type.toLowerCase() == 'phone'
-                                  ? Icons.phone_iphone
-                                  : Icons.build,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.orderTrackingRoute,
+                                  arguments: order.id,
+                                );
+                              },
+                              child: _buildRecentOrderCard(
+                                title: '${order.device.brand} ${order.device.model}',
+                                orderId: '#${order.orderNumber.split('-').last}',
+                                status: badge.text,
+                                time: _formatDate(order.createdAt),
+                                statusColor: badge.backgroundColor,
+                                statusTextColor: badge.textColor,
+                                icon: order.device.type.toLowerCase() == 'phone'
+                                    ? Icons.phone_iphone
+                                    : Icons.build,
+                              ),
                             ),
                           );
                         },
@@ -412,16 +453,28 @@ class _ClientHomeState extends State<ClientHome> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Color(0xFFFFC107), size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      center.rating.toString(),
-                      style: GoogleFonts.cairo(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF9E6),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shield_outlined, color: Color(0xFF8B7500), size: 11),
+                      const SizedBox(width: 4),
+                      Text(
+                        'ضمان معتمد على الصيانة',
+                        style: GoogleFonts.cairo(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF8B7500),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -687,9 +740,154 @@ class _ClientHomeState extends State<ClientHome> {
           );
         }
 
-        return const SizedBox.shrink();
+        // Empty coupons encouraging banner
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Color(0xFF231F14),
+                  Color(0xFF141414),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFFFC107).withValues(alpha: 0.3),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFC107).withValues(alpha: 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFC107).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFFFC107).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.campaign_rounded,
+                    color: Color(0xFFFFC107),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'ترقّب أقوى العروض والخصومات!',
+                            style: GoogleFonts.cairo(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFC107).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFFFFC107).withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Text(
+                              'قريباً',
+                              style: GoogleFonts.cairo(
+                                color: const Color(0xFFFFC107),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'تابعنا باستمرار للاستفادة من كوبونات الخصم الحصرية والعروض المميزة فور توفرها 🎁✨',
+                        style: GoogleFonts.cairo(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
+
+  _HomeStatusBadgeData _getStatusBadgeData(String status) {
+    switch (status.toLowerCase()) {
+      case 'delivered':
+        return const _HomeStatusBadgeData(
+          text: 'تم التوصيل',
+          backgroundColor: Color(0xFFE8F5E9),
+          textColor: Color(0xFF2E7D32),
+        );
+      case 'completed':
+      case 'done':
+        return const _HomeStatusBadgeData(
+          text: 'مكتمل',
+          backgroundColor: Color(0xFFE8F5E9),
+          textColor: Color(0xFF2E7D32),
+        );
+      case 'cancelled':
+        return const _HomeStatusBadgeData(
+          text: 'ملغي',
+          backgroundColor: Color(0xFFFFEBEE),
+          textColor: Color(0xFFC62828),
+        );
+      case 'rejected':
+        return const _HomeStatusBadgeData(
+          text: 'مرفوض',
+          backgroundColor: Color(0xFFFFEBEE),
+          textColor: Color(0xFFC62828),
+        );
+      default:
+        return const _HomeStatusBadgeData(
+          text: 'تم التسليم',
+          backgroundColor: Color(0xFFE8F5E9),
+          textColor: Color(0xFF2E7D32),
+        );
+    }
+  }
+}
+
+class _HomeStatusBadgeData {
+  final String text;
+  final Color backgroundColor;
+  final Color textColor;
+
+  const _HomeStatusBadgeData({
+    required this.text,
+    required this.backgroundColor,
+    required this.textColor,
+  });
 }
 

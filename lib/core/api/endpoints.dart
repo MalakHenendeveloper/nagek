@@ -3,7 +3,7 @@
 class Endpoints {
   //Deployment
 
-  static const String Url = 'https://3gra4rwnt-44fzzxukn-nagek.vercel.app/api';
+  static const String Url = 'https://3gra4rwnt-k6v9by0pl-nagek.vercel.app/api';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';
@@ -44,6 +44,8 @@ class Endpoints {
   static const String adminSettlements = '/admin/settlements';
   static const String adminSettlementsSummary = '/admin/settlements/summary';
   static String payAdminSettlement(String id) => '/admin/settlements/$id/pay';
+  static String updateOrderSettlement(String orderId) =>
+      '/admin/orders/$orderId/settlement';
   static const String adminDelegates = '/admin/delegates';
   static const String adminUsers = '/admin/users';
   static const String adminCenters = '/admin/centers';

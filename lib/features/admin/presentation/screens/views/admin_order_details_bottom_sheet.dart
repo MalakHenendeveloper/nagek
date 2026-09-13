@@ -480,20 +480,20 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
             ),
             child: Builder(
               builder: (context) {
-                // Pickup delegate fee (client -> center)
-                final pickupFee = (order.financialSnapshot != null && order.financialSnapshot!.inspectionFee > 0)
-                    ? order.financialSnapshot!.inspectionFee
-                    : order.fees.inspection;
+                // // Pickup delegate fee (client -> center)
+                // final pickupFee = (order.financialSnapshot != null && order.financialSnapshot!.inspectionFee > 0)
+                //     ? order.financialSnapshot!.inspectionFee
+                //     : order.fees.inspection;
 
-                // Delivery delegate fee (center -> client)
-                final deliveryFee = (order.financialSnapshot != null && order.financialSnapshot!.deliveryFee > 0)
-                    ? order.financialSnapshot!.deliveryFee
-                    : order.fees.delivery;
+                // // Delivery delegate fee (center -> client)
+                // final deliveryFee = (order.financialSnapshot != null && order.financialSnapshot!.deliveryFee > 0)
+                //     ? order.financialSnapshot!.deliveryFee
+                //     : order.fees.delivery;
 
-                // Center payout
-                final centerAmount = (order.financialSnapshot != null && order.financialSnapshot!.centerAmount > 0)
-                    ? order.financialSnapshot!.centerAmount
-                    : order.fees.repair;
+                // // Center payout
+                // final centerAmount = (order.financialSnapshot != null && order.financialSnapshot!.centerAmount > 0)
+                //     ? order.financialSnapshot!.centerAmount
+                //     : order.fees.repair;
 
                 // Client total
                 final clientTotal = (order.financialSnapshot != null && order.financialSnapshot!.clientTotal > 0)
@@ -502,22 +502,22 @@ class AdminOrderDetailsBottomSheet extends StatelessWidget {
                         ? order.fees.total
                         : order.fees.repair + order.fees.delivery + order.fees.inspection);
 
-                // Admin commission = total - center - pickup - delivery
-                final adminCommission = clientTotal - centerAmount - pickupFee - deliveryFee;
+                // // Admin commission = total - center - pickup - delivery
+                // final adminCommission = clientTotal - centerAmount - pickupFee - deliveryFee;
 
                 return Column(
                   children: [
-                    _buildFeeRow('أجر مندوب الاستلام (إلى المركز)', pickupFee),
-                    const SizedBox(height: 8),
-                    _buildFeeRow('أجر مندوب التوصيل (من المركز للعميل)', deliveryFee),
-                    const SizedBox(height: 8),
-                    _buildFeeRow('مستحق مركز الصيانة', centerAmount),
-                    const SizedBox(height: 8),
-                    _buildFeeRow('عمولة الإدارة', adminCommission),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(color: Colors.white10, height: 1),
-                    ),
+                    // _buildFeeRow('أجر مندوب التوصيل (من المركز للعميل)', pickupFee),
+                    // const SizedBox(height: 8),
+                    // _buildFeeRow('أجر مندوب الاستلام (إلى المركز)', deliveryFee),
+                    // const SizedBox(height: 8),
+                    // _buildFeeRow('مستحق مركز الصيانة', centerAmount),
+                    // const SizedBox(height: 8),
+                    // _buildFeeRow('عمولة الإدارة', adminCommission),
+                    // const Padding(
+                    //   padding: EdgeInsets.symmetric(vertical: 10),
+                    //   child: Divider(color: Colors.white10, height: 1),
+                    // ),
                     _buildFeeRow(
                       'المجموع الكلي المطلوب من العميل',
                       clientTotal,

@@ -37,7 +37,7 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
 
   @override
   Future<HereGeocodeModel> reverseGeocode(double lat, double lng) async {
-    // Try HERE API first
+    // 1. Try HERE API first
     try {
       final url =
           '${HereConfig.reverseGeocodeBaseUrl}?at=$lat,$lng&apiKey=${HereConfig.apiKey}&lang=ar-SA';
@@ -48,37 +48,253 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
         return HereGeocodeModel.fromHereItemJson(items.first as Map<String, dynamic>);
       }
     } catch (e) {
-      log('[MapRemoteDataSource] HERE API reverseGeocode failed ($e). Falling back to OpenStreetMap Nominatim.');
+      log('[MapRemoteDataSource] HERE API reverseGeocode failed ($e). Falling back to OpenStreetMap / BigDataCloud.');
     }
 
-    // Fallback: OpenStreetMap Nominatim (100% Free, No Key / Visa Required)
+    // 2. Fallback: Photon Komoot (Detailed Street, House Number, Suburb, OSM native, 0 rate limit)
+    try {
+      final photonResult = await _reverseGeocodePhoton(lat, lng);
+      if (photonResult != null) {
+        return photonResult;
+      }
+    } catch (e) {
+      log('[MapRemoteDataSource] Photon reverse geocode error: $e');
+    }
+
+    // 3. Fallback: BigDataCloud (Detailed localityInfo, informative sub-areas, fast)
+    try {
+      final bigDataResult = await _reverseGeocodeBigDataCloud(lat, lng);
+      if (bigDataResult != null) {
+        return bigDataResult;
+      }
+    } catch (e) {
+      log('[MapRemoteDataSource] BigDataCloud reverse geocode error: $e');
+    }
+
+    // 4. Fallback: OpenStreetMap Nominatim
     return await _reverseGeocodeNominatim(lat, lng);
+  }
+
+  Future<HereGeocodeModel?> _reverseGeocodePhoton(double lat, double lng) async {
+    try {
+      final url = 'https://photon.komoot.io/reverse?lat=$lat&lon=$lng&lang=default';
+      final response = await dio.get(
+        url,
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final features = data['features'] as List<dynamic>?;
+        if (features != null && features.isNotEmpty) {
+          final first = features.first as Map<String, dynamic>;
+          final props = first['properties'] as Map<String, dynamic>?;
+
+          if (props != null) {
+            final name = props['name'] as String? ?? '';
+            final street = props['street'] as String? ?? '';
+            final housenumber = props['housenumber']?.toString() ?? '';
+            final district = props['district'] as String? ?? props['suburb'] as String? ?? '';
+            final city = props['city'] as String? ?? '';
+            final state = props['state'] as String? ?? '';
+            final country = props['country'] as String? ?? '';
+
+            final parts = <String>[];
+            final seen = <String>{};
+
+            void addPart(String val) {
+              final trimmed = val.trim();
+              if (trimmed.isNotEmpty && !seen.contains(trimmed.toLowerCase())) {
+                seen.add(trimmed.toLowerCase());
+                parts.add(trimmed);
+              }
+            }
+
+            // Street & house number
+            if (street.isNotEmpty) {
+              if (housenumber.isNotEmpty) {
+                addPart('$street، مبنى $housenumber');
+              } else {
+                addPart(street);
+              }
+            }
+
+            // Place / POI / Landmark name
+            if (name.isNotEmpty && name != street && name != city && name != state) {
+              addPart(name);
+            }
+
+            // District / Neighbourhood
+            if (district.isNotEmpty) addPart(district);
+
+            // City / Municipality
+            if (city.isNotEmpty) addPart(city);
+
+            // Governorate / State
+            if (state.isNotEmpty) addPart(state);
+
+            // Country
+            if (country.isNotEmpty) addPart(country);
+
+            if (parts.isNotEmpty) {
+              final finalCity = city.isNotEmpty
+                  ? city
+                  : (state.isNotEmpty ? state : (country.isNotEmpty ? country : 'بغداد'));
+
+              return HereGeocodeModel(
+                latitude: lat,
+                longitude: lng,
+                address: parts.join(', '),
+                city: finalCity,
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      log('[Photon Reverse Geocode Error] $e');
+    }
+    return null;
+  }
+
+  Future<HereGeocodeModel?> _reverseGeocodeBigDataCloud(double lat, double lng) async {
+    try {
+      final url =
+          'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=$lat&longitude=$lng&localityLanguage=ar';
+      final response = await dio.get(
+        url,
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final country = data['countryName'] as String? ?? '';
+        final state = data['principalSubdivision'] as String? ?? '';
+        final city = data['city'] as String? ?? '';
+        final locality = data['locality'] as String? ?? '';
+
+        final parts = <String>[];
+        final seen = <String>{};
+
+        void addPart(String val) {
+          final trimmed = val.trim();
+          if (trimmed.isNotEmpty && !seen.contains(trimmed.toLowerCase())) {
+            seen.add(trimmed.toLowerCase());
+            parts.add(trimmed);
+          }
+        }
+
+        // Extract detailed locality info (streets, sub-areas, landmarks)
+        final localityInfo = data['localityInfo'] as Map<String, dynamic>?;
+        final informative = localityInfo?['informative'] as List<dynamic>?;
+        if (informative != null) {
+          for (final item in informative) {
+            final map = item as Map<String, dynamic>?;
+            final order = (map?['order'] as num?)?.toInt() ?? 0;
+            final name = map?['name'] as String? ?? '';
+            if (order >= 6 && name.isNotEmpty) {
+              addPart(name);
+            }
+          }
+        }
+
+        if (locality.isNotEmpty) addPart(locality);
+        if (city.isNotEmpty) addPart(city);
+        if (state.isNotEmpty) addPart(state);
+        if (country.isNotEmpty) addPart(country);
+
+        final displayAddress = parts.isNotEmpty
+            ? parts.join(', ')
+            : 'موقع محدد ($lat, $lng)';
+
+        final finalCity = city.isNotEmpty
+            ? city
+            : (state.isNotEmpty ? state : (country.isNotEmpty ? country : 'بغداد'));
+
+        return HereGeocodeModel(
+          latitude: lat,
+          longitude: lng,
+          address: displayAddress,
+          city: finalCity,
+        );
+      }
+    } catch (e) {
+      log('[BigDataCloud Error] $e');
+    }
+    return null;
   }
 
   Future<HereGeocodeModel> _reverseGeocodeNominatim(double lat, double lng) async {
     try {
       final url =
-          'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&accept-language=ar';
+          'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&zoom=18&addressdetails=1&accept-language=ar';
       final response = await dio.get(
         url,
-        options: Options(headers: {'User-Agent': 'NagekApp/1.0'}),
+        options: Options(
+          headers: {'User-Agent': 'NagekApp/1.0 (contact@nagek.app)'},
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
-        final displayName = data['display_name'] as String? ?? 'موقع على الخريطة';
         final addressObj = data['address'] as Map<String, dynamic>?;
 
+        final road = addressObj?['road'] as String? ??
+            addressObj?['pedestrian'] as String? ??
+            addressObj?['street'] as String? ??
+            '';
+        final neighbourhood = addressObj?['neighbourhood'] as String? ??
+            addressObj?['suburb'] as String? ??
+            addressObj?['quarter'] as String? ??
+            addressObj?['city_district'] as String? ??
+            '';
         final city = addressObj?['city'] as String? ??
-            addressObj?['state'] as String? ??
             addressObj?['town'] as String? ??
-            'القاهرة';
+            addressObj?['municipality'] as String? ??
+            '';
+        final state = addressObj?['state'] as String? ??
+            addressObj?['governorate'] as String? ??
+            '';
+        final country = addressObj?['country'] as String? ?? '';
+
+        final parts = <String>[];
+        final seen = <String>{};
+
+        void addPart(String val) {
+          final trimmed = val.trim();
+          if (trimmed.isNotEmpty && !seen.contains(trimmed.toLowerCase())) {
+            seen.add(trimmed.toLowerCase());
+            parts.add(trimmed);
+          }
+        }
+
+        if (road.isNotEmpty) addPart(road);
+        if (neighbourhood.isNotEmpty) addPart(neighbourhood);
+        if (city.isNotEmpty) addPart(city);
+        if (state.isNotEmpty) addPart(state);
+        if (country.isNotEmpty) addPart(country);
+
+        final displayAddress = parts.isNotEmpty
+            ? parts.join(', ')
+            : (data['display_name'] as String? ?? 'موقع على الخريطة');
+
+        final finalCity = city.isNotEmpty
+            ? city
+            : (state.isNotEmpty ? state : (country.isNotEmpty ? country : 'بغداد'));
 
         return HereGeocodeModel(
           latitude: lat,
           longitude: lng,
-          address: displayName,
-          city: city,
+          address: displayAddress,
+          city: finalCity,
         );
       }
     } catch (e) {
@@ -89,6 +305,7 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
       latitude: lat,
       longitude: lng,
       address: 'موقع محدد على الخريطة ($lat, $lng)',
+      city: 'بغداد',
     );
   }
 
@@ -166,10 +383,14 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
     for (final q in queriesToTry) {
       try {
         final url =
-            'https://nominatim.openstreetmap.org/search?format=json&q=${Uri.encodeComponent(q)}&addressdetails=1&accept-language=ar';
+            'https://nominatim.openstreetmap.org/search?format=json&q=${Uri.encodeComponent(q)}&addressdetails=1&accept-language=ar&limit=5';
         final response = await dio.get(
           url,
-          options: Options(headers: {'User-Agent': 'NagekApp/1.0'}),
+          options: Options(
+            headers: {'User-Agent': 'NagekApp/1.0 (contact@nagek.app)'},
+            sendTimeout: const Duration(seconds: 4),
+            receiveTimeout: const Duration(seconds: 4),
+          ),
         );
 
         if (response.statusCode == 200 && response.data is List) {
@@ -181,7 +402,9 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
               final lng = double.tryParse(map['lon']?.toString() ?? '0') ?? 0.0;
               final displayName = map['display_name'] as String? ?? q;
               final addressObj = map['address'] as Map<String, dynamic>?;
-              final city = addressObj?['city'] as String? ?? addressObj?['state'] as String?;
+              final city = addressObj?['city'] as String? ??
+                  addressObj?['state'] as String? ??
+                  addressObj?['county'] as String?;
 
               return HereGeocodeModel(
                 latitude: lat,
@@ -195,6 +418,66 @@ class MapRemoteDataSourceImpl implements MapRemoteDataSource {
       } catch (e) {
         log('[Nominatim Search Error for "$q"] $e');
       }
+    }
+
+    // Secondary search fallback: Photon Komoot OSM API (No rate limits)
+    return await _geocodeAddressPhoton(rawQuery);
+  }
+
+  Future<List<HereGeocodeModel>> _geocodeAddressPhoton(String rawQuery) async {
+    try {
+      final url =
+          'https://photon.komoot.io/api/?q=${Uri.encodeComponent(rawQuery)}&limit=5&lang=default';
+      final response = await dio.get(
+        url,
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final features = data['features'] as List<dynamic>?;
+        if (features != null && features.isNotEmpty) {
+          final results = <HereGeocodeModel>[];
+          for (final f in features) {
+            final fMap = f as Map<String, dynamic>;
+            final geometry = fMap['geometry'] as Map<String, dynamic>?;
+            final coords = geometry?['coordinates'] as List<dynamic>?;
+            final props = fMap['properties'] as Map<String, dynamic>?;
+
+            if (coords != null && coords.length >= 2) {
+              final lng = (coords[0] as num).toDouble();
+              final lat = (coords[1] as num).toDouble();
+
+              final name = props?['name'] as String? ?? '';
+              final street = props?['street'] as String? ?? '';
+              final district = props?['district'] as String? ?? '';
+              final city =
+                  props?['city'] as String? ?? props?['state'] as String? ?? 'بغداد';
+              final country = props?['country'] as String? ?? '';
+
+              final parts = <String>[];
+              if (name.isNotEmpty) parts.add(name);
+              if (street.isNotEmpty && street != name) parts.add(street);
+              if (district.isNotEmpty && district != name) parts.add(district);
+              if (city.isNotEmpty && city != name) parts.add(city);
+              if (country.isNotEmpty) parts.add(country);
+
+              results.add(HereGeocodeModel(
+                latitude: lat,
+                longitude: lng,
+                address: parts.isNotEmpty ? parts.join(', ') : rawQuery,
+                city: city,
+              ));
+            }
+          }
+          if (results.isNotEmpty) return results;
+        }
+      }
+    } catch (e) {
+      log('[Photon Search Error] $e');
     }
     return [];
   }

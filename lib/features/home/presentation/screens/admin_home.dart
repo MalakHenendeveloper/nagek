@@ -31,6 +31,11 @@ import '../../../admin/presentation/screens/views/admin_payment_settings_view.da
 import '../../../admin/presentation/screens/views/admin_financial_settings_view.dart';
 import '../../../admin/presentation/screens/views/admin_add_coupon_view.dart';
 import '../../../admin/presentation/screens/views/admin_coupons_view.dart';
+import '../../../admin/presentation/screens/views/admin_settlements_report_view.dart';
+import '../../../admin/presentation/cubit/admin_settlements_report_cubit.dart';
+import '../../../admin/domain/use_cases/get_admin_settlements_report_use_case.dart';
+import '../../../admin/domain/use_cases/update_order_settlement_use_case.dart';
+import '../../../admin/domain/repositories/admin_repository.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -214,6 +219,11 @@ class _AdminHomeState extends State<AdminHome> {
 
                         _buildDrawerCategory('الإدارة المالية'),
                         _buildDrawerSubItem(
+                          index: 13,
+                          title: 'تقرير التسويات المالية',
+                          icon: Icons.receipt_long_rounded,
+                        ),
+                        _buildDrawerSubItem(
                           index: 8,
                           title: 'التحويلات والمدفوعات',
                           icon: Icons.account_balance_wallet_rounded,
@@ -293,6 +303,8 @@ class _AdminHomeState extends State<AdminHome> {
         return 'إضافة كوبون';
       case 12:
         return 'قائمة الكوبونات';
+      case 13:
+        return 'تقرير التسويات المالية';
       default:
         return 'مدير النظام';
     }
@@ -349,6 +361,20 @@ class _AdminHomeState extends State<AdminHome> {
         );
       case 12:
         return const AdminCouponsView();
+      case 13:
+        return BlocProvider<AdminSettlementsReportCubit>(
+          create: (context) {
+            try {
+              return getIt<AdminSettlementsReportCubit>();
+            } catch (_) {
+              return AdminSettlementsReportCubit(
+                GetAdminSettlementsReportUseCase(getIt<AdminRepository>()),
+                UpdateOrderSettlementUseCase(getIt<AdminRepository>()),
+              );
+            }
+          },
+          child: const AdminSettlementsReportView(),
+        );
       default:
         return const AdminDashboardView();
     }

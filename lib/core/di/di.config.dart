@@ -50,6 +50,10 @@ import '../../features/admin/domain/use_cases/get_admin_settlements_summary_use_
     as _i711;
 import '../../features/admin/domain/use_cases/get_admin_settlements_use_case.dart'
     as _i42;
+import '../../features/admin/domain/use_cases/get_admin_settlements_report_use_case.dart'
+    as _i788;
+import '../../features/admin/domain/use_cases/update_order_settlement_use_case.dart'
+    as _i790;
 import '../../features/admin/domain/use_cases/get_admin_user_details_use_case.dart'
     as _i191;
 import '../../features/admin/domain/use_cases/get_admin_users_use_case.dart'
@@ -106,6 +110,8 @@ import '../../features/admin/presentation/cubit/admin_settlements_cubit.dart'
     as _i559;
 import '../../features/admin/presentation/cubit/admin_settlements_summary_cubit.dart'
     as _i585;
+import '../../features/admin/presentation/cubit/admin_settlements_report_cubit.dart'
+    as _i789;
 import '../../features/admin/presentation/cubit/admin_user_details_cubit.dart'
     as _i608;
 import '../../features/admin/presentation/cubit/admin_users_cubit.dart'
@@ -834,6 +840,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1037.MyCenterServicesCubit>(
       () =>
           _i1037.MyCenterServicesCubit(gh<_i293.GetMyCenterServicesUseCase>()),
+    );
+    gh.lazySingleton<_i788.GetAdminSettlementsReportUseCase>(
+      () => _i788.GetAdminSettlementsReportUseCase(gh<_i583.AdminRepository>()),
+    );
+    gh.lazySingleton<_i790.UpdateOrderSettlementUseCase>(
+      () => _i790.UpdateOrderSettlementUseCase(gh<_i583.AdminRepository>()),
+    );
+    gh.factory<_i789.AdminSettlementsReportCubit>(
+      () => _i789.AdminSettlementsReportCubit(
+        gh<_i788.GetAdminSettlementsReportUseCase>(),
+        gh<_i790.UpdateOrderSettlementUseCase>(),
+      ),
     );
     return this;
   }

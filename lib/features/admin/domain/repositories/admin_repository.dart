@@ -11,10 +11,17 @@ import '../entities/admin_financial_settings_entity.dart';
 import '../entities/admin_dashboard_entity.dart';
 import '../entities/admin_settlement_entity.dart';
 import '../entities/admin_settlements_summary_entity.dart';
+import '../entities/admin_settlements_report_entity.dart';
 import '../entities/coupon_entity.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 abstract class AdminRepository {
+  Future<Either<Failure, bool>> updateOrderSettlement({
+    required String orderId,
+    required String party,
+    required bool settled,
+  });
+  Future<Either<Failure, AdminSettlementsReportEntity>> getAdminSettlementsReport();
   Future<Either<Failure, AdminDashboardEntity>> getAdminDashboard();
 
   Future<Either<Failure, AdminSettlementEntity>> payAdminSettlement(

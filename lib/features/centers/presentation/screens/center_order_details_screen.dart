@@ -396,9 +396,43 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
                     highlightColor: Colors.greenAccent,
                   ),
                   const Divider(color: Colors.white10, height: 20),
-                  _buildFinancialRow(
-                    'حالة الدفع',
-                    _getPaymentStatusLabel(financial.paymentStatus),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'حالة الدفع',
+                                style: GoogleFonts.cairo(fontSize: 13, color: Colors.white54),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'برجاء عدم بدء الإصلاح إلا عند تأكيد الدفع',
+                                style: GoogleFonts.cairo(
+                                  fontSize: 11,
+                                  color: const Color(0xFFFFC107),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getPaymentStatusLabel(financial.paymentStatus),
+                          style: GoogleFonts.cairo(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _getPaymentStatusColor(financial.paymentStatus),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -764,13 +798,38 @@ class _CenterOrderDetailsScreenState extends State<CenterOrderDetailsScreen> {
   String _getPaymentStatusLabel(String status) {
     switch (status.toLowerCase()) {
       case 'paid':
+      case 'confirmed':
+      case 'approved':
+      case 'completed':
         return 'مدفوع ✅';
+      case 'pending':
+      case 'awaiting_payment':
+        return 'بانتظار تأكيد الدفع';
       case 'unpaid':
         return 'غير مدفوع';
       case 'partial':
         return 'دفع جزئي';
+      case 'failed':
+        return 'فشل الدفع';
+      case 'refunded':
+        return 'مسترد';
       default:
-        return status;
+        return status.isNotEmpty ? (status.toLowerCase() == 'pending' ? 'بانتظار تأكيد الدفع' : status) : 'غير مدفوع';
+    }
+  }
+
+  Color _getPaymentStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case 'confirmed':
+      case 'approved':
+      case 'completed':
+        return Colors.greenAccent;
+      case 'pending':
+      case 'awaiting_payment':
+        return const Color(0xFFFFC107);
+      default:
+        return const Color(0xFFFF5252);
     }
   }
 

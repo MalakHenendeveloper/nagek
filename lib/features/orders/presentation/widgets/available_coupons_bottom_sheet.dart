@@ -138,7 +138,7 @@ class AvailableCouponsBottomSheet extends StatelessWidget {
                   final coupons = state.coupons;
                   if (coupons.isEmpty) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40.0),
+                      padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
                       child: Center(
                         child: Column(
                           children: [
@@ -147,12 +147,49 @@ class AvailableCouponsBottomSheet extends StatelessWidget {
                               size: 54,
                               color: Colors.white.withValues(alpha: 0.15),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             Text(
                               'لا توجد كوبونات متاحة حالياً',
                               style: GoogleFonts.cairo(
+                                color: Colors.white70,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'تابع صفحة العروض في الصفحة الرئيسية باستمرار!\nنضيف كوبونات وخصومات حصرية بشكل دوري 🎁',
+                              style: GoogleFonts.cairo(
                                 color: Colors.white54,
-                                fontSize: 14,
+                                fontSize: 13,
+                                height: 1.6,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFC107).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFFFC107).withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.home_rounded, color: Color(0xFFFFC107), size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'راقب العروض من الصفحة الرئيسية',
+                                    style: GoogleFonts.cairo(
+                                      color: const Color(0xFFFFC107),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

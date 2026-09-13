@@ -7,19 +7,22 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
 import '../../../../core/services/image_picker_service.dart';
-import '../cubit/available_coupons_cubit.dart';
 import '../cubit/create_order_cubit.dart';
 import '../cubit/create_order_state.dart';
 import '../cubit/device_selection_cubit.dart';
 import '../cubit/device_selection_state.dart';
-import '../widgets/available_coupons_bottom_sheet.dart';
 import '../widgets/device_selector_widget.dart';
 import '../../../map/domain/entities/map_location_entity.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String centerId;
+  final List<String> supportedDeviceTypes;
 
-  const CreateOrderScreen({super.key, required this.centerId});
+  const CreateOrderScreen({
+    super.key,
+    required this.centerId,
+    this.supportedDeviceTypes = const [],
+  });
 
   @override
   State<CreateOrderScreen> createState() => _CreateOrderScreenState();
@@ -27,12 +30,11 @@ class CreateOrderScreen extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   late CreateOrderCubit _cubit;
-  late AvailableCouponsCubit _availableCouponsCubit;
 
   int _currentStep = 0;
 
   // Form Fields
-  String _selectedDeviceType = 'phone'; // phone, tablet, laptop
+  late String _selectedDeviceType;
   final TextEditingController _brandController = TextEditingController();
   final TextEditingController _modelController = TextEditingController();
   String _selectedProblemType = 'screen'; // screen, battery, software, other
@@ -49,8 +51,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   void initState() {
     super.initState();
     _cubit = getIt<CreateOrderCubit>();
-    _availableCouponsCubit = getIt<AvailableCouponsCubit>();
     _cityController.text = 'الرياض'; // default
+
+    // Auto-select first supported device type
+    final supported = widget.supportedDeviceTypes;
+    if (supported.isNotEmpty) {
+      _selectedDeviceType = supported.first.toLowerCase();
+    } else {
+      _selectedDeviceType = 'phone';
+    }
   }
 
   @override
@@ -62,7 +71,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     _cityController.dispose();
     _couponCodeController.dispose();
     _cubit.close();
-    _availableCouponsCubit.close();
     super.dispose();
   }
 
@@ -328,11 +336,19 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 
   Widget _buildStep1DeviceType() {
-    final types = [
+    final allTypes = [
       {'key': 'phone', 'title': 'هاتف ذكي', 'icon': Icons.phone_iphone},
       {'key': 'tablet', 'title': 'تابلت / آيباد', 'icon': Icons.tablet_mac},
       {'key': 'laptop', 'title': 'لابتوب', 'icon': Icons.laptop_mac},
     ];
+
+    // Filter based on supported device types from center
+    final supported = widget.supportedDeviceTypes
+        .map((t) => t.toLowerCase().trim())
+        .toList();
+    final types = supported.isEmpty
+        ? allTypes
+        : allTypes.where((t) => supported.contains(t['key'])).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -731,36 +747,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.local_offer_outlined, color: Color(0xFF8B7500), size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'كوبون الخصم (اختياري)',
-                        style: GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      AvailableCouponsBottomSheet.show(context, _availableCouponsCubit);
-                    },
-                    icon: const Icon(Icons.confirmation_num_outlined, size: 16, color: Color(0xFFB388FF)),
-                    label: Text(
-                      'الكوبونات المتاحة',
-                      style: GoogleFonts.cairo(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF7C4DFF),
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      backgroundColor: const Color(0xFF7C4DFF).withValues(alpha: 0.08),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                  const Icon(Icons.local_offer_outlined, color: Color(0xFF8B7500), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'كوبون الخصم (اختياري)',
+                    style: GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                 ],
               ),
