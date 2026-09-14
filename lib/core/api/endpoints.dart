@@ -64,5 +64,9 @@ class Endpoints {
       '/delegate/tasks/$orderId/confirm-pickup-center';
   static String confirmDelivery(String orderId) =>
       '/delegate/tasks/$orderId/confirm-delivery';
+
+  // Push token endpoints
   static const String delegatePushTokens = '/delegate/push-tokens';
+  static const String centerPushTokens = '/centers/push-tokens';
+  static const String adminPushTokens = '/admin/push-tokens';
 }

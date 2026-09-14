@@ -84,7 +84,7 @@ class _AppNavigatorState extends State<AppNavigator> {
         _isLoggedIn = true;
         _userRole = role.toLowerCase();
       });
-      if (_userRole == 'delegate') {
+      if (_userRole == 'delegate' || _userRole == 'center' || _userRole == 'admin') {
         NotificationService.instance.sendTokenToBackend();
       }
     }

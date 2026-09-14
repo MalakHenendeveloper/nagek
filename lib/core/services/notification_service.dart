@@ -220,6 +220,19 @@ class NotificationService {
     if (type == 'new_order') {
       // Navigate to available pickup orders for delegates
       nav.pushNamed(Routes.delegateAvailableOrdersRoute);
+    } else if (type == 'new_order_admin') {
+      // Navigate to admin home screen
+      nav.pushNamed(Routes.adminHomeRoute);
+    } else if (type == 'new_order_center') {
+      // Navigate to center order details if orderId is provided, otherwise center home
+      if (orderId != null && orderId.isNotEmpty) {
+        nav.pushNamed(
+          Routes.centerOrderDetailsRoute,
+          arguments: orderId,
+        );
+      } else {
+        nav.pushNamed(Routes.centerHomeRoute);
+      }
     } else if (orderId != null && orderId.isNotEmpty) {
       // Navigate to tracking/details screen for specific order
       nav.pushNamed(
@@ -229,7 +242,10 @@ class NotificationService {
     }
   }
 
-  /// Sends the current FCM device token to the backend: POST /delegate/push-tokens
+  /// Sends the current FCM device token to the backend based on user role:
+  /// - Delegate: POST /delegate/push-tokens
+  /// - Center:   POST /centers/push-tokens
+  /// - Admin:    POST /admin/push-tokens
   Future<void> sendTokenToBackend({String? forceToken}) async {
     try {
       final secureStorage = getIt<SecureStorageService>();
@@ -239,10 +255,22 @@ class NotificationService {
         return;
       }
 
-      final role = await secureStorage.getUserRole();
-      if (role?.toLowerCase() != 'delegate') {
-        debugPrint('Skipping sendTokenToBackend: User role is "$role", not delegate');
-        return;
+      final role = (await secureStorage.getUserRole())?.toLowerCase();
+      String? endpoint;
+
+      switch (role) {
+        case 'delegate':
+          endpoint = Endpoints.delegatePushTokens;
+          break;
+        case 'center':
+          endpoint = Endpoints.centerPushTokens;
+          break;
+        case 'admin':
+          endpoint = Endpoints.adminPushTokens;
+          break;
+        default:
+          debugPrint('Skipping sendTokenToBackend: User role is "$role", push token registration not required');
+          return;
       }
 
       final token = forceToken ?? await FirebaseMessaging.instance.getToken();
@@ -252,20 +280,20 @@ class NotificationService {
       }
 
       debugPrint('========================================================');
-      debugPrint('🔥 FCM TOKEN FOR THIS DEVICE:');
+      debugPrint('🔥 FCM TOKEN FOR THIS DEVICE (Role: $role):');
       debugPrint(token);
       debugPrint('========================================================');
 
       final apiManager = getIt<ApiManager>();
       final response = await apiManager.PostDate(
-        Endpoints.delegatePushTokens,
+        endpoint,
         body: {'token': token},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('Push token successfully registered on backend');
+        debugPrint('Push token successfully registered for $role on backend');
       } else {
-        debugPrint('Failed to register push token: ${response.statusCode} - ${response.data}');
+        debugPrint('Failed to register push token for $role: ${response.statusCode} - ${response.data}');
       }
     } catch (e) {
       debugPrint('Error sending push token to backend: $e');

@@ -62,6 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       switch (role) {
                         case 'admin':
                           routeName = Routes.adminHomeRoute;
+                          NotificationService.instance.sendTokenToBackend();
                           break;
                         case 'delegate':
                           routeName = Routes.delegateHomeRoute;
@@ -69,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           break;
                         case 'center':
                           routeName = Routes.centerHomeRoute;
+                          NotificationService.instance.sendTokenToBackend();
                           break;
                         case 'client':
                         default:
