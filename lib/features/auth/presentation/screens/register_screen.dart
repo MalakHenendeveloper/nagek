@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../cubit/register_cubit.dart';
 import '../cubit/register_state.dart';
 
@@ -59,6 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       );
 
+                      NotificationService.instance.sendTokenToBackend(roleOverride: 'client');
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         Routes.clientHomeRoute,

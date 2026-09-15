@@ -233,8 +233,21 @@ class NotificationService {
       } else {
         nav.pushNamed(Routes.centerHomeRoute);
       }
+    } else if (type == 'order_repaired') {
+      // Notify delegates: device repaired, navigate to tasks (ready-for-delivery orders)
+      nav.pushNamed(Routes.delegateTasksRoute);
+    } else if (type == 'order_repaired_client') {
+      // Notify client: their device is repaired, navigate to order tracking
+      if (orderId != null && orderId.isNotEmpty) {
+        nav.pushNamed(
+          Routes.orderTrackingRoute,
+          arguments: orderId,
+        );
+      } else {
+        nav.pushNamed(Routes.myOrdersRoute);
+      }
     } else if (orderId != null && orderId.isNotEmpty) {
-      // Navigate to tracking/details screen for specific order
+      // Fallback: navigate to tracking/details screen for specific order
       nav.pushNamed(
         Routes.orderTrackingRoute,
         arguments: orderId,
@@ -255,9 +268,9 @@ class NotificationService {
 
       final role = (roleOverride ?? await secureStorage.getUserRole())?.toLowerCase();
 
-      // Only register tokens for roles that receive notifications
-      if (role == 'client' || role == null) {
-        debugPrint('ℹ️ [PUSH TOKEN] Role "$role" does not require push token registration');
+      // All roles (client, delegate, center, admin) receive notifications
+      if (role == null || role.isEmpty) {
+        debugPrint('ℹ️ [PUSH TOKEN] Role is null/empty, skipping push token registration');
         return false;
       }
 

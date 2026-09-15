@@ -84,7 +84,8 @@ class _AppNavigatorState extends State<AppNavigator> {
         _isLoggedIn = true;
         _userRole = role.toLowerCase();
       });
-      if (_userRole == 'delegate' || _userRole == 'center' || _userRole == 'admin') {
+      // All roles that receive notifications need their token synced
+      if (_userRole == 'delegate' || _userRole == 'center' || _userRole == 'admin' || _userRole == 'client') {
         debugPrint('🔄 [AUTO-SYNC] App launched with logged-in role: $_userRole, syncing push token...');
         NotificationService.instance.sendTokenToBackend(roleOverride: _userRole);
       }

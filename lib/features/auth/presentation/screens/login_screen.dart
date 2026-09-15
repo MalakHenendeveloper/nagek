@@ -77,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         case 'client':
                         default:
                           routeName = Routes.clientHomeRoute;
+                          NotificationService.instance.sendTokenToBackend(roleOverride: 'client');
                           break;
                       }
 
