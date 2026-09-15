@@ -59,18 +59,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       final role = state.user.role.toLowerCase();
                       String routeName = Routes.clientHomeRoute;
 
+                      debugPrint('👤 [AUTH LOGIN] Logged in successfully: User=${state.user.name}, Role=$role');
+
                       switch (role) {
                         case 'admin':
                           routeName = Routes.adminHomeRoute;
-                          NotificationService.instance.sendTokenToBackend();
+                          NotificationService.instance.sendTokenToBackend(roleOverride: 'admin');
                           break;
                         case 'delegate':
                           routeName = Routes.delegateHomeRoute;
-                          NotificationService.instance.sendTokenToBackend();
+                          NotificationService.instance.sendTokenToBackend(roleOverride: 'delegate');
                           break;
                         case 'center':
                           routeName = Routes.centerHomeRoute;
-                          NotificationService.instance.sendTokenToBackend();
+                          NotificationService.instance.sendTokenToBackend(roleOverride: 'center');
                           break;
                         case 'client':
                         default:

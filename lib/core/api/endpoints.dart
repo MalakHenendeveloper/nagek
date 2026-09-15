@@ -3,7 +3,7 @@
 class Endpoints {
   //Deployment
 
-  static const String Url = 'https://3gra4rwnt-ciauy5rso-nagek.vercel.app/api';
+  static const String Url = 'https://3gra4rwnt-nzkqys7a7-nagek.vercel.app/api';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String registerDelegate = '/auth/register-delegate';
@@ -65,8 +65,6 @@ class Endpoints {
   static String confirmDelivery(String orderId) =>
       '/delegate/tasks/$orderId/confirm-delivery';
 
-  // Push token endpoints
-  static const String delegatePushTokens = '/delegate/push-tokens';
-  static const String centerPushTokens = '/centers/push-tokens';
-  static const String adminPushTokens = '/admin/push-tokens';
+  // Push token endpoint (unified for all roles: delegate, center, admin)
+  static const String pushTokens = '/push-tokens';
 }

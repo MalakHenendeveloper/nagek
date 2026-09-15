@@ -465,12 +465,16 @@ class _ClientHomeState extends State<ClientHome> {
                     children: [
                       const Icon(Icons.shield_outlined, color: Color(0xFF8B7500), size: 11),
                       const SizedBox(width: 4),
-                      Text(
-                        'ضمان معتمد على الصيانة',
-                        style: GoogleFonts.cairo(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF8B7500),
+                      Flexible(
+                        child: Text(
+                          'ضمان معتمد على الصيانة',
+                          style: GoogleFonts.cairo(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF8B7500),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -666,12 +670,16 @@ class _ClientHomeState extends State<ClientHome> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                'عروض وكوبونات حصرية',
-                                style: GoogleFonts.cairo(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                              Expanded(
+                                child: Text(
+                                  'عروض وكوبونات حصرية',
+                                  style: GoogleFonts.cairo(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -792,12 +800,16 @@ class _ClientHomeState extends State<ClientHome> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'ترقّب أقوى العروض والخصومات!',
-                            style: GoogleFonts.cairo(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          Expanded(
+                            child: Text(
+                              'ترقّب أقوى العروض والخصومات!',
+                              style: GoogleFonts.cairo(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 8),

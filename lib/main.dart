@@ -85,7 +85,8 @@ class _AppNavigatorState extends State<AppNavigator> {
         _userRole = role.toLowerCase();
       });
       if (_userRole == 'delegate' || _userRole == 'center' || _userRole == 'admin') {
-        NotificationService.instance.sendTokenToBackend();
+        debugPrint('🔄 [AUTO-SYNC] App launched with logged-in role: $_userRole, syncing push token...');
+        NotificationService.instance.sendTokenToBackend(roleOverride: _userRole);
       }
     }
   }

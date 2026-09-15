@@ -181,7 +181,8 @@ class _DelegateLoginScreenState extends State<DelegateLoginScreen> {
                 child: BlocConsumer<DelegateLoginCubit, DelegateLoginState>(
                   listener: (context, state) {
                     if (state is DelegateLoginSuccessState) {
-                      NotificationService.instance.sendTokenToBackend();
+                      debugPrint('👤 [DELEGATE LOGIN] Logged in successfully: DelegateID=${state.user.id}, Name=${state.user.name}');
+                      NotificationService.instance.sendTokenToBackend(roleOverride: 'delegate');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

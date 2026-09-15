@@ -243,60 +243,66 @@ class NotificationService {
   }
 
   /// Sends the current FCM device token to the backend based on user role:
-  /// - Delegate: POST /delegate/push-tokens
-  /// - Center:   POST /centers/push-tokens
-  /// - Admin:    POST /admin/push-tokens
-  Future<void> sendTokenToBackend({String? forceToken}) async {
+  /// - All roles use the same unified endpoint: POST /push-tokens
+  Future<bool> sendTokenToBackend({String? forceToken, String? roleOverride}) async {
     try {
       final secureStorage = getIt<SecureStorageService>();
       final isLoggedIn = await secureStorage.isLoggedIn();
-      if (!isLoggedIn) {
-        debugPrint('Skipping sendTokenToBackend: User is not logged in');
-        return;
+      if (!isLoggedIn && roleOverride == null) {
+        debugPrint('⚠️ [PUSH TOKEN] Skipping sendTokenToBackend: User is not logged in');
+        return false;
       }
 
-      final role = (await secureStorage.getUserRole())?.toLowerCase();
-      String? endpoint;
+      final role = (roleOverride ?? await secureStorage.getUserRole())?.toLowerCase();
 
-      switch (role) {
-        case 'delegate':
-          endpoint = Endpoints.delegatePushTokens;
-          break;
-        case 'center':
-          endpoint = Endpoints.centerPushTokens;
-          break;
-        case 'admin':
-          endpoint = Endpoints.adminPushTokens;
-          break;
-        default:
-          debugPrint('Skipping sendTokenToBackend: User role is "$role", push token registration not required');
-          return;
+      // Only register tokens for roles that receive notifications
+      if (role == 'client' || role == null) {
+        debugPrint('ℹ️ [PUSH TOKEN] Role "$role" does not require push token registration');
+        return false;
       }
 
       final token = forceToken ?? await FirebaseMessaging.instance.getToken();
       if (token == null || token.isEmpty) {
-        debugPrint('Skipping sendTokenToBackend: FCM token is null or empty');
-        return;
+        debugPrint('❌ [PUSH TOKEN ERROR] FCM token is null or empty. (Check Google Play Services)');
+        return false;
       }
 
-      debugPrint('========================================================');
-      debugPrint('🔥 FCM TOKEN FOR THIS DEVICE (Role: $role):');
-      debugPrint(token);
-      debugPrint('========================================================');
+      debugPrint('╔═══════════════════════════════════════════════════════════════════════');
+      debugPrint('║ 🚀 [FCM PUSH TOKEN SYNC] Sending Token to Backend...');
+      debugPrint('║ 👤 Role: $role');
+      debugPrint('║ 🔗 Full Endpoint: ${Endpoints.Url}${Endpoints.pushTokens}');
+      debugPrint('║ 🔑 FCM Token: $token');
+      debugPrint('╚═══════════════════════════════════════════════════════════════════════');
 
       final apiManager = getIt<ApiManager>();
       final response = await apiManager.PostDate(
-        endpoint,
+        Endpoints.pushTokens,
         body: {'token': token},
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('Push token successfully registered for $role on backend');
+      final isSuccess = response.statusCode == 200 || response.statusCode == 201;
+
+      if (isSuccess) {
+        debugPrint('╔═══════════════════════════════════════════════════════════════════════');
+        debugPrint('║ ✅ [FCM TOKEN SAVED SUCCESSFULLY]');
+        debugPrint('║ 👤 Role: $role');
+        debugPrint('║ 📡 Status: ${response.statusCode}');
+        debugPrint('║ 📦 Server Message: ${response.data}');
+        debugPrint('╚═══════════════════════════════════════════════════════════════════════');
+        return true;
       } else {
-        debugPrint('Failed to register push token for $role: ${response.statusCode} - ${response.data}');
+        debugPrint('╔═══════════════════════════════════════════════════════════════════════');
+        debugPrint('║ ❌ [FCM TOKEN SAVE FAILED]');
+        debugPrint('║ 👤 Role: $role');
+        debugPrint('║ 🔗 Endpoint: ${Endpoints.Url}${Endpoints.pushTokens}');
+        debugPrint('║ 📡 HTTP Status: ${response.statusCode}');
+        debugPrint('║ ⚠️ Server Response: ${response.data}');
+        debugPrint('╚═══════════════════════════════════════════════════════════════════════');
+        return false;
       }
-    } catch (e) {
-      debugPrint('Error sending push token to backend: $e');
+    } catch (e, stack) {
+      debugPrint('❌ [FCM TOKEN EXCEPTION] Failed to send token to backend: $e\n$stack');
+      return false;
     }
   }
 }
