@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/di.dart';
 import '../../domain/entities/order_entity.dart';
 import '../cubit/available_pickup_orders_cubit.dart';
@@ -34,25 +34,6 @@ class _AvailablePickupOrdersScreenState
     _tabController.dispose();
     _cubit.close();
     super.dispose();
-  }
-
-  Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'تعذر إجراء الاتصال بالرقم $phoneNumber',
-              style: GoogleFonts.cairo(),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        );
-      }
-    }
   }
 
   String _formatDate(String isoString) {
@@ -513,11 +494,70 @@ class _AvailablePickupOrdersScreenState
                                   ),
                                 ),
                               ],
+                              if (order.repairCenter.phone.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.phone_outlined,
+                                      size: 13,
+                                      color: Colors.blueAccent,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      order.repairCenter.phone,
+                                      style: GoogleFonts.cairo(
+                                        fontSize: 12,
+                                        color: Colors.blueAccent.shade100,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      icon: const Icon(
+                                        Icons.copy_rounded,
+                                        size: 16,
+                                        color: Colors.blueAccent,
+                                      ),
+                                      tooltip: 'نسخ رقم المركز',
+                                      onPressed: () {
+                                        Clipboard.setData(
+                                          ClipboardData(
+                                            text: order.repairCenter.phone,
+                                          ),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            backgroundColor:
+                                                Colors.teal.shade800,
+                                            content: Text(
+                                              'تم نسخ رقم المركز ✅',
+                                              style: GoogleFonts.cairo(
+                                                color: Colors.white,
+                                              ),
+                                              textAlign: TextAlign.right,
+                                            ),
+                                            duration: const Duration(
+                                              seconds: 2,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        if (order.repairCenter.phone.isNotEmpty)
+                        if (order.repairCenter.address.isNotEmpty ||
+                            order.repairCenter.name.isNotEmpty)
                           IconButton(
+                            tooltip: 'نسخ عنوان المركز',
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.blueAccent,
                               foregroundColor: Colors.white,
@@ -525,9 +565,29 @@ class _AvailablePickupOrdersScreenState
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            icon: const Icon(Icons.phone, size: 18),
-                            onPressed: () =>
-                                _makePhoneCall(order.repairCenter.phone),
+                            icon: const Icon(Icons.copy_rounded, size: 18),
+                            onPressed: () {
+                              final textToCopy =
+                                  order.repairCenter.address.isNotEmpty
+                                  ? order.repairCenter.address
+                                  : order.repairCenter.name;
+                              Clipboard.setData(
+                                ClipboardData(text: textToCopy),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: Colors.teal.shade800,
+                                  content: Text(
+                                    'تم نسخ عنوان المركز للحافظة',
+                                    style: GoogleFonts.cairo(
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
                           ),
                       ],
                     ),
@@ -778,6 +838,7 @@ class _AvailablePickupOrdersScreenState
             ],
           ),
           IconButton(
+            tooltip: 'نسخ رقم العميل',
             style: IconButton.styleFrom(
               backgroundColor: const Color(0xFFFFC107),
               foregroundColor: Colors.black,
@@ -785,8 +846,21 @@ class _AvailablePickupOrdersScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            icon: const Icon(Icons.phone, size: 20),
-            onPressed: () => _makePhoneCall(order.client!.phone),
+            icon: const Icon(Icons.copy_rounded, size: 20),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: order.client!.phone));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.teal.shade800,
+                  content: Text(
+                    'تم نسخ رقم العميل ✅',
+                    style: GoogleFonts.cairo(color: Colors.white),
+                    textAlign: TextAlign.right,
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/di.dart';
 import '../../../../core/routes_manager/routes.dart';
 import '../../../map/data/datasources/map_remote_data_source.dart';
@@ -455,7 +455,7 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                 // Customer phone
                 Row(
                   children: [
-                    Icon(Icons.phone_outlined, size: 16, color: Colors.white38),
+                    const Icon(Icons.phone_outlined, size: 16, color: Colors.white38),
                     const SizedBox(width: 8),
                     Text(
                       'هاتف العميل: ',
@@ -464,21 +464,36 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                         color: Colors.white54,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: order.client?.phone != null
-                          ? () => launchUrl(
-                              Uri.parse('tel:${order.client!.phone}'),
-                            )
-                          : null,
+                    Expanded(
                       child: Text(
                         order.client?.phone ?? 'غير متوفر',
                         style: GoogleFonts.cairo(
                           fontSize: 13,
                           color: const Color(0xFFFFC107),
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
+                    if (order.client?.phone != null && order.client!.phone.isNotEmpty)
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFFFC107)),
+                        tooltip: 'نسخ رقم العميل',
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: order.client!.phone));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: Colors.teal.shade800,
+                              content: Text(
+                                'تم نسخ رقم العميل ✅',
+                                style: GoogleFonts.cairo(color: Colors.white),
+                                textAlign: TextAlign.right,
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 ),
                 if (order.fees.delivery > 0) ...[
@@ -554,6 +569,7 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           context,
                           fullAddr,
                           'موقع العميل',
+                          destinationPhone: order.client?.phone,
                         );
                       },
                     ),
@@ -617,6 +633,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // Dedicated Center Address & Info Card
+                  _buildRepairCenterInfoCard(context, order.repairCenter),
+                  const SizedBox(height: 12),
                   // Navigate to center location button
                   SizedBox(
                     width: double.infinity,
@@ -641,6 +660,7 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                         context,
                         order.repairCenter.address,
                         order.repairCenter.name,
+                        destinationPhone: order.repairCenter.phone,
                       ),
                     ),
                   ),
@@ -1014,15 +1034,26 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      icon: const Icon(Icons.phone),
+                      icon: const Icon(Icons.copy_rounded),
                       label: Text(
-                        'اتصال بالعميل',
+                        'نسخ رقم العميل',
                         style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
-                        if (order.client?.phone != null) {
-                          launchUrl(Uri.parse('tel:${order.client!.phone}'));
+                        if (order.client?.phone != null && order.client!.phone.isNotEmpty) {
+                          Clipboard.setData(ClipboardData(text: order.client!.phone));
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: Colors.teal.shade800,
+                              content: Text(
+                                'تم نسخ رقم العميل ✅',
+                                style: GoogleFonts.cairo(color: Colors.white),
+                                textAlign: TextAlign.right,
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
                         }
                       },
                     ),
@@ -2234,8 +2265,9 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
   Future<void> _navigateToMapRoute(
     BuildContext context,
     String destinationAddress,
-    String destinationTitle,
-  ) async {
+    String destinationTitle, {
+    String? destinationPhone,
+  }) async {
     // 1. First verify GPS & permissions before showing loading dialog
     final position = await _getDelegateLocationWithPermission(context);
     if (position == null) return;
@@ -2285,10 +2317,31 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
           SnackBar(
             backgroundColor: Colors.orange.shade800,
             content: Text(
-              'تعذر العثور على الموقع من العنوان "$destinationAddress"',
+              'تعذر تحديد المسار على الخريطة. يرجى التواصل عن طريق الهاتف مع المركز لمعرفة العنوان بدقة.',
               style: GoogleFonts.cairo(color: Colors.white),
               textAlign: TextAlign.right,
             ),
+            duration: const Duration(seconds: 6),
+            action: (destinationPhone != null && destinationPhone.isNotEmpty)
+                ? SnackBarAction(
+                    label: 'نسخ الرقم',
+                    textColor: const Color(0xFFFFC107),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: destinationPhone));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.teal.shade800,
+                          content: Text(
+                            'تم نسخ الرقم ✅',
+                            style: GoogleFonts.cairo(color: Colors.white),
+                            textAlign: TextAlign.right,
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  )
+                : null,
           ),
         );
         return;
@@ -2307,6 +2360,7 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
           'destLng': dest.longitude,
           'destinationTitle': destinationTitle,
           'destinationAddress': destinationAddress,
+          'destinationPhone': destinationPhone,
         },
       );
     } catch (e) {
@@ -2316,13 +2370,215 @@ class _DelegateTasksScreenState extends State<DelegateTasksScreen> {
           SnackBar(
             backgroundColor: Colors.red.shade700,
             content: Text(
-              'خطأ في تحديد الموقع: ${e.toString()}',
+              'تعذر تحميل الخريطة. يرجى التواصل عن طريق الهاتف مع المركز لمعرفة العنوان بدقة.',
               style: GoogleFonts.cairo(color: Colors.white),
               textAlign: TextAlign.right,
             ),
+            duration: const Duration(seconds: 6),
+            action: (destinationPhone != null && destinationPhone.isNotEmpty)
+                ? SnackBarAction(
+                    label: 'نسخ الرقم',
+                    textColor: const Color(0xFFFFC107),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: destinationPhone));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.teal.shade800,
+                          content: Text(
+                            'تم نسخ الرقم ✅',
+                            style: GoogleFonts.cairo(color: Colors.white),
+                            textAlign: TextAlign.right,
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  )
+                : null,
           ),
         );
       }
     }
+  }
+
+  Widget _buildRepairCenterInfoCard(BuildContext context, RepairCenterEntity center) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF181B22),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.blue.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.storefront_rounded,
+                  color: Color(0xFF42A5F5),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'وجهة التسليم (مركز الصيانة)',
+                  style: GoogleFonts.cairo(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF90CAF9),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildInfoRow(
+            Icons.business,
+            'اسم المركز',
+            center.name.isNotEmpty ? center.name : 'مركز الصيانة',
+          ),
+          const SizedBox(height: 8),
+          // Written address with copy button
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on, size: 16, color: Color(0xFFFF5252)),
+              const SizedBox(width: 8),
+              Text(
+                'عنوان المركز: ',
+                style: GoogleFonts.cairo(
+                  fontSize: 13,
+                  color: Colors.white54,
+                ),
+              ),
+              Expanded(
+                child: SelectableText(
+                  center.address.isNotEmpty ? center.address : 'غير متوفر',
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (center.address.isNotEmpty)
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFFFC107)),
+                  tooltip: 'نسخ عنوان المركز',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: center.address));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.teal.shade800,
+                        content: Text(
+                          'تم نسخ عنوان المركز للحافظة',
+                          style: GoogleFonts.cairo(color: Colors.white),
+                          textAlign: TextAlign.right,
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+          if (center.phone.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.phone_outlined, size: 16, color: Colors.white38),
+                const SizedBox(width: 8),
+                Text(
+                  'هاتف المركز: ',
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    color: Colors.white54,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    center.phone,
+                    style: GoogleFonts.cairo(
+                      fontSize: 13,
+                      color: const Color(0xFFFFC107),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFFFC107)),
+                  tooltip: 'نسخ رقم المركز',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: center.phone));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.teal.shade800,
+                        content: Text(
+                          'تم نسخ رقم المركز ✅',
+                          style: GoogleFonts.cairo(color: Colors.white),
+                          textAlign: TextAlign.right,
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Copy center phone button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: Text(
+                  'نسخ رقم المركز للتواصل',
+                  style: GoogleFonts.cairo(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: center.phone));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.teal.shade800,
+                      content: Text(
+                        'تم نسخ رقم المركز ✅',
+                        style: GoogleFonts.cairo(color: Colors.white),
+                        textAlign: TextAlign.right,
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

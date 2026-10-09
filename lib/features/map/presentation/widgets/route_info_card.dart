@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../domain/entities/route_info_entity.dart';
 
 class RouteInfoCard extends StatelessWidget {
@@ -58,19 +59,39 @@ class RouteInfoCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (destinationAddress != null &&
-                        destinationAddress!.isNotEmpty &&
-                        destinationAddress != destinationTitle) ...[
+                    if (destinationAddress != null && destinationAddress!.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        destinationAddress!,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade700,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              destinationAddress!,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade700,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: destinationAddress!));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('تم نسخ العنوان للحافظة'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              child: Icon(Icons.copy_rounded, size: 16, color: Colors.black45),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ],

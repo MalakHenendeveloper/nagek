@@ -130,6 +130,7 @@ class RouteGenerator {
             destLng: args['destLng'] as double,
             destinationTitle: args['destinationTitle'] as String? ?? 'الموقع المستهدف',
             destinationAddress: args['destinationAddress'] as String?,
+            destinationPhone: args['destinationPhone'] as String?,
           ),
         );
       default:
